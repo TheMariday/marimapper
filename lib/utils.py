@@ -1,19 +1,34 @@
-import cv2
+import logging
+def AddCameraArgs(parser):
+    parser.add_argument('--device', type=int, help='Camera device index', default=0)
+    parser.add_argument('--width', type=int, help='Video width, uses camera default by default', default=-1)
+    parser.add_argument('--height', type=int, help='Video height, uses camera default by default', default=-1)
+    parser.add_argument('--exposure', type=int, help='Set exposure time, usually lower is shorter', default=-10)
+    parser.add_argument('--threshold', type=int, help='Anything below this threshold will be disregarded', default=128)
 
-def moment_test(image):
 
-    image_grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+def GetBackend(backend_name, led_count):
+    logging.info(f"Initialising backend")
 
-    ret, image_thresh = cv2.threshold(image_grey, 64, 255, cv2.THRESH_TOZERO)
+    if backend_name == "custom":
+        from backends.custom import custom_backend
+        return custom_backend.Backend(led_count)
 
-    contours, hierarchy = cv2.findContours(image_thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    if backend_name == "fadecandy":
+        from backends.fadecandy import fadecandy_backend
+        return fadecandy_backend.Backend(led_count)
 
-    cv2.drawContours(image, contours, -1, (255, 0, 0), 1)
+    if backend_name == "serial":
+        from backends.serial import serial_backend
+        return serial_backend.Backend(led_count)
 
-    m = cv2.moments(image_thresh)
+    if backend_name == "wled":
+        from backends.wled import wled_backend
+        return wled_backend.Backend(led_count)
 
-    if m["m00"] > 0:
+    if backend_name == "lcm":
+        from backends.lcm import lcm_backend
+        return lcm_backend.Backend(led_count)
 
-        center_of_mass = (int(m["m10"] / m["m00"]), int(m["m01"] / m["m00"]))
+    logging.critical("Invalid backend")
 
-        cv2.drawMarker(image, center_of_mass, (0,255,0) ,thickness=2)

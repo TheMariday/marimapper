@@ -1,8 +1,5 @@
 import cv2
 import logging
-from lib.utils import moment_test
-
-EXPOSURE_MODE_MANUAL = 0
 
 
 class CameraSettings:
@@ -33,6 +30,8 @@ class Camera:
             logging.info(f"Connected to camera {device_id}")
         else:
             logging.critical(f"Failed to connect to camera {device_id}")
+
+        self.set_resolution(self.get_width(), self.get_height())  # Don't ask
 
     def __repr__(self):
         return f"""Resolution: {self.get_width()} x {self.get_height()}
@@ -112,17 +111,6 @@ Gain: {self.get_gain()}"""
 
         if not self.device.set(cv2.CAP_PROP_EXPOSURE, exposure):
             logging.warning(f"Failed to set exposure to {exposure}")
-
-
-    def visualise_feed(self):
-
-        while True:
-            image = self.read()
-            moment_test(image)
-            cv2.imshow('Webcam - press esc to close this window', image)
-            if cv2.waitKey(1) == 27:
-                break  # esc to quit
-
 
     def read(self):
         ret_val, image = self.device.read()
