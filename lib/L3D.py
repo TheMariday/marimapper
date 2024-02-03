@@ -40,6 +40,13 @@ class L3D:
         for _ in range(count):
             self.cam.read()
 
-    def find_led(self):
+    def find_led(self, debug=False):
         image = self.cam.read()
-        return self.led_finder.find_led(image)
+        results = self.led_finder.find_led(image)
+
+        if debug:
+            rendered_image = self.led_finder.draw_results(image, results)
+            cv2.imshow('Webcam Feed - Press ESC to close this window', rendered_image)
+            cv2.waitKey(1)
+
+        return results
