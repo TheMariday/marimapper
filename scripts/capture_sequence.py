@@ -2,20 +2,16 @@ import argparse
 import logging
 import sys
 import os
+import time
 sys.path.append('./')
 from lib import utils
 from lib import L3D
-import time
 
 if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
 
-    print("""
-    Welcome to Mariday's super-awesome sequence capturer!
-    """)
-
-    parser = argparse.ArgumentParser(description='A tool to test whether your camera is compatible with L3D')
+    parser = argparse.ArgumentParser(description='Captures LED flashes to file')
 
     utils.AddCameraArgs(parser)
 
@@ -65,7 +61,7 @@ if __name__ == "__main__":
 
                 if result:  # Then no led is found! next
                     logging.info(f"Led found at {result.center}")
-                    output_file.write(f"{result.center[0]},{result.center[1]}\n")
+                    output_file.write(f"{led_id},{result.center[0]},{result.center[1]}\n")
                     total_leds_found += 1
 
                 led_backend.set_led(led_id, False)

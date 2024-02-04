@@ -12,13 +12,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
 
-    print("""
-    Welcome to Mariday's super-awesome latency checker
-    This script should test your camera and the LEDs
-    This will give you a latency in ms that you can use later
-    """)
-
-    parser = argparse.ArgumentParser(description='A tool to test whether your camera is compatible with L3D')
+    parser = argparse.ArgumentParser(description='Tests the functionality and latency of your LED backend')
 
     parser.add_argument("--reference_led", type=int,
                         help="This is the index of the LED should be visible from the camera",required=True)

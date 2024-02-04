@@ -23,8 +23,8 @@ class LedFinder:
         if moments["m00"] == 0:
             return None
 
-        center_x = int(moments["m10"] / moments["m00"])
-        center_y = int(moments["m01"] / moments["m00"])
+        center_x = moments["m10"] / moments["m00"]
+        center_y = moments["m01"] / moments["m00"]
 
         return LedResults((center_x, center_y), contours)
 
@@ -35,6 +35,6 @@ class LedFinder:
 
         if results:
             cv2.drawContours(render_image, results.contours, -1, (255, 0, 0), 1)
-            cv2.drawMarker(render_image, results.center, (0, 255, 0), markerSize=100)
+            cv2.drawMarker(render_image, [int(i) for i in results.center], (0, 255, 0), markerSize=100)
 
         return render_image

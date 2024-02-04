@@ -6,12 +6,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
 
-    print("""
-    Welcome to Mariday's super-awesome reconstructor
-    I need to go to bed
-    """)
-
-    parser = argparse.ArgumentParser(description='A tool to reconstruct data!')
+    parser = argparse.ArgumentParser(description='Reconstructs 3D information from LED flashes captured with capture_sequence.py')
 
     parser.add_argument("--input_dir", type=str,
                         help="Enter the input directory of CSV files", required=True)
@@ -51,4 +46,4 @@ if __name__ == "__main__":
             points.append(file_points)
 
 
-    # Do SFM here, oh I have to install it from source? eeEEEEGHHHHHWHY
+    # Do my own custom SFM stuff here
