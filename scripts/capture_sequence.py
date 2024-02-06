@@ -1,15 +1,14 @@
 import argparse
-import logging
 import sys
 import os
 import time
+from tqdm import tqdm
 sys.path.append('./')
 from lib import utils
 from lib import L3D
+from lib.color_print import cprint, Col
 
 if __name__ == "__main__":
-
-    logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser(description='Captures LED flashes to file')
 
@@ -44,12 +43,12 @@ if __name__ == "__main__":
         filename = f"capture_{string_time}_{l3d.cam.get_width()}_{l3d.cam.get_height()}.csv"
 
         filepath = os.path.join(output_dir_full, filename)
-        logging.info(f"Opening scan file {filepath}")
+        cprint(f"Opening scan file {filepath}")
         with open(filepath, 'a') as output_file:
 
             total_leds_found = 0
 
-            for led_id in range(args.led_count):
+            for led_id in tqdm(range(args.led_count)):
 
                 led_backend.set_led(led_id, True)
 
@@ -60,7 +59,7 @@ if __name__ == "__main__":
                     result = l3d.find_led(True)
 
                 if result:  # Then no led is found! next
-                    logging.info(f"Led found at {result.center}")
+                    cprint(f"Led found at {result.center}")
                     output_file.write(f"{led_id},{result.center[0]},{result.center[1]}\n")
                     total_leds_found += 1
 
@@ -70,8 +69,8 @@ if __name__ == "__main__":
                 while l3d.find_led() is not None:
                     pass
 
-        logging.info(f"{total_leds_found}/{args.led_count} leds found")
-        logging.info(f"Scan complete, scan again? [y/n]")
+        cprint(f"{total_leds_found}/{args.led_count} leds found", Col.BLUE)
+        cprint(f"Scan complete, scan again? [y/n]", Col.PURPLE)
         uin = input()
         while uin not in ("y", "n"):
             uin = input()

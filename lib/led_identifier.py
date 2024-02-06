@@ -7,6 +7,12 @@ class LedResults:
         self.center = center
         self.contours = contours
 
+    def u(self):
+        return self.center[0]
+
+    def v(self):
+        return self.center[1]
+
 class LedFinder:
 
     def __init__(self, threshold):

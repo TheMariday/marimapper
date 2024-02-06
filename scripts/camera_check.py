@@ -1,13 +1,11 @@
-import logging
 import argparse
 import sys
 sys.path.append('./')
 from lib.utils import AddCameraArgs
 from lib import L3D
+from lib.color_print import cprint, Col
 
 if __name__ == "__main__":
-
-    logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser(description='Tests your webcam and LED detection algorithms')
 
@@ -16,10 +14,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.width * args.height < 0:
-        logging.critical(f"Failed to start camera checker as both camera width and height need to be provided")
+        cprint(f"Failed to start camera checker as both camera width and height need to be provided", format=Col.FAIL)
         quit()
 
     l3d = L3D.L3D(args.device, args.exposure, args.threshold, width=args.width, height=args.height)
 
-    while l3d.show_debug():
-        pass
+    l3d.show_debug()

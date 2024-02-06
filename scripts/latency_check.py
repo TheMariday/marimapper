@@ -1,16 +1,14 @@
 import argparse
-import logging
 import math
 import sys
 sys.path.append('./')
 from lib import utils
 from lib import L3D
+from lib.color_print import cprint, Col
 import time
 import numpy as np
 
 if __name__ == "__main__":
-
-    logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser(description='Tests the functionality and latency of your LED backend')
 
@@ -24,13 +22,13 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    logging.info(f"Loading {args.backend} backend")
+    cprint(f"Loading {args.backend} backend")
 
     l3d = L3D.L3D(args.device, args.exposure, args.threshold, width=args.width, height=args.height)
 
     led_count = args.reference_led+1
     led_backend = utils.GetBackend(args.backend, led_count)
-    logging.info(f"Backend initialised")
+    cprint(f"Backend initialised")
 
     led_backend.set_led(args.reference_led, False)
 
@@ -39,10 +37,10 @@ if __name__ == "__main__":
 
     result = l3d.find_led()
     if result is not None:
-        logging.critical(f"All LEDs should be off, however LED has been detected at {result.center}, please run camera_check to ensure the detector is working properly")
+        cprint(f"All LEDs should be off, however LED has been detected at {result.center}, please run camera_check to ensure the detector is working properly", Col.FAIL)
         quit()
 
-    logging.info("Testing average latency...")
+    cprint("Testing average latency...")
 
     latencies = []
 
@@ -58,7 +56,7 @@ if __name__ == "__main__":
             pass
         latencies.append(time.time() - led_update_time)
 
-    #remove the first few as they tend to be off
+    #  remove the first few as they tend to be off
     latencies = latencies[2:]
 
     # Destroy l3d so the logging doesn't get in the way
@@ -68,11 +66,10 @@ if __name__ == "__main__":
     avg_ms = round((sum(latencies)/len(latencies))*1000)
     max_ms = math.ceil(max(latencies)*1000)
 
-    logging.info("\n\n\n----------------------------Results----------------------------")
-    logging.info(f"Latency Min: {min_ms}ms")
-    logging.info(f"Latency Avg: {avg_ms}ms")
-    logging.info(f"Latency Max: {max_ms}ms")
+    cprint(f"Latency Min: {min_ms}ms", Col.BLUE)
+    cprint(f"Latency Avg: {avg_ms}ms", Col.BLUE)
+    cprint(f"Latency Max: {max_ms}ms", Col.BLUE)
 
     suggested_latency = round((np.percentile(latencies, 95)*1.1)*1000)
 
-    logging.info(f"Suggested latency value for 95% of cases + 10%: {suggested_latency}ms")
+    cprint(f"Suggested latency value for 95% of cases + 10%: {suggested_latency}ms", Col.BLUE)

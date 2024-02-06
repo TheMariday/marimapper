@@ -1,5 +1,7 @@
 import cv2
-import logging
+import sys
+sys.path.append('./')
+from lib.color_print import cprint, Col
 
 
 class CameraSettings:
@@ -20,27 +22,20 @@ class CameraSettings:
         camera.set_gain(self.gain)
         camera.set_exposure(self.exposure)
 
+
 class Camera:
 
     def __init__(self, device_id):
-        logging.info(f"Connecting to camera {device_id} ...")
+        cprint(f"Connecting to camera {device_id} ...")
         self.device_id = device_id
         self.device = cv2.VideoCapture(device_id)
         if self.device.isOpened():
-            logging.info(f"Connected to camera {device_id}")
+            cprint(f"Connected to camera {device_id}")
         else:
-            logging.critical(f"Failed to connect to camera {device_id}")
+            cprint(f"Failed to connect to camera {device_id}", format=Col.FAIL)
+            quit()
 
         self.set_resolution(self.get_width(), self.get_height())  # Don't ask
-
-    def __repr__(self):
-        return f"""Resolution: {self.get_width()} x {self.get_height()}
-Autofocus mode: {self.get_af_mode()}
-Focus: {self.get_focus()}
-Exposure mode: {self.get_exposure_mode()}
-Exposure: {self.get_exposure()}
-Gain: {self.get_gain()}"""
-
 
     def get_width(self):
         return int(self.device.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -65,7 +60,7 @@ Gain: {self.get_gain()}"""
 
     def set_resolution(self, width, height):
 
-        logging.info(f"Setting camera resolution to {width} x {height} ...")
+        cprint(f"Setting camera resolution to {width} x {height} ...")
 
         self.device.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.device.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
@@ -74,47 +69,46 @@ Gain: {self.get_gain()}"""
         new_height = self.get_height()
 
         if width != new_width or height != new_height:
-            logging.error(f"Failed to set camera {self.device_id} resolution to {width} x {height}")
+            cprint(f"Failed to set camera {self.device_id} resolution to {width} x {height}", Col.WARNING)
 
         self.device.read()  # do not remove! do not ask why, just accept it
 
-        logging.info(f"Camera resolution set to {new_width} x {new_height}")
-
+        cprint(f"Camera resolution set to {new_width} x {new_height}")
 
     def set_autofocus(self, mode, focus=0):
 
-        logging.info(f"Setting autofocus to mode {mode} with focus {focus}")
+        cprint(f"Setting autofocus to mode {mode} with focus {focus}")
 
         if not self.device.set(cv2.CAP_PROP_AUTOFOCUS, mode):
-            logging.warning(f"Failed to set autofocus to {mode}")
+            cprint(f"Failed to set autofocus to {mode}", Col.WARNING)
 
         if not self.device.set(cv2.CAP_PROP_FOCUS, focus):
-            logging.warning(f"Failed to set focus to {focus}")
+            cprint(f"Failed to set focus to {focus}", Col.WARNING)
 
     def set_exposure_mode(self, mode):
 
-        logging.info(f"Setting exposure to mode {mode}")
+        cprint(f"Setting exposure to mode {mode}")
 
         if not self.device.set(cv2.CAP_PROP_AUTO_EXPOSURE, mode):
-            logging.error(f"Failed to put camera into manual exposure mode {mode}")
+            cprint(f"Failed to put camera into manual exposure mode {mode}", Col.FAIL)
 
     def set_gain(self, gain):
 
-        logging.info(f"Setting gain to {gain}")
+        cprint(f"Setting gain to {gain}")
 
         if not self.device.set(cv2.CAP_PROP_GAIN, gain):
-            logging.warning(f"failed to set camera gain to {gain}")
+            cprint(f"failed to set camera gain to {gain}", Col.WARNING)
 
     def set_exposure(self, exposure):
 
-        logging.info(f"Setting exposure to {exposure}")
+        cprint(f"Setting exposure to {exposure}")
 
         if not self.device.set(cv2.CAP_PROP_EXPOSURE, exposure):
-            logging.warning(f"Failed to set exposure to {exposure}")
+            cprint(f"Failed to set exposure to {exposure}", Col.FAIL)
 
     def read(self):
         ret_val, image = self.device.read()
         if not ret_val:
-            logging.warning("Failed to grab frame")
+            cprint("Failed to grab frame", Col.FAIL)
         return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
