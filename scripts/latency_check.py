@@ -24,16 +24,21 @@ if __name__ == "__main__":
 
     cprint(f"Loading {args.backend} backend")
 
-    l3d = L3D.L3D(args.device, args.exposure, args.threshold, width=args.width, height=args.height)
-
     led_count = args.reference_led+1
-    led_backend = utils.GetBackend(args.backend, led_count)
-    cprint(f"Backend initialised")
+    led_backend = None
+
+    try:
+        led_backend = utils.GetBackend(args.backend, led_count)
+    except NotImplementedError:
+        cprint(f"Failed to initialise backend {args.backend}, you need to implement it!", Col.FAIL)
+        quit()
 
     led_backend.set_led(args.reference_led, False)
 
-    #  wait for 2 seconds for the backend to update, we don't know the latency at this point
-    time.sleep(2)
+    l3d = L3D.L3D(args.device, args.exposure, args.threshold, width=args.width, height=args.height)
+
+    #  wait for 1 seconds for the backend to update, we don't know the latency at this point
+    time.sleep(1)
 
     result = l3d.find_led()
     if result is not None:

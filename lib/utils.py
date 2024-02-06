@@ -1,4 +1,3 @@
-import logging
 def AddCameraArgs(parser):
     parser.add_argument('--device', type=int, help='Camera device index', default=0)
     parser.add_argument('--width', type=int, help='Video width, uses camera default by default', default=-1)
@@ -8,7 +7,6 @@ def AddCameraArgs(parser):
 
 
 def GetBackend(backend_name, led_count):
-    logging.info(f"Initialising backend")
 
     if backend_name == "custom":
         from backends.custom import custom_backend
@@ -30,5 +28,4 @@ def GetBackend(backend_name, led_count):
         from backends.lcm import lcm_backend
         return lcm_backend.Backend(led_count)
 
-    logging.critical("Invalid backend")
-
+    raise "Invalid backend name"
