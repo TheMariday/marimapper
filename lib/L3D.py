@@ -8,8 +8,9 @@ class L3D:
 
     def __init__(self, device, exposure, threshold, width=-1, height=-1):
         cprint(f"Starting L3D...")
-        self.cam = Camera(device)
 
+        self.settings_backup = None
+        self.cam = Camera(device)
         self.settings_backup = CameraSettings(self.cam)
 
         if width != -1 or height != -1:
@@ -23,12 +24,12 @@ class L3D:
         self.ditch_frames(20)
 
         self.led_finder = LedFinder(threshold)
-        cprint(f"L3D started", Col.GREEN)
 
     def __del__(self):
-        cprint("Reverting camera changes...")
-        self.settings_backup.apply(self.cam)
-        cprint("Camera changes reverted")
+        if self.settings_backup is not None:
+            cprint("Reverting camera changes...")
+            self.settings_backup.apply(self.cam)
+            cprint("Camera changes reverted")
 
     def show_debug(self):
 

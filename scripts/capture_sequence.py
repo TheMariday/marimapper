@@ -2,6 +2,8 @@ import argparse
 import sys
 import os
 import time
+
+import cv2
 from tqdm import tqdm
 sys.path.append('./')
 from lib import utils
@@ -43,12 +45,13 @@ if __name__ == "__main__":
         filename = f"capture_{string_time}_{l3d.cam.get_width()}_{l3d.cam.get_height()}.csv"
 
         filepath = os.path.join(output_dir_full, filename)
-        cprint(f"Opening scan file {filepath}")
+        cprint(f"Opening scan file {filepath}\n")
         with open(filepath, 'a') as output_file:
 
             total_leds_found = 0
 
-            for led_id in tqdm(range(args.led_count)):
+            for led_id in tqdm(range(args.led_count), unit="LEDs", desc=f"Capturing sequence to {filename}",
+                               total=args.led_count, smoothing=0):
 
                 led_backend.set_led(led_id, True)
 
@@ -59,7 +62,6 @@ if __name__ == "__main__":
                     result = l3d.find_led(True)
 
                 if result:  # Then no led is found! next
-                    cprint(f"Led found at {result.center}")
                     output_file.write(f"{led_id},{result.center[0]},{result.center[1]}\n")
                     total_leds_found += 1
 
@@ -68,6 +70,8 @@ if __name__ == "__main__":
                 #  wait for LED to turn off
                 while l3d.find_led() is not None:
                     pass
+
+        cv2.destroyWindow("LED Detection Debug")
 
         cprint(f"{total_leds_found}/{args.led_count} leds found", Col.BLUE)
         cprint(f"Scan complete, scan again? [y/n]", Col.PURPLE)
