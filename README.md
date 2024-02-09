@@ -70,6 +70,11 @@ Run `python scripts/capture_sequence.py --help` to list the optional parameters
 ## Step 5: Reconstruct a 3D map
 *TODO*
 
+
+## Step 6: Visualise!
+
+Run `python scripts/visualise.py <filename>` to visualise 2D and 3D csv map files
+
 # Feedback
 
 I would really love to hear what you think and if you have any bugs or improvements, please raise them here or drop me a line on [Telegram](https://t.me/themariday).
