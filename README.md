@@ -38,7 +38,7 @@ class Backend:
         #  Make your LEDs do the on-off thing here!
 ```
 
-There are also plans to support the following backends. This can be selected in the next step using the `--backend` argument
+There are also plans to support the following backends. This can be selected in the following steps using the `--backend` argument.
 
 | Backend   | Supported |
 |-----------|-----------|
@@ -49,9 +49,8 @@ There are also plans to support the following backends. This can be selected in 
 ## Step 3: Run the LED latency checker (recommended)
 After writing or choosing your backend, place one of your addressable LEDs in front of your camera and run `python scripts/latency_check.py`
 
-This checks that your backend is working properly and benchmarks the latency which will be useful later.
-
-Once the latency check has finished, the recommended latency will be listed in the console in milliseconds.
+Once complete, the recommended latency will be listed in the console in milliseconds. 
+This can be used in the following steps using the `--latency` argument.
 
 Run `python scripts/latency_check.py --help` to list the optional parameters
 
@@ -60,11 +59,9 @@ Set up your LEDs in front of your camera and run `python scripts/capture_sequenc
 
 Change `--led_count` to however many LEDs you want to scan and `--output_dir` to whatever folder you would like to export the 2D maps to.
 
-If you have run Step 3, use the `--latency` argument followed by the recommended latency.
-
 This will produce timestamped CSV files with the following format:
 
-```json lines
+```
 led_id, x, y
 ```
 
