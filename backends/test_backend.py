@@ -2,7 +2,7 @@ import argparse
 import sys
 sys.path.append('./')
 from lib import utils
-from lib.color_print import cprint, Col
+from lib.color_print import cprint
 import time
 
 if __name__ == "__main__":
@@ -21,22 +21,18 @@ if __name__ == "__main__":
 
     led_count = args.reference_led + 1
 
-    try:
-        led_backend = utils.get_backend(args.backend, led_count)
+    led_backend = utils.get_backend(args.backend, led_count)
 
-        cprint("Press ctrl-c to cancel")
+    cprint("Press ctrl-c to cancel")
 
-        while True:
+    while True:
 
-            time.sleep(1)
+        time.sleep(1)
 
-            cprint(f"Turning on LED {args.reference_led}")
-            led_backend.set_led(args.reference_led, True)
+        cprint(f"Turning on LED {args.reference_led}")
+        led_backend.set_led(args.reference_led, True)
 
-            time.sleep(1)
+        time.sleep(1)
 
-            cprint(f"Turning off LED {args.reference_led}")
-            led_backend.set_led(args.reference_led, False)
-
-    except NotImplementedError:
-        cprint(f"Failed to initialise backend {args.backend}, you need to implement it!", Col.FAIL)
+        cprint(f"Turning off LED {args.reference_led}")
+        led_backend.set_led(args.reference_led, False)
