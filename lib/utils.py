@@ -1,12 +1,17 @@
-def AddCameraArgs(parser):
-    parser.add_argument('--device', type=int, help='Camera device index', default=0)
-    parser.add_argument('--width', type=int, help='Video width, uses camera default by default', default=-1)
-    parser.add_argument('--height', type=int, help='Video height, uses camera default by default', default=-1)
-    parser.add_argument('--exposure', type=int, help='Set exposure time, usually lower is shorter', default=-10)
-    parser.add_argument('--threshold', type=int, help='Anything below this threshold will be disregarded', default=128)
+def add_camera_args(parser):
+    parser.add_argument('--device', type=int,
+                        help='Camera device index, set to 1 if using a laptop with a USB webcam', default=0)
+    parser.add_argument('--width', type=int,
+                        help='Camera width, usually uses 640 by default', default=-1)
+    parser.add_argument('--height', type=int,
+                        help='Camera height, usually uses 480 by default', default=-1)
+    parser.add_argument('--exposure', type=int,
+                        help='Camera exposure, the lower the value, the darker the image', default=-10)
+    parser.add_argument('--threshold', type=int,
+                        help='LED detection threshold, reducing this number will reduce false positives', default=128)
 
 
-def GetBackend(backend_name, led_count):
+def get_backend(backend_name, led_count):
 
     if backend_name == "custom":
         from backends.custom import custom_backend

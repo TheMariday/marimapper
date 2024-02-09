@@ -1,13 +1,13 @@
 from lib.camera import Camera, CameraSettings
-from lib.led_identifier import LedFinder, LedResults
-from lib.color_print import cprint, Col
+from lib.led_identifier import LedFinder
+from lib.color_print import cprint
 import cv2
 
 
 class L3D:
 
     def __init__(self, device, exposure, threshold, width=-1, height=-1):
-        cprint(f"Starting L3D...")
+        cprint("Starting L3D...")
 
         self.settings_backup = None
         self.cam = Camera(device)

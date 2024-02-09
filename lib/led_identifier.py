@@ -13,6 +13,7 @@ class LedResults:
     def v(self):
         return self.center[1]
 
+
 class LedFinder:
 
     def __init__(self, threshold):

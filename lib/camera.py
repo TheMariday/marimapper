@@ -111,4 +111,3 @@ class Camera:
         if not ret_val:
             cprint("Failed to grab frame", Col.FAIL)
         return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-

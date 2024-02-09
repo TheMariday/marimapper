@@ -8,8 +8,10 @@ class Col:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+
 def cprint(str, format=""):
     print(f"{format}{str}\033[0m")
+
 
 if __name__ == "__main__":
     cprint("hello")

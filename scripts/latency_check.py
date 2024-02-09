@@ -12,23 +12,23 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Tests the functionality and latency of your LED backend')
 
-    parser.add_argument("--reference_led", type=int,
-                        help="This is the index of the LED should be visible from the camera",required=True)
-
     parser.add_argument("--backend", type=str, help="The backend used for led communication",
-                        choices=["custom", "fadecandy", "serial", "wled", "lcm"], required=True)
+                        choices=["custom", "fadecandy", "serial", "wled", "lcm"], default="custom")
 
-    utils.AddCameraArgs(parser)
+    parser.add_argument("--reference_led", type=int,
+                        help="This is the index of the LED should be visible from the camera", default=0)
+
+    utils.add_camera_args(parser)
 
     args = parser.parse_args()
 
     cprint(f"Loading {args.backend} backend")
 
-    led_count = args.reference_led+1
+    led_count = args.reference_led + 1
     led_backend = None
 
     try:
-        led_backend = utils.GetBackend(args.backend, led_count)
+        led_backend = utils.get_backend(args.backend, led_count)
     except NotImplementedError:
         cprint(f"Failed to initialise backend {args.backend}, you need to implement it!", Col.FAIL)
         quit()
@@ -42,7 +42,8 @@ if __name__ == "__main__":
 
     result = l3d.find_led()
     if result is not None:
-        cprint(f"All LEDs should be off, however LED has been detected at {result.center}, please run camera_check to ensure the detector is working properly", Col.FAIL)
+        cprint(f"All LEDs should be off, however LED has been detected at {result.center},"
+               f" please run camera_check to ensure the detector is working properly", Col.FAIL)
         quit()
 
     cprint("Testing average latency...")
@@ -67,14 +68,14 @@ if __name__ == "__main__":
     # Destroy l3d so the logging doesn't get in the way
     del l3d
 
-    min_ms = math.floor(min(latencies)*1000)
-    avg_ms = round((sum(latencies)/len(latencies))*1000)
-    max_ms = math.ceil(max(latencies)*1000)
+    min_ms = math.floor(min(latencies) * 1000)
+    avg_ms = round((sum(latencies) / len(latencies)) * 1000)
+    max_ms = math.ceil(max(latencies) * 1000)
 
     cprint(f"Latency Min: {min_ms}ms", Col.BLUE)
     cprint(f"Latency Avg: {avg_ms}ms", Col.BLUE)
     cprint(f"Latency Max: {max_ms}ms", Col.BLUE)
 
-    suggested_latency = round((np.percentile(latencies, 95)*1.1)*1000)
+    suggested_latency = round((np.percentile(latencies, 95) * 1.1) * 1000)
 
     cprint(f"Suggested latency value for 95% of cases + 10%: {suggested_latency}ms", Col.BLUE)

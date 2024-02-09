@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Captures LED flashes to file')
 
-    utils.AddCameraArgs(parser)
+    utils.add_camera_args(parser)
 
     parser.add_argument("--led_count", type=int,
                         help="How many LEDs are in your system", required=True)
@@ -22,7 +22,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", type=str, help="The output folder for your capture", required=True)
 
     parser.add_argument("--backend", type=str, help="The backend used for led communication",
-                        choices=["custom", "fadecandy", "serial", "wled", "lcm"], required=True)
+                        choices=["custom", "fadecandy", "serial", "wled", "lcm"], default="custom")
 
     parser.add_argument("--latency", type=int,
                         help="The expected latency in ms from an LED being updated to that being updated in the camera",
@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    led_backend = utils.GetBackend(args.backend, args.led_count)
+    led_backend = utils.get_backend(args.backend, args.led_count)
 
     l3d = L3D.L3D(args.device, args.exposure, args.threshold, width=args.width, height=args.height)
 
@@ -56,7 +56,7 @@ if __name__ == "__main__":
                 led_backend.set_led(led_id, True)
 
                 #  wait for LED to turn on
-                max_time = time.time() + float(args.latency)/1000
+                max_time = time.time() + float(args.latency) / 1000
                 result = None
                 while result is None and time.time() < max_time:
                     result = l3d.find_led(True)
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         cv2.destroyWindow("LED Detection Debug")
 
         cprint(f"{total_leds_found}/{args.led_count} leds found", Col.BLUE)
-        cprint(f"Scan complete, scan again? [y/n]", Col.PURPLE)
+        cprint("Scan complete, scan again? [y/n]", Col.PURPLE)
         uin = input()
         while uin not in ("y", "n"):
             uin = input()
