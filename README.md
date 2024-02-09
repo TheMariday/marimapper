@@ -38,6 +38,8 @@ class Backend:
         #  Make your LEDs do the on-off thing here!
 ```
 
+You can test your backend with `python backends/test_backend.py`
+
 There are also plans to support the following backends. This can be selected in the following steps using the `--backend` argument.
 
 | Backend   | Supported |

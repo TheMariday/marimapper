@@ -33,4 +33,4 @@ jobs:
 
     - name: Flake 8 Syntax Warnings
       run: | 
-        flake8 scripts lib --count --max-complexity=10 --max-line-length=127 --statistics --ignore E402
+        flake8 lib scripts backends --exclude backends/fadecandy/opc.py --count --max-complexity=10 --max-line-length=127 --statistics --ignore E402
