@@ -1,3 +1,8 @@
+import sys
+sys.path.append('./')
+from lib.color_print import cprint, Col
+
+
 def add_camera_args(parser):
     parser.add_argument('--device', type=int,
                         help='Camera device index, set to 1 if using a laptop with a USB webcam', default=0)
@@ -13,24 +18,26 @@ def add_camera_args(parser):
 
 def get_backend(backend_name, led_count):
 
-    if backend_name == "custom":
-        from backends.custom import custom_backend
-        return custom_backend.Backend(led_count)
+    try:
+        if backend_name == "custom":
+            from backends.custom import custom_backend
+            return custom_backend.Backend(led_count)
 
-    if backend_name == "fadecandy":
-        from backends.fadecandy import fadecandy_backend
-        return fadecandy_backend.Backend(led_count)
+        if backend_name == "fadecandy":
+            from backends.fadecandy import fadecandy_backend
+            return fadecandy_backend.Backend(led_count)
 
-    if backend_name == "serial":
-        from backends.serial import serial_backend
-        return serial_backend.Backend(led_count)
+        if backend_name == "wled":
+            from backends.wled import wled_backend
+            return wled_backend.Backend(led_count)
 
-    if backend_name == "wled":
-        from backends.wled import wled_backend
-        return wled_backend.Backend(led_count)
+        if backend_name == "lcm":
+            from backends.lcm import lcm_backend
+            return lcm_backend.Backend(led_count)
 
-    if backend_name == "lcm":
-        from backends.lcm import lcm_backend
-        return lcm_backend.Backend(led_count)
+        raise "Invalid backend name"
 
-    raise "Invalid backend name"
+    except NotImplementedError:
+        cprint(f"Failed to initialise backend {backend_name}, you need to implement it or use the "
+               f"--backend argument to select from the available backends", Col.FAIL)
+        quit()

@@ -13,7 +13,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Tests the functionality and latency of your LED backend')
 
     parser.add_argument("--backend", type=str, help="The backend used for led communication",
-                        choices=["custom", "fadecandy", "serial", "wled", "lcm"], default="custom")
+                        choices=["custom", "fadecandy", "wled", "lcm"], default="custom")
 
     parser.add_argument("--reference_led", type=int,
                         help="This is the index of the LED should be visible from the camera", default=0)
@@ -25,13 +25,8 @@ if __name__ == "__main__":
     cprint(f"Loading {args.backend} backend")
 
     led_count = args.reference_led + 1
-    led_backend = None
 
-    try:
-        led_backend = utils.get_backend(args.backend, led_count)
-    except NotImplementedError:
-        cprint(f"Failed to initialise backend {args.backend}, you need to implement it!", Col.FAIL)
-        quit()
+    led_backend = utils.get_backend(args.backend, led_count)
 
     led_backend.set_led(args.reference_led, False)
 

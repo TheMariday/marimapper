@@ -22,7 +22,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", type=str, help="The output folder for your capture", required=True)
 
     parser.add_argument("--backend", type=str, help="The backend used for led communication",
-                        choices=["custom", "fadecandy", "serial", "wled", "lcm"], default="custom")
+                        choices=["custom", "fadecandy", "wled", "lcm"], default="custom")
 
     parser.add_argument("--latency", type=int,
                         help="The expected latency in ms from an LED being updated to that being updated in the camera",

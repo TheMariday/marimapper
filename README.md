@@ -29,13 +29,24 @@ Your LEDs are as unique as you are,
 so the fastest way to connect L3D to your system is to fill in the blanks in [backends/custom/custom_backend.py](backends/custom/custom_backend.py):
 
 ```python
+# import some_led_library
+
 class Backend:
 
-    def __init__(self, led_count):
-        self.led_count = led_count
+    def __init__(self, led_count: int):
+        # Remove the following line after you have implemented the set_led function!
+        raise NotImplementedError("Could not load backend as it has not been implemented, go implement it!")
 
     def set_led(self, led_index: int, on: bool):
-        #  Make your LEDs do the on-off thing here!
+        # Write your code for controlling your LEDs here
+        # It should turn on or off the led at the led_index depending on the "on" variable
+        # For example:
+        # if on:
+        #     some_led_library.set_led(led_index, (255, 255, 255))
+        # else:
+        #     some_led_library.set_led(led_index, (0, 0, 0))
+        pass
+
 ```
 
 You can test your backend with `python backends/test_backend.py`
