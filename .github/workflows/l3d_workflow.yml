@@ -1,4 +1,4 @@
-name: L3D Workflow
+name: Build
 
 on:
   push:

@@ -1,6 +1,6 @@
 # L3D LED Mapper
 
-![Build banner](actions/workflows/l3d_workflow.yml/badge.svg)
+![Build banner](https://github.com/themariday/l3d/actions/workflows/l3d_workflow.yml/badge.svg)
 
 This is a selection of tools to map LEDs into 2D and 3D space using only your webcam!
 
