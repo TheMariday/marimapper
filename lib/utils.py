@@ -21,7 +21,7 @@ def add_backend_args(parser):
     parser.add_argument("--backend", type=str, help="The backend used for led communication",
                         choices=["custom", "fadecandy", "wled", "lcm"], default="custom")
 
-    parser.add_argument("--server", type=str, help="Some backends require a server", required=True)
+    parser.add_argument("--server", type=str, help="Some backends require a server")
 
 
 def get_backend(backend_name, led_count, server=""):
@@ -41,9 +41,9 @@ def get_backend(backend_name, led_count, server=""):
         if backend_name == "wled":
             from backends.wled import wled_backend
             if server:
-                return wled_backend.Backend(led_count, server)
+                return wled_backend.Backend(server)
             else:
-                return wled_backend.Backend(led_count)
+                return wled_backend.Backend()
 
         if backend_name == "lcm":
             from backends.lcm import lcm_backend

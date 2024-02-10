@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     led_count = args.reference_led + 1
 
-    led_backend = utils.get_backend(args.backend, led_count)
+    led_backend = utils.get_backend(args.backend, led_count, args.server)
 
     led_backend.set_led(args.reference_led, False)
 
@@ -53,6 +53,8 @@ if __name__ == "__main__":
         while l3d.find_led() is None:
             pass
         latencies.append(time.time() - led_update_time)
+
+    led_backend.set_led(args.reference_led, False)
 
     #  remove the first few as they tend to be off
     latencies = latencies[2:]
