@@ -23,6 +23,7 @@ def add_backend_args(parser):
 
     parser.add_argument("--server", type=str, help="Some backends require a server", required=True)
 
+
 def get_backend(backend_name, led_count, server=""):
 
     try:

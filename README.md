@@ -93,3 +93,5 @@ Run `python scripts/visualise.py <filename>` to visualise 2D and 3D csv map file
 I would really love to hear what you think and if you have any bugs or improvements, please raise them here or drop me a line on [Telegram](https://t.me/themariday).
 
 If you implement a backend that you think others might use, please raise a pull request or just drop me a message on Telegram!
+
+Please install and run flake8 before submitting changes thank you! 

@@ -1,0 +1,5 @@
+[flake8]
+ignore = E402
+exclude = backends/fadecandy/opc.py, venv
+max-line-length=127
+max-complexity = 10
