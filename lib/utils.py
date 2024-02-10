@@ -16,7 +16,14 @@ def add_camera_args(parser):
                         help='LED detection threshold, reducing this number will reduce false positives', default=128)
 
 
-def get_backend(backend_name, led_count):
+def add_backend_args(parser):
+
+    parser.add_argument("--backend", type=str, help="The backend used for led communication",
+                        choices=["custom", "fadecandy", "wled", "lcm"], default="custom")
+
+    parser.add_argument("--server", type=str, help="Some backends require a server", required=True)
+
+def get_backend(backend_name, led_count, server=""):
 
     try:
         if backend_name == "custom":
@@ -25,11 +32,17 @@ def get_backend(backend_name, led_count):
 
         if backend_name == "fadecandy":
             from backends.fadecandy import fadecandy_backend
-            return fadecandy_backend.Backend(led_count)
+            if server:
+                return fadecandy_backend.Backend(led_count, server)
+            else:
+                return fadecandy_backend.Backend(led_count)
 
         if backend_name == "wled":
             from backends.wled import wled_backend
-            return wled_backend.Backend(led_count)
+            if server:
+                return wled_backend.Backend(led_count, server)
+            else:
+                return wled_backend.Backend(led_count)
 
         if backend_name == "lcm":
             from backends.lcm import lcm_backend

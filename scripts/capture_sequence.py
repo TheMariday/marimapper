@@ -15,14 +15,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Captures LED flashes to file')
 
     utils.add_camera_args(parser)
-
-    parser.add_argument("--led_count", type=int,
-                        help="How many LEDs are in your system", required=True)
+    utils.add_backend_args(parser)
 
     parser.add_argument("--output_dir", type=str, help="The output folder for your capture", required=True)
 
-    parser.add_argument("--backend", type=str, help="The backend used for led communication",
-                        choices=["custom", "fadecandy", "wled", "lcm"], default="custom")
+    parser.add_argument("--led_count", type=int,
+                        help="How many LEDs are in your system", required=True)
 
     parser.add_argument("--latency", type=int,
                         help="The expected latency in ms from an LED being updated to that being updated in the camera",
@@ -30,7 +28,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    led_backend = utils.get_backend(args.backend, args.led_count)
+    led_backend = utils.get_backend(args.backend, args.led_count, args.server)
 
     l3d = L3D.L3D(args.device, args.exposure, args.threshold, width=args.width, height=args.height)
 

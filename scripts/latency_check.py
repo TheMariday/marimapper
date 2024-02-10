@@ -12,13 +12,11 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Tests the functionality and latency of your LED backend')
 
-    parser.add_argument("--backend", type=str, help="The backend used for led communication",
-                        choices=["custom", "fadecandy", "wled", "lcm"], default="custom")
-
     parser.add_argument("--reference_led", type=int,
                         help="This is the index of the LED should be visible from the camera", default=0)
 
     utils.add_camera_args(parser)
+    utils.add_backend_args(parser)
 
     args = parser.parse_args()
 
