@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     with open(args.filename, "r") as file:
         lines = file.readlines()
-        file_points = [[int(v) for v in line.strip().split(",")] for line in lines]
+        file_points = [[int(float(v)) for v in line.strip().split(",")] for line in lines]
 
         if len(file_points[0]) == 3:
 

@@ -7,6 +7,7 @@ from lib import L3D
 from lib.color_print import cprint, Col
 import time
 import numpy as np
+from tqdm import tqdm
 
 if __name__ == "__main__":
 
@@ -39,11 +40,9 @@ if __name__ == "__main__":
                f" please run camera_check to ensure the detector is working properly", Col.FAIL)
         quit()
 
-    cprint("Testing average latency...")
-
     latencies = []
 
-    for _ in range(100):
+    for _ in tqdm(range(100), unit="Tests", desc=f"Testing average latency", total=100, smoothing=0):
         # Set reference led to off and spin until L3D can't find the led anymore
         led_backend.set_led(args.reference_led, False)
         while l3d.find_led() is not None:
@@ -69,6 +68,6 @@ if __name__ == "__main__":
     cprint(f"Latency Avg: {avg_ms}ms", Col.BLUE)
     cprint(f"Latency Max: {max_ms}ms", Col.BLUE)
 
-    suggested_latency = round((np.percentile(latencies, 95) * 1.1) * 1000)
+    suggested_latency = round((np.percentile(latencies, 99) * 1.1) * 1000)
 
-    cprint(f"Suggested latency value for 95% of cases + 10%: {suggested_latency}ms", Col.BLUE)
+    cprint(f"Suggested latency value for 99% of cases + 10%: {suggested_latency}ms", Col.BLUE)
