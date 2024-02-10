@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     latencies = []
 
-    for _ in tqdm(range(100), unit="Tests", desc=f"Testing average latency", total=100, smoothing=0):
+    for _ in tqdm(range(100), unit="Tests", desc="Testing average latency", total=100, smoothing=0):
         # Set reference led to off and spin until L3D can't find the led anymore
         led_backend.set_led(args.reference_led, False)
         while l3d.find_led() is not None:
