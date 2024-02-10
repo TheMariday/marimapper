@@ -2,6 +2,7 @@ import requests
 
 wled_ip = "1.2.3.4"  # Replace with the actual IP address or hostname of your WLED device
 
+
 class Backend:
 
     def __init__(self, wled_base_url):
@@ -33,9 +34,9 @@ class Backend:
 
         # Not the cleanest, but its honest work :3c
         if on is True:
-            payload = {"seg":{"i":[led_index,"FFFFFF"]}}
-        else: 
-            payload = {"seg":{"i":[led_index,"000000"]}}
+            payload = {"seg": {"i": [led_index, "FFFFFF"]}}
+        else:
+            payload = {"seg": {"i": [led_index, "000000"]}}
 
         try:
             # Send the HTTP POST request to WLED API
@@ -50,7 +51,5 @@ class Backend:
             print(f"Error: {e}")
 
 
-
 backend = Backend(wled_base_url=wled_ip)
 print(f"LED count: {backend.led_count}")
-
