@@ -9,8 +9,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Tests a particular backend by making a reference led blink')
 
-    parser.add_argument("--backend", type=str, help="The backend used for led communication",
-                        choices=["custom", "fadecandy", "serial", "wled", "lcm"], default="custom")
+    utils.add_backend_args(parser)
 
     parser.add_argument("--reference_led", type=int,
                         help="This is the index of the LED should be visible from the camera", default=0)
@@ -21,7 +20,7 @@ if __name__ == "__main__":
 
     led_count = args.reference_led + 1
 
-    led_backend = utils.get_backend(args.backend, led_count)
+    led_backend = utils.get_backend(args.backend, led_count, args.server)
 
     cprint("Press ctrl-c to cancel")
 
