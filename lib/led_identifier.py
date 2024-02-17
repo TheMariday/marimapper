@@ -16,7 +16,7 @@ class LedResults:
 
 class LedFinder:
 
-    def __init__(self, threshold):
+    def __init__(self, threshold=128):
         self.threshold = threshold
 
     def find_led(self, image):
