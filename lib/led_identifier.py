@@ -45,3 +45,8 @@ class LedFinder:
             cv2.drawMarker(render_image, [int(i) for i in results.center], (0, 255, 0), markerSize=100)
 
         return render_image
+
+
+if __name__ == "__main__":
+
+    led_finder = LedFinder()
