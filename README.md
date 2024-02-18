@@ -1,5 +1,11 @@
 # L3D LED Mapper
 
+![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+![macOS](https://img.shields.io/badge/mac%20os-000000?style=for-the-badge&logo=macos&logoColor=F0F0F0)
+
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+
 ![Build banner](https://github.com/themariday/l3d/actions/workflows/l3d_workflow.yml/badge.svg)
 
 This is a selection of tools to map LEDs into 2D and 3D space using only your webcam!
@@ -7,9 +13,7 @@ This is a selection of tools to map LEDs into 2D and 3D space using only your we
 This works best in a dim environment so please make sure your camera isn't pointing at any other light sources! (Test in Step 1)
 
 ## Step 0: Install requirements
-After downloading this repository, run `pip install -r requirements.txt`
-
-This should install everything you need to run L3D.
+After downloading this repository and installing Python, run `pip install -r requirements.txt`
 
 ## Step 1: Run the camera checker (recommended)
 This will check your camera is compatible with L3D.
@@ -56,8 +60,8 @@ There are also plans to support the following backends. This can be selected in 
 | Backend   | Supported |
 |-----------|-----------|
 | FadeCandy | yes       |
+| WLED      | yes       |
 | LCM       | todo      |
-| WLED      | todo      |
 
 ## Step 3: Run the LED latency checker (recommended)
 After writing or choosing your backend, place one of your addressable LEDs in front of your camera and run `python scripts/latency_check.py`
