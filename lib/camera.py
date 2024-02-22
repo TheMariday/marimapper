@@ -111,3 +111,7 @@ class Camera:
         if not ret_val:
             cprint("Failed to grab frame", Col.FAIL)
         return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    def ditch_frames(self, count=20):
+        for _ in range(count):
+            self.read()

@@ -58,37 +58,39 @@ if __name__ == "__main__":
 
         filepath = os.path.join(output_dir_full, filename)
         cprint(f"Opening scan file {filepath}\n")
-        with open(filepath, "a") as output_file:
 
-            total_leds_found = 0
+        results_csv = []
 
-            for led_id in tqdm(
-                range(args.led_count),
-                unit="LEDs",
-                desc=f"Capturing sequence to {filename}",
-                total=args.led_count,
-                smoothing=0,
-            ):
+        total_leds_found = 0
 
-                led_backend.set_led(led_id, True)
+        for led_id in tqdm(
+            range(args.led_count),
+            unit="LEDs",
+            desc=f"Capturing sequence to {filename}",
+            total=args.led_count,
+            smoothing=0,
+        ):
 
-                #  wait for LED to turn on
-                max_time = time.time() + float(args.latency) / 1000
-                result = None
-                while result is None and time.time() < max_time:
-                    result = l3d.find_led(True)
+            led_backend.set_led(led_id, True)
 
-                if result:  # Then no led is found! next
-                    output_file.write(
-                        f"{led_id},{result.center[0]},{result.center[1]}\n"
-                    )
-                    total_leds_found += 1
+            #  wait for LED to turn on
+            max_time = time.time() + float(args.latency) / 1000
+            result = None
+            while result is None and time.time() < max_time:
+                result = l3d.find_led(True)
 
-                led_backend.set_led(led_id, False)
+            if result:
+                results_csv.append(f"{led_id},{result.center[0]},{result.center[1]}")
+                total_leds_found += 1
 
-                #  wait for LED to turn off
-                while l3d.find_led() is not None:
-                    pass
+            led_backend.set_led(led_id, False)
+
+            #  wait for LED to turn off
+            while l3d.find_led() is not None:
+                pass
+
+        with open(filepath, "w") as output_file:
+            output_file.write("\n".join(results_csv))
 
         cv2.destroyWindow("LED Detection Debug")
 

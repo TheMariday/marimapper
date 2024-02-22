@@ -6,11 +6,11 @@ import cv2
 
 class L3D:
 
-    def __init__(self, device, exposure, threshold, width=-1, height=-1):
+    def __init__(self, device, exposure, threshold, width=-1, height=-1, camera=None):
         cprint("Starting L3D...")
 
         self.settings_backup = None
-        self.cam = Camera(device)
+        self.cam = Camera(device) if camera is None else camera
         self.settings_backup = CameraSettings(self.cam)
 
         if width != -1 or height != -1:
@@ -21,7 +21,7 @@ class L3D:
         self.cam.set_gain(0)
         self.cam.set_exposure(exposure)
 
-        self.ditch_frames(20)
+        self.cam.ditch_frames(20)
 
         self.led_finder = LedFinder(threshold)
 
@@ -43,10 +43,6 @@ class L3D:
                 break
 
             self.find_led(debug=True)
-
-    def ditch_frames(self, count=20):
-        for _ in range(count):
-            self.cam.read()
 
     def find_led(self, debug=False):
         image = self.cam.read()
