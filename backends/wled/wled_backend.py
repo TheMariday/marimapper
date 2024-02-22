@@ -15,22 +15,31 @@ class Backend:
 
         # Get the LED Count straight from the WLED Device :D
         if response.status_code != 200:
-            raise ConnectionError(f"Failed to retrieve LED count. Status code: {response.status_code}")
+            raise ConnectionError(
+                f"Failed to retrieve LED count. Status code: {response.status_code}"
+            )
 
         info_data = response.json()
-        return info_data['leds']['count']
+        return info_data["leds"]["count"]
 
     def reset_wled(self):
 
         # Set all the LED's to black on launch
-        payload = {"seg": [{"start": 0, "stop": self.get_led_count(), "sel": True}, {"stop": 0}]}
+        payload = {
+            "seg": [
+                {"start": 0, "stop": self.get_led_count(), "sel": True},
+                {"stop": 0},
+            ]
+        }
 
         # Send the HTTP POST request to WLED API
         response = requests.post(self.state_endpoint, json=payload)
 
         # Check if the request was successful (HTTP status code 200)
         if response.status_code != 200:
-            raise ConnectionError(f"Failed to retrieve LED count. Status code: {response.status_code}")
+            raise ConnectionError(
+                f"Failed to retrieve LED count. Status code: {response.status_code}"
+            )
         [self.set_led(i, False) for i in range(self.get_led_count())]
 
     def set_led(self, led_index: int, on: bool):
@@ -42,4 +51,6 @@ class Backend:
 
         # Check if the request was successful (HTTP status code 200)
         if response.status_code != 200:
-            raise ConnectionError(f"WLED Backend failed to set LED state. Status code: {response.status_code}")
+            raise ConnectionError(
+                f"WLED Backend failed to set LED state. Status code: {response.status_code}"
+            )

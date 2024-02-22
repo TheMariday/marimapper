@@ -5,32 +5,44 @@ import time
 
 import cv2
 from tqdm import tqdm
-sys.path.append('./')
+
+sys.path.append("./")
 from lib import utils
 from lib import L3D
 from lib.color_print import cprint, Col
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='Captures LED flashes to file')
+    parser = argparse.ArgumentParser(description="Captures LED flashes to file")
 
     utils.add_camera_args(parser)
     utils.add_backend_args(parser)
 
-    parser.add_argument("--output_dir", type=str, help="The output folder for your capture", required=True)
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        help="The output folder for your capture",
+        required=True,
+    )
 
-    parser.add_argument("--led_count", type=int,
-                        help="How many LEDs are in your system", required=True)
+    parser.add_argument(
+        "--led_count", type=int, help="How many LEDs are in your system", required=True
+    )
 
-    parser.add_argument("--latency", type=int,
-                        help="The expected latency in ms from an LED being updated to that being updated in the camera",
-                        default=1000)
+    parser.add_argument(
+        "--latency",
+        type=int,
+        help="The expected latency in ms from an LED being updated to that being updated in the camera",
+        default=1000,
+    )
 
     args = parser.parse_args()
 
     led_backend = utils.get_backend(args.backend, args.led_count, args.server)
 
-    l3d = L3D.L3D(args.device, args.exposure, args.threshold, width=args.width, height=args.height)
+    l3d = L3D.L3D(
+        args.device, args.exposure, args.threshold, width=args.width, height=args.height
+    )
 
     output_dir_full = os.path.join(os.getcwd(), "my_scans", args.output_dir)
 
@@ -40,16 +52,23 @@ if __name__ == "__main__":
 
         # The filename is made out of the date, then the resolution of the camera
         string_time = time.strftime("%Y%m%d-%H%M%S")
-        filename = f"capture_{string_time}_{l3d.cam.get_width()}_{l3d.cam.get_height()}.csv"
+        filename = (
+            f"capture_{string_time}_{l3d.cam.get_width()}_{l3d.cam.get_height()}.csv"
+        )
 
         filepath = os.path.join(output_dir_full, filename)
         cprint(f"Opening scan file {filepath}\n")
-        with open(filepath, 'a') as output_file:
+        with open(filepath, "a") as output_file:
 
             total_leds_found = 0
 
-            for led_id in tqdm(range(args.led_count), unit="LEDs", desc=f"Capturing sequence to {filename}",
-                               total=args.led_count, smoothing=0):
+            for led_id in tqdm(
+                range(args.led_count),
+                unit="LEDs",
+                desc=f"Capturing sequence to {filename}",
+                total=args.led_count,
+                smoothing=0,
+            ):
 
                 led_backend.set_led(led_id, True)
 
@@ -60,7 +79,9 @@ if __name__ == "__main__":
                     result = l3d.find_led(True)
 
                 if result:  # Then no led is found! next
-                    output_file.write(f"{led_id},{result.center[0]},{result.center[1]}\n")
+                    output_file.write(
+                        f"{led_id},{result.center[0]},{result.center[1]}\n"
+                    )
                     total_leds_found += 1
 
                 led_backend.set_led(led_id, False)

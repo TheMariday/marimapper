@@ -1,18 +1,25 @@
 import argparse
 import sys
-sys.path.append('./')
+
+sys.path.append("./")
 from lib import utils
 from lib.color_print import cprint
 import time
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='Tests a particular backend by making a reference led blink')
+    parser = argparse.ArgumentParser(
+        description="Tests a particular backend by making a reference led blink"
+    )
 
     utils.add_backend_args(parser)
 
-    parser.add_argument("--reference_led", type=int,
-                        help="This is the index of the LED should be visible from the camera", default=0)
+    parser.add_argument(
+        "--reference_led",
+        type=int,
+        help="This is the index of the LED should be visible from the camera",
+        default=0,
+    )
 
     args = parser.parse_args()
 

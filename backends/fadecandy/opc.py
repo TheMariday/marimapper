@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# fmt: off
 
 """Python Client library for Open Pixel Control
 http://github.com/zestyping/openpixelcontrol
@@ -211,3 +212,4 @@ class Client(object):
         return True
 
 
+# fmt: on

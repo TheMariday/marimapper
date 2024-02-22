@@ -1,7 +1,8 @@
 import argparse
 import math
 import sys
-sys.path.append('./')
+
+sys.path.append("./")
 from lib import utils
 from lib import L3D
 from lib.color_print import cprint, Col
@@ -11,10 +12,16 @@ from tqdm import tqdm
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='Tests the functionality and latency of your LED backend')
+    parser = argparse.ArgumentParser(
+        description="Tests the functionality and latency of your LED backend"
+    )
 
-    parser.add_argument("--reference_led", type=int,
-                        help="This is the index of the LED should be visible from the camera", default=0)
+    parser.add_argument(
+        "--reference_led",
+        type=int,
+        help="This is the index of the LED should be visible from the camera",
+        default=0,
+    )
 
     utils.add_camera_args(parser)
     utils.add_backend_args(parser)
@@ -29,20 +36,27 @@ if __name__ == "__main__":
 
     led_backend.set_led(args.reference_led, False)
 
-    l3d = L3D.L3D(args.device, args.exposure, args.threshold, width=args.width, height=args.height)
+    l3d = L3D.L3D(
+        args.device, args.exposure, args.threshold, width=args.width, height=args.height
+    )
 
     #  wait for 1 seconds for the backend to update, we don't know the latency at this point
     time.sleep(1)
 
     result = l3d.find_led()
     if result is not None:
-        cprint(f"All LEDs should be off, however LED has been detected at {result.center},"
-               f" please run camera_check to ensure the detector is working properly", Col.FAIL)
+        cprint(
+            f"All LEDs should be off, however LED has been detected at {result.center},"
+            f" please run camera_check to ensure the detector is working properly",
+            Col.FAIL,
+        )
         quit()
 
     latencies = []
 
-    for _ in tqdm(range(100), unit="Tests", desc="Testing average latency", total=100, smoothing=0):
+    for _ in tqdm(
+        range(100), unit="Tests", desc="Testing average latency", total=100, smoothing=0
+    ):
         # Set reference led to off and spin until L3D can't find the led anymore
         led_backend.set_led(args.reference_led, False)
         while l3d.find_led() is not None:
@@ -72,4 +86,7 @@ if __name__ == "__main__":
 
     suggested_latency = round((np.percentile(latencies, 99) * 1.1) * 1000)
 
-    cprint(f"Suggested latency value for 99% of cases + 10%: {suggested_latency}ms", Col.BLUE)
+    cprint(
+        f"Suggested latency value for 99% of cases + 10%: {suggested_latency}ms",
+        Col.BLUE,
+    )

@@ -3,7 +3,7 @@
 [![Windows](https://github.com/TheMariday/L3D/actions/workflows/test_windows.yml/badge.svg)](https://github.com/TheMariday/L3D/actions/workflows/test_windows.yml)
 [![Ubuntu](https://github.com/TheMariday/L3D/actions/workflows/test_ubuntu.yml/badge.svg)](https://github.com/TheMariday/L3D/actions/workflows/test_ubuntu.yml)
 [![MacOS](https://github.com/TheMariday/L3D/actions/workflows/test_mac.yml/badge.svg)](https://github.com/TheMariday/L3D/actions/workflows/test_mac.yml)
-[![Style](https://github.com/TheMariday/L3D/actions/workflows/lint.yml/badge.svg)](https://github.com/TheMariday/L3D/actions/workflows/lint.yml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 
 This is a selection of tools to map LEDs into 2D and 3D space using only your webcam!
@@ -96,4 +96,4 @@ I would really love to hear what you think and if you have any bugs or improveme
 
 If you implement a backend that you think others might use, please raise a pull request or just drop me a message on Telegram!
 
-Please install and run flake8 before submitting changes thank you! 
+If you want a super speed PR, run flake8, flake8-bugbear and black before submitting changes!

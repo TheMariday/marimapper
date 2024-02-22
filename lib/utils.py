@@ -49,7 +49,7 @@ def get_backend(backend_name, led_count, server=""):
             from backends.lcm import lcm_backend
             return lcm_backend.Backend(led_count)
 
-        raise "Invalid backend name"
+        raise RuntimeError("Invalid backend name")
 
     except NotImplementedError:
         cprint(f"Failed to initialise backend {backend_name}, you need to implement it or use the "

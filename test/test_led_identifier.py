@@ -1,5 +1,6 @@
 import sys
-sys.path.append('./')
+
+sys.path.append("./")
 from lib.led_identifier import LedFinder
 from mock_camera import MockCamera
 
