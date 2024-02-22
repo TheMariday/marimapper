@@ -1,0 +1,29 @@
+name: Style
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.9
+
+    - name: Flake 8 Syntax Errors
+      run: |
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+    - name: Flake 8 Syntax Warnings
+      run: | 
+        flake8 . --count --statistics
