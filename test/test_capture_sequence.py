@@ -12,7 +12,7 @@ def test_capture_sequence():
 
     os.makedirs(output_dir_full, exist_ok=True)
 
-    for device_id in range(5):
+    for device_id in range(9):
 
         mock_camera = MockCamera(device_id=device_id)
 
