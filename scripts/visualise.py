@@ -26,7 +26,7 @@ if __name__ == "__main__":
         if len(file_points[0]) == 3:
 
             for point_id, point_u, point_v in file_points:
-                image_point = (int(point_u*640), int(point_v*640))
+                image_point = (int(point_u * 640), int(point_v * 640))
                 cv2.drawMarker(display, image_point, color=(0, 255, 0))
                 cv2.putText(
                     display,

@@ -55,14 +55,3 @@ class SFM:
 
         with open(filename, "w") as f:
             f.write("\n".join(lines))
-
-
-if __name__ == "__main__":
-
-    sfm = SFM("D:\\Users\\Sam\\GIT\\L3D\\my_scans\\test\\")
-
-    sfm.process()
-
-    sfm.print_points()
-    sfm.save_points("points3d.csv")
-    sfm.display()

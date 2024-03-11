@@ -8,7 +8,7 @@ import os
 
 def test_capture_sequence():
 
-    output_dir_full = os.path.join(os.getcwd(), "my_scans", "test")
+    output_dir_full = os.path.join(os.getcwd(), "test", "scan")
 
     os.makedirs(output_dir_full, exist_ok=True)
 
@@ -26,9 +26,7 @@ def test_capture_sequence():
         )
 
         # The filename is made out of the date, then the resolution of the camera
-        filename = (
-            f"capture_cam_{device_id}.csv"
-        )
+        filename = f"capture_cam_{device_id}.csv"
 
         filepath = os.path.join(output_dir_full, filename)
 
@@ -50,7 +48,7 @@ def test_capture_sequence_correctness():
     mock_camera = MockCamera()
 
     for device_id in range(9):
-        output_dir_full = os.path.join(os.getcwd(), "my_scans", "test")
+        output_dir_full = os.path.join(os.getcwd(), "test", "scan")
         filename = f"capture_cam_{device_id}.csv"
         filepath = os.path.join(output_dir_full, filename)
 
