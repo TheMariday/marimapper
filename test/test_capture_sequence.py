@@ -27,7 +27,7 @@ def test_capture_sequence():
 
         # The filename is made out of the date, then the resolution of the camera
         filename = (
-            f"capture_cam_{device_id}_{l3d.cam.get_width()}_{l3d.cam.get_height()}.csv"
+            f"capture_cam_{device_id}.csv"
         )
 
         filepath = os.path.join(output_dir_full, filename)
@@ -49,9 +49,9 @@ def test_capture_sequence_correctness():
 
     mock_camera = MockCamera()
 
-    for device_id in range(5):
+    for device_id in range(9):
         output_dir_full = os.path.join(os.getcwd(), "my_scans", "test")
-        filename = f"capture_cam_{device_id}_{mock_camera.get_width()}_{mock_camera.get_height()}.csv"
+        filename = f"capture_cam_{device_id}.csv"
         filepath = os.path.join(output_dir_full, filename)
 
         with open(filepath, "r") as csv_file:

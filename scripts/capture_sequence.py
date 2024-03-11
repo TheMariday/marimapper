@@ -53,7 +53,7 @@ if __name__ == "__main__":
         # The filename is made out of the date, then the resolution of the camera
         string_time = time.strftime("%Y%m%d-%H%M%S")
         filename = (
-            f"capture_{string_time}_{l3d.cam.get_width()}_{l3d.cam.get_height()}.csv"
+            f"capture_{string_time}.csv"
         )
 
         filepath = os.path.join(output_dir_full, filename)

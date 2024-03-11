@@ -27,8 +27,8 @@ def populate(db_path, input_directory, led_count=23, min_avg_points_per_view=100
         for line in lines:
             led_id, u, v = line.split(",")
 
-            key_points[int(led_id)][0] = float(u)
-            key_points[int(led_id)][1] = float(v)
+            key_points[int(led_id)][0] = float(u)*2000
+            key_points[int(led_id)][1] = float(v)*2000
 
             total_keypoints += 1
 
@@ -47,8 +47,8 @@ def populate(db_path, input_directory, led_count=23, min_avg_points_per_view=100
     # model=0 means that it's a "SIMPLE PINHOLE" with just 1 focal length parameter that I think should get optimised
     # the params here should be f, cx, cy
 
-    width = int(str(input_files[0]).split("_")[-2])
-    height = int(str(input_files[0]).split("_")[-1].replace(".csv", ""))
+    width = 2000
+    height = 2000
     fov = 60  # degrees, this gets optimised so doesn't //really// matter that much
 
     SIMPLE_PINHOLE = 0

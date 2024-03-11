@@ -14,26 +14,23 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    file_resolution = [
-        int(r) for r in args.filename.replace(".csv", "").split("_")[-2:]
-    ]
-
-    display = np.zeros((file_resolution[1], file_resolution[0], 3))
+    display = np.zeros((640, 640, 3))
 
     with open(args.filename, "r") as file:
         lines = file.readlines()
-        file_points = [
-            [int(float(v)) for v in line.strip().split(",")] for line in lines
-        ]
+        file_points = []
+        for line in lines:
+            led_id, u, v = line.strip().split(",")
+            file_points.append([led_id, float(u), float(v)])
 
         if len(file_points[0]) == 3:
 
             for point_id, point_u, point_v in file_points:
-                image_point = (int(point_u), int(point_v))
+                image_point = (int(point_u*640), int(point_v*640))
                 cv2.drawMarker(display, image_point, color=(0, 255, 0))
                 cv2.putText(
                     display,
-                    f"{point_id}",
+                    point_id,
                     image_point,
                     cv2.FONT_HERSHEY_SIMPLEX,
                     1,

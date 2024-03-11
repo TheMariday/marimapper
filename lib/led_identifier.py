@@ -33,7 +33,9 @@ class LedFinder:
         center_x = moments["m10"] / moments["m00"]
         center_y = moments["m01"] / moments["m00"]
 
-        return LedResults((center_x, center_y), contours)
+        max_dimension = max(image.shape)
+
+        return LedResults((center_x/max_dimension, center_y/max_dimension), contours)
 
     @staticmethod
     def draw_results(image, results):
