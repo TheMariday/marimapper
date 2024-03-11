@@ -1,10 +1,10 @@
 # L3D LED Mapper
 
+[![Supported Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue)]()
 [![Windows](https://github.com/TheMariday/L3D/actions/workflows/test_windows.yml/badge.svg)](https://github.com/TheMariday/L3D/actions/workflows/test_windows.yml)
 [![Ubuntu](https://github.com/TheMariday/L3D/actions/workflows/test_ubuntu.yml/badge.svg)](https://github.com/TheMariday/L3D/actions/workflows/test_ubuntu.yml)
 [![MacOS](https://github.com/TheMariday/L3D/actions/workflows/test_mac.yml/badge.svg)](https://github.com/TheMariday/L3D/actions/workflows/test_mac.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-
 
 This is a selection of tools to map LEDs into 2D and 3D space using only your webcam!
 
@@ -74,7 +74,7 @@ Set up your LEDs in front of your camera and run `python scripts/capture_sequenc
 
 Change `--led_count` to however many LEDs you want to scan and `--output_dir` to whatever folder you would like to export the 2D maps to.
 
-This will produce timestamped CSV files with the following format:
+This will produce a timestamped CSV file with the following format:
 
 ```
 led_id, x, y
@@ -83,12 +83,24 @@ led_id, x, y
 Run `python scripts/capture_sequence.py --help` to list the optional parameters
 
 ## Step 5: Reconstruct a 3D map
-*TODO*
+
+To create a 3D map, run `capture_sequence` multiple times from different views of your LEDs, 
+this can either be done by moving your webcam around your LEDs or rotating your LEDs.
+
+I would recommend at least 3 positions with around 20° between views.
+
+Once you have a selection of 2D maps captured with the `capture_sequence` script, run `python scripts/reconstruct.py --input_dir my_scan`
+
+This may take a while, however once complete will generate `reconstruction.csv` in the input directory
+
+The below reconstruction uses 9 views, each 22.5° apart for optimal reconstruction
+
+![alt text](docs/images/reconstruct.png "Reconstruct window")
 
 
 ## Step 6: Visualise!
 
-Run `python scripts/visualise.py <filename>` to visualise 2D and 3D csv map files
+Run `python scripts/visualise.py <filename>` to visualise 2D ~~and 3D~~ csv map files
 
 # Feedback
 

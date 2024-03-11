@@ -1,7 +1,7 @@
 import logging
 import argparse
 import sys
-
+from pathlib import Path
 sys.path.append("./")
 
 from lib.sfm.sfm import SFM
@@ -28,5 +28,5 @@ if __name__ == "__main__":
     sfm.process()
 
     sfm.print_points()
-    sfm.save_points("points3d.csv")
+    sfm.save_points(Path(args.input_dir) / "reconstruction.csv")
     sfm.display()
