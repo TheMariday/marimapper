@@ -43,20 +43,21 @@ def render_model(model):
     __vis.destroy_window()
 
 
-def draw_camera(K, R, t, w, h, scale=1, color=[0.8, 0.2, 0.8]):
+def draw_camera(K, R, t, w, h):
     """Create axis, plane and pyramed geometries in Open3D format.
     :param K: calibration matrix (camera intrinsics)
     :param R: rotation matrix
     :param t: translation
     :param w: image width
     :param h: image height
-    :param scale: camera model scale
-    :param color: color of the image plane and pyramid lines
     :return: camera model geometries (axis, plane and pyramid)
     """
 
+    scale = 1
+    color = [0.8, 0.2, 0.8]
+
     # intrinsics
-    K = K.copy() / scale
+    K = K.copy()
     Kinv = np.linalg.inv(K)
 
     # 4x4 transformation
