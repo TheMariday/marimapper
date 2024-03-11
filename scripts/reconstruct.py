@@ -2,6 +2,7 @@ import logging
 import argparse
 import sys
 from pathlib import Path
+
 sys.path.append("./")
 
 from lib.sfm.sfm import SFM
