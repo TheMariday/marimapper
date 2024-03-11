@@ -57,15 +57,16 @@ def test_capture_sequence_correctness():
         with open(filepath, "r") as csv_file:
             lines = csv_file.readlines()
 
-            if device_id % 2:
-                assert (  # If it's a diagonal view, then we will see 15 points
-                    len(lines) == 15
-                )
-            else:
-                assert (  # If it's a straight-on view, then we see 9 points
+            if device_id in [0, 4, 8]:
+                assert (  # If it's a straight on view, there should be 9 points
                     len(lines) == 9
                 )
+            else:
+                assert (  # If it's a diagonal-ish view, then we see 15 points
+                    len(lines) == 15
+                )
 
+            # ensure we can cast all lines of the CSV file to their respective datatypes
             for line in lines:
                 led_id, u, v = line.split(",")
                 int(led_id)
