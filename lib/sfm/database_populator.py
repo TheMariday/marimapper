@@ -27,8 +27,8 @@ def populate(db_path, input_directory, led_count=23, min_avg_points_per_view=100
         for line in lines:
             led_id, u, v = line.split(",")
 
-            key_points[int(led_id)][0] = float(u)*2000
-            key_points[int(led_id)][1] = float(v)*2000
+            key_points[int(led_id)][0] = float(u) * 2000
+            key_points[int(led_id)][1] = float(v) * 2000
 
             total_keypoints += 1
 

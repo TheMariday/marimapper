@@ -35,7 +35,7 @@ class LedFinder:
 
         max_dimension = max(image.shape)
 
-        return LedResults((center_x/max_dimension, center_y/max_dimension), contours)
+        return LedResults((center_x / max_dimension, center_y / max_dimension), contours)
 
     @staticmethod
     def draw_results(image, results):

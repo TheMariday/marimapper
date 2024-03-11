@@ -45,8 +45,6 @@ def test_capture_sequence():
 
 def test_capture_sequence_correctness():
 
-    mock_camera = MockCamera()
-
     for device_id in range(9):
         output_dir_full = os.path.join(os.getcwd(), "test", "scan")
         filename = f"capture_cam_{device_id}.csv"
