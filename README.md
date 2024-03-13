@@ -74,11 +74,7 @@ Set up your LEDs in front of your camera and run `python scripts/capture_sequenc
 
 Change `--led_count` to however many LEDs you want to scan and `--output_dir` to whatever folder you would like to export the 2D maps to.
 
-This will produce a timestamped CSV file with the following format:
-
-```
-led_id, x, y
-```
+This will produce a timestamped CSV file with led index, u and v values.
 
 Run `python scripts/capture_sequence.py --help` to list the optional parameters
 
@@ -95,12 +91,14 @@ This may take a while, however once complete will generate `reconstruction.csv` 
 
 The below reconstruction uses 9 views, each 22.5° apart for optimal reconstruction
 
+Green points have a low error, red have a high error.
+
 ![alt text](docs/images/reconstruct.png "Reconstruct window")
 
 
 ## Step 6: Visualise!
 
-Run `python scripts/visualise.py <filename>` to visualise 2D ~~and 3D~~ csv map files
+Run `python scripts/visualise.py <filename>` to visualise 2D ~~and 3D~~ csv map files.
 
 # Feedback
 

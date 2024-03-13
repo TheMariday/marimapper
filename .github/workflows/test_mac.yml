@@ -2,7 +2,7 @@ name: MacOS
 
 on:
   push:
-    branches: [ "main", "colmap" ]
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
