@@ -12,3 +12,5 @@ def test_reconstruction():
     sfm.process()
 
     sfm.print_points()
+
+    assert len(sfm.model.points) == 21

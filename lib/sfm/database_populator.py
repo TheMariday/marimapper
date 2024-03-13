@@ -7,38 +7,41 @@ from itertools import combinations
 from os import listdir, path
 
 
-def populate(db_path, input_directory, led_count=23, min_avg_points_per_view=100):
+def populate(db_path, input_directory, min_avg_points_per_view=100):
 
-    cam_views = []
+    input_files = [
+        f for f in listdir(input_directory) if path.isfile(input_directory / f and f != "reconstruction.csv")
+    ]
 
     total_keypoints = 0
 
-    input_files = [
-        f for f in listdir(input_directory) if path.isfile(input_directory / f)
-    ]
+    cam_views = np.zeros((len(input_files), 1, 2))
 
-    for input_file_name in input_files:
+    for cam_view_index, input_file_name in enumerate(input_files):
 
         with open(input_directory / input_file_name, "r") as csv_file:
             lines = csv_file.readlines()
 
-        key_points = np.zeros((led_count, 2))
-
         for line in lines:
             led_id, u, v = line.split(",")
+            led_id = int(led_id)
+            u = float(u)
+            v = float(v)
 
-            key_points[int(led_id)][0] = float(u) * 2000
-            key_points[int(led_id)][1] = float(v) * 2000
+            pad_needed = led_id - cam_views.shape[1] + 1
+            if pad_needed > 0:
+                cam_views = np.pad(cam_views, [(0, 0), (0, pad_needed), (0, 0)])
+
+            cam_views[cam_view_index][int(led_id)][0] = float(u) * 2000
+            cam_views[cam_view_index][int(led_id)][1] = float(v) * 2000
 
             total_keypoints += 1
-
-        cam_views.append(key_points)
 
     avg_keypoints = total_keypoints / len(input_files)
 
     multiplier = math.ceil(min_avg_points_per_view / avg_keypoints)
 
-    cam_views = [np.tile(k, (multiplier, 1)) for k in cam_views]
+    cam_views_tiled = np.tile(cam_views, (1, multiplier, 1))
 
     db = COLMAPDatabase.connect(db_path)
 
@@ -69,12 +72,12 @@ def populate(db_path, input_directory, led_count=23, min_avg_points_per_view=100
         image_ids.append(image_id)
 
     # Create some keypoints
-    for i, keypoints in enumerate(cam_views):
+    for i, keypoints in enumerate(cam_views_tiled):
         db.add_keypoints(image_ids[i], keypoints)
 
     for view_1_id, view_2_id in combinations(range(len(input_files)), 2):
-        view_1_keypoints = cam_views[view_1_id]
-        view_2_keypoints = cam_views[view_2_id]
+        view_1_keypoints = cam_views_tiled[view_1_id]
+        view_2_keypoints = cam_views_tiled[view_2_id]
 
         shared_led_ids = []
 
@@ -90,3 +93,6 @@ def populate(db_path, input_directory, led_count=23, min_avg_points_per_view=100
 
     db.commit()
     db.close()
+
+    max_led_index = cam_views.shape[1] - 1
+    return max_led_index

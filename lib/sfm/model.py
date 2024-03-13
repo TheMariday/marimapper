@@ -9,7 +9,7 @@ from lib.sfm.read_write_model import (
 
 
 class Model:
-    def __init__(self, path):
+    def __init__(self, path, max_led_index):
         self.cameras = read_cameras_binary(os.path.join(path, "cameras.bin"))
         self.images = read_images_binary(os.path.join(path, "images.bin"))
         self.points3D = read_points3D_binary(os.path.join(path, "points3D.bin"))
@@ -23,7 +23,7 @@ class Model:
         for point3D in self.points3D.values():
 
             point_id = point3D.point2D_idxs[0]
-            if point_id > 23:
+            if point_id > max_led_index:
                 continue
 
             self.points[point3D.point2D_idxs[0]] = {

@@ -23,14 +23,14 @@ class SFM:
 
     def process(self):
 
-        populate(self.database_path, input_directory=Path(self.input_directory))
+        max_led_index = populate(self.database_path, input_directory=Path(self.input_directory))
 
         im_folder = TemporaryDirectory()
         pycolmap.incremental_mapping(
             self.database_path, im_folder.name, self.output_directory.name
         )
 
-        self.model = Model(Path(self.output_directory.name) / "0")
+        self.model = Model(Path(self.output_directory.name) / "0", max_led_index)
 
     def display(self):
         render_model(self.model)

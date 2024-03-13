@@ -19,9 +19,9 @@ def test_basic_image_loading():
     mock_camera = MockCamera()
 
     led_results = led_finder.find_led(mock_camera.read())
-
-    assert close(led_results.u(), 257 / 640.0)
-    assert close(led_results.v(), 177 / 480.0)
+    u, v = led_results.get_center()
+    assert close(u, 257)
+    assert close(v, 177)
 
 
 def test_none_found():

@@ -37,7 +37,8 @@ def test_capture_sequence():
             result = l3d.find_led(False)
 
             if result:
-                results_csv.append(f"{led_id},{result.center[0]},{result.center[1]}")
+                u, v = result.get_center_normalised()
+                results_csv.append(f"{led_id},{u},{v}")
 
         with open(filepath, "w") as output_file:
             output_file.write("\n".join(results_csv))

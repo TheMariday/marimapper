@@ -78,7 +78,8 @@ if __name__ == "__main__":
                 result = l3d.find_led(True)
 
             if result:
-                results_csv.append(f"{led_id},{result.center[0]},{result.center[1]}")
+                u, v = result.get_center_normalised()
+                results_csv.append(f"{led_id},{u},{v}")
                 total_leds_found += 1
 
             led_backend.set_led(led_id, False)
