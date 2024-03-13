@@ -45,18 +45,13 @@ if __name__ == "__main__":
         args.device, args.exposure, args.threshold, width=args.width, height=args.height
     )
 
-    output_dir_full = os.path.join(os.getcwd(), "my_scans", args.output_dir)
-
-    os.makedirs(output_dir_full, exist_ok=True)
+    os.makedirs(args.output_dir, exist_ok=True)
 
     while True:
 
         # The filename is made out of the date, then the resolution of the camera
         string_time = time.strftime("%Y%m%d-%H%M%S")
         filename = f"capture_{string_time}.csv"
-
-        filepath = os.path.join(output_dir_full, filename)
-        cprint(f"Opening scan file {filepath}\n")
 
         map_data = []
 
@@ -89,7 +84,7 @@ if __name__ == "__main__":
             while l3d.find_led() is not None:
                 pass
 
-        write_2d_map(filename, map_data)
+        write_2d_map(os.path.join(args.output_dir, filename), map_data)
 
         cv2.destroyWindow("LED Detection Debug")
 

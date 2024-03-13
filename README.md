@@ -98,7 +98,7 @@ Green points have a low error, red have a high error.
 
 ## Step 6: Visualise!
 
-Run `python scripts/visualise.py <filename>` to visualise 2D ~~and 3D~~ csv map files.
+Run `python scripts/visualise.py <filename>` to visualise 2D and 3D map files.
 
 # Feedback
 

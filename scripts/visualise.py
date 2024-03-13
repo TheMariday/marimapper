@@ -5,7 +5,8 @@ import numpy as np
 import sys
 
 sys.path.append("./")
-from lib.map_read_write import read_2d_map
+from lib.map_read_write import read_2d_map, read_3d_map
+from lib.sfm.visualize_model import render_model
 
 if __name__ == "__main__":
 
@@ -23,18 +24,26 @@ if __name__ == "__main__":
 
     map_data = read_2d_map(args.filename)
 
-    for led in map_data:
+    if map_data:
 
-        image_point = (int(led["u"] * 640), int(led["v"] * 640))
-        cv2.drawMarker(display, image_point, color=(0, 255, 0))
-        cv2.putText(
-            display,
-            str(led["index"]),
-            image_point,
-            cv2.FONT_HERSHEY_SIMPLEX,
-            1,
-            color=(0, 0, 255),
-        )
+        for led in map_data:
 
-    cv2.imshow("Visualise", display)
-    cv2.waitKey(0)
+            image_point = (int(led["u"] * 640), int(led["v"] * 640))
+            cv2.drawMarker(display, image_point, color=(0, 255, 0))
+            cv2.putText(
+                display,
+                str(led["index"]),
+                image_point,
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1,
+                color=(0, 0, 255),
+            )
+
+        cv2.imshow("Visualise", display)
+        cv2.waitKey(0)
+
+    else:
+
+        map_data = read_3d_map(args.filename)
+
+        render_model(map_data, [])
