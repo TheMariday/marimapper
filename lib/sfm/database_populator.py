@@ -1,47 +1,26 @@
-import math
-
 from lib.sfm.database import COLMAPDatabase
 import numpy as np
 from math import radians, tan
 from itertools import combinations
-from os import listdir, path
 
 
-def populate(db_path, input_directory, min_avg_points_per_view=100):
+def populate(db_path, maps):
 
-    input_files = [
-        f for f in listdir(input_directory) if path.isfile(input_directory / f and f != "reconstruction.csv")
-    ]
+    if not maps:
+        raise Exception("Failed to populate reconstruction database due to no maps being provided")
 
-    total_keypoints = 0
+    map_features = np.zeros((len(maps), 1, 2))
 
-    cam_views = np.zeros((len(input_files), 1, 2))
+    for map_index, map in enumerate(maps):
 
-    for cam_view_index, input_file_name in enumerate(input_files):
+        for led_info in map:
 
-        with open(input_directory / input_file_name, "r") as csv_file:
-            lines = csv_file.readlines()
-
-        for line in lines:
-            led_id, u, v = line.split(",")
-            led_id = int(led_id)
-            u = float(u)
-            v = float(v)
-
-            pad_needed = led_id - cam_views.shape[1] + 1
+            pad_needed = led_info["index"] - map_features.shape[1] + 1
             if pad_needed > 0:
-                cam_views = np.pad(cam_views, [(0, 0), (0, pad_needed), (0, 0)])
+                map_features = np.pad(map_features, [(0, 0), (0, pad_needed), (0, 0)])
 
-            cam_views[cam_view_index][int(led_id)][0] = float(u) * 2000
-            cam_views[cam_view_index][int(led_id)][1] = float(v) * 2000
-
-            total_keypoints += 1
-
-    avg_keypoints = total_keypoints / len(input_files)
-
-    multiplier = math.ceil(min_avg_points_per_view / avg_keypoints)
-
-    cam_views_tiled = np.tile(cam_views, (1, multiplier, 1))
+            map_features[map_index][led_info["index"]][0] = led_info["u"] * 2000
+            map_features[map_index][led_info["index"]][1] = led_info["v"] * 2000
 
     db = COLMAPDatabase.connect(db_path)
 
@@ -66,18 +45,15 @@ def populate(db_path, input_directory, min_avg_points_per_view=100):
 
     # Create dummy images_all_the_same.
 
-    image_ids = []
-    for input_file in input_files:
-        image_id = db.add_image(input_file, camera_id)
-        image_ids.append(image_id)
+    image_ids = [db.add_image(str(i), camera_id) for i in range(len(maps))]
 
     # Create some keypoints
-    for i, keypoints in enumerate(cam_views_tiled):
+    for i, keypoints in enumerate(map_features):
         db.add_keypoints(image_ids[i], keypoints)
 
-    for view_1_id, view_2_id in combinations(range(len(input_files)), 2):
-        view_1_keypoints = cam_views_tiled[view_1_id]
-        view_2_keypoints = cam_views_tiled[view_2_id]
+    for view_1_id, view_2_id in combinations(range(len(maps)), 2):
+        view_1_keypoints = map_features[view_1_id]
+        view_2_keypoints = map_features[view_2_id]
 
         shared_led_ids = []
 
@@ -93,6 +69,3 @@ def populate(db_path, input_directory, min_avg_points_per_view=100):
 
     db.commit()
     db.close()
-
-    max_led_index = cam_views.shape[1] - 1
-    return max_led_index

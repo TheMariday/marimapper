@@ -1,4 +1,3 @@
-from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import pycolmap
@@ -6,52 +5,53 @@ import sys
 
 sys.path.append("./")
 
-from lib.sfm.model import Model
+from lib.sfm.model import get_map_and_cams
 from lib.sfm.visualize_model import render_model
 from lib.sfm.database_populator import populate
+from lib import map_read_write
+import os
 
 
 class SFM:
 
-    def __init__(self, input_directory):
-        self.input_directory = input_directory
-        self.database_directory = TemporaryDirectory()
-        self.database_path = Path(self.database_directory.name) / "database.db"
-        self.output_directory = TemporaryDirectory()
+    def __init__(self, maps):
+        self.maps_2d = maps
 
-        self.model = None
+        self.cams = None
+        self.maps_3d = None
 
     def process(self):
 
-        max_led_index = populate(self.database_path, input_directory=Path(self.input_directory))
+        with TemporaryDirectory() as temp_dir:
 
-        im_folder = TemporaryDirectory()
-        pycolmap.incremental_mapping(
-            self.database_path, im_folder.name, self.output_directory.name
-        )
+            database_path = os.path.join(temp_dir, "database.db")
 
-        self.model = Model(Path(self.output_directory.name) / "0", max_led_index)
+            populate(database_path, self.maps_2d)
+
+            options = pycolmap.IncrementalPipelineOptions()
+            options.triangulation.ignore_two_view_tracks = False  # used to be true
+            options.min_num_matches = 9  # default 15
+            options.mapper.abs_pose_min_num_inliers = 9  # default 30
+            options.mapper.init_min_num_inliers = 50  # used to be 100
+
+            pycolmap.incremental_mapping(
+                database_path=database_path,
+                image_path=temp_dir,
+                output_path=temp_dir,
+                options=options
+            )
+
+            try:
+                self.maps_3d, self.cams = get_map_and_cams(temp_dir)
+            except FileNotFoundError:
+                raise Exception("Failed to reconstruct.")
 
     def display(self):
-        render_model(self.model)
+        render_model(self.maps_3d, self.cams)
 
     def print_points(self):
-
-        for led_id in sorted(self.model.points.keys()):
-            led = self.model.points[led_id]
-            print(
-                f"LED ID: {led_id}, LED Pos: {led['pos']}, LED Error: {led['error']}, Views: {led['views']}"
-            )
+        for led in sorted(self.maps_3d, key=lambda x: x["index"], reverse=True):
+            print(led)
 
     def save_points(self, filename):
-
-        lines = ["x,y,z,error"]
-
-        for led_id in sorted(self.model.points.keys()):
-            led = self.model.points[led_id]
-            lines.append(
-                f"{led['pos'][0]}, {led['pos'][1]}, {led['pos'][2]}, {led['error']}"
-            )
-
-        with open(filename, "w") as f:
-            f.write("\n".join(lines))
+        map_read_write.write_3d_map(filename, self.maps_3d)

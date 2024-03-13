@@ -2,13 +2,13 @@ import open3d
 import numpy as np
 
 
-def render_model(model):
+def render_model(led_map, cams):
 
     __vis = open3d.visualization.Visualizer()
     __vis.create_window()
 
     cam_geometry = []
-    for K, R, t, width, height in model.cams:
+    for K, R, t, width, height in cams:
         cam_geometry.extend(draw_camera(K, R, t, width, height))
 
     for c in cam_geometry:
@@ -21,16 +21,16 @@ def render_model(model):
 
     pcd = open3d.geometry.PointCloud()
 
-    xyz = [model.points[led_id]["pos"] for led_id in model.points]
-    rgb = [[0, 0, 0] for _ in model.points]
+    xyz = [(led["x"], led["y"], led["z"]) for led in led_map]
+    errors = [led["error"] for led in led_map]
+
+    errors_normalised = [(e - min(errors)) / (max(errors) - min(errors)) for e in errors]
+    rgb = [[1 - e, e, 0] for e in errors_normalised]
 
     pcd.points = open3d.utility.Vector3dVector(xyz)
     pcd.colors = open3d.utility.Vector3dVector(rgb)
 
     __vis.add_geometry(pcd)
-    __vis.poll_events()
-    __vis.update_renderer()
-
     __vis.poll_events()
     __vis.update_renderer()
 

@@ -2,6 +2,7 @@ import sys
 
 sys.path.append("./")
 from lib import L3D
+from lib import map_read_write
 from mock_camera import MockCamera
 import os
 
@@ -12,25 +13,20 @@ def test_capture_sequence():
 
     os.makedirs(output_dir_full, exist_ok=True)
 
-    for device_id in range(9):
+    for view_index in range(9):
 
-        mock_camera = MockCamera(device_id=device_id)
+        mock_camera = MockCamera(device_id=view_index)
 
         l3d = L3D.L3D(
-            device_id,
-            0,
-            128,
+            device=view_index,
+            exposure=0,
+            threshold=128,
             width=mock_camera.get_width(),
             height=mock_camera.get_height(),
             camera=mock_camera,
         )
 
-        # The filename is made out of the date, then the resolution of the camera
-        filename = f"capture_cam_{device_id}.csv"
-
-        filepath = os.path.join(output_dir_full, filename)
-
-        results_csv = []
+        map_data = []
 
         for led_id in range(24):
 
@@ -38,34 +34,29 @@ def test_capture_sequence():
 
             if result:
                 u, v = result.get_center_normalised()
-                results_csv.append(f"{led_id},{u},{v}")
+                map_data.append({"index": led_id, "u": u, "v": v})
 
-        with open(filepath, "w") as output_file:
-            output_file.write("\n".join(results_csv))
+        filepath = os.path.join(output_dir_full, f"capture_{view_index}.csv")
+
+        map_read_write.write_2d_map(filepath, map_data)
 
 
 def test_capture_sequence_correctness():
 
-    for device_id in range(9):
+    for view_index in range(9):
         output_dir_full = os.path.join(os.getcwd(), "test", "scan")
-        filename = f"capture_cam_{device_id}.csv"
-        filepath = os.path.join(output_dir_full, filename)
 
-        with open(filepath, "r") as csv_file:
-            lines = csv_file.readlines()
+        filepath = os.path.join(output_dir_full, f"capture_{view_index}.csv")
 
-            if device_id in [0, 4, 8]:
-                assert (  # If it's a straight on view, there should be 9 points
-                    len(lines) == 9
-                )
-            else:
-                assert (  # If it's a diagonal-ish view, then we see 15 points
-                    len(lines) == 15
-                )
+        map_data = map_read_write.read_2d_map(filepath)
 
-            # ensure we can cast all lines of the CSV file to their respective datatypes
-            for line in lines:
-                led_id, u, v = line.split(",")
-                int(led_id)
-                float(u)
-                float(v)
+        print(map_data)
+
+        if view_index in [0, 4, 8]:
+            assert (  # If it's a straight on view, there should be 9 points
+                len(map_data) == 9
+            )
+        else:
+            assert (  # If it's a diagonal-ish view, then we see 15 points
+                len(map_data) == 15
+            )

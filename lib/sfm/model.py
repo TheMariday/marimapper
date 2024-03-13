@@ -8,79 +8,78 @@ from lib.sfm.read_write_model import (
 )
 
 
-class Model:
-    def __init__(self, path, max_led_index):
-        self.cameras = read_cameras_binary(os.path.join(path, "cameras.bin"))
-        self.images = read_images_binary(os.path.join(path, "images.bin"))
-        self.points3D = read_points3D_binary(os.path.join(path, "points3D.bin"))
+def get_map_and_cams(path):
 
-        self.points = {}
+    led_map = []
 
-        self.cams = []
+    points_bin = read_points3D_binary(os.path.join(path, "0", "points3D.bin"))
 
-        self.center = []
+    for point in points_bin.values():
 
-        for point3D in self.points3D.values():
+        led_map.append({
+            "index": point.point2D_idxs[0],
+            "x": point.xyz[0],
+            "y": point.xyz[1],
+            "z": point.xyz[2],
+            "error": point.error,
+        })
 
-            point_id = point3D.point2D_idxs[0]
-            if point_id > max_led_index:
-                continue
+    center_x = np.average([led["x"] for led in led_map])
+    center_y = np.average([led["y"] for led in led_map])
+    center_z = np.average([led["z"] for led in led_map])
 
-            self.points[point3D.point2D_idxs[0]] = {
-                "pos": point3D.xyz,
-                "error": point3D.error,
-                "views": sorted(point3D.image_ids),
-            }
+    for i in range(len(led_map)):
+        led_map[i]["x"] -= center_x
+        led_map[i]["y"] -= center_y
+        led_map[i]["z"] -= center_z
 
-        center_x = np.average([self.points[led_id]["pos"][0] for led_id in self.points])
-        center_y = np.average([self.points[led_id]["pos"][1] for led_id in self.points])
-        center_z = np.average([self.points[led_id]["pos"][2] for led_id in self.points])
+    cams = []
 
-        for led_id in self.points:
-            self.points[led_id]["pos"][0] -= center_x
-            self.points[led_id]["pos"][1] -= center_y
-            self.points[led_id]["pos"][2] -= center_z
+    cameras_bin = read_cameras_binary(os.path.join(path, "0", "cameras.bin"))
+    images_bin = read_images_binary(os.path.join(path, "0", "images.bin"))
 
-        for img in self.images.values():
-            # rotation
-            R = qvec2rotmat(img.qvec)
+    for img in images_bin.values():
+        # rotation
+        R = qvec2rotmat(img.qvec)
 
-            # translation
-            t = img.tvec
+        # translation
+        t = img.tvec
 
-            # invert
-            t = -R.T @ t
-            R = R.T
+        # invert
+        t = -R.T @ t
+        R = R.T
 
-            t[0] -= center_x
-            t[1] -= center_y
-            t[2] -= center_z
+        t[0] -= center_x
+        t[1] -= center_y
+        t[2] -= center_z
 
-            # intrinsics
-            cam = self.cameras[img.camera_id]
+        # intrinsics
+        cam = cameras_bin[img.camera_id]
 
-            if cam.model in ("SIMPLE_PINHOLE", "SIMPLE_RADIAL", "RADIAL"):
-                fx = fy = cam.params[0]
-                cx = cam.params[1]
-                cy = cam.params[2]
-            elif cam.model in (
-                "PINHOLE",
-                "OPENCV",
-                "OPENCV_FISHEYE",
-                "FULL_OPENCV",
-            ):
-                fx = cam.params[0]
-                fy = cam.params[1]
-                cx = cam.params[2]
-                cy = cam.params[3]
-            else:
-                raise Exception("Camera model not supported")
+        if cam.model in ("SIMPLE_PINHOLE", "SIMPLE_RADIAL", "RADIAL"):
+            fx = fy = cam.params[0]
+            cx = cam.params[1]
+            cy = cam.params[2]
+        elif cam.model in (
+            "PINHOLE",
+            "OPENCV",
+            "OPENCV_FISHEYE",
+            "FULL_OPENCV",
+        ):
+            fx = cam.params[0]
+            fy = cam.params[1]
+            cx = cam.params[2]
+            cy = cam.params[3]
+        else:
+            raise Exception("Camera model not supported")
 
-            # intrinsics
-            K = np.identity(3)
-            K[0, 0] = fx
-            K[1, 1] = fy
-            K[0, 2] = cx
-            K[1, 2] = cy
+        # intrinsics
+        K = np.identity(3)
+        K[0, 0] = fx
+        K[1, 1] = fy
+        K[0, 2] = cx
+        K[1, 2] = cy
 
-            self.cams.append([K, R, t, cam.width, cam.height])
+        cams.append([K, R, t, cam.width, cam.height])
+
+    return led_map, cams
