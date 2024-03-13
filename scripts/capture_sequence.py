@@ -10,6 +10,7 @@ sys.path.append("./")
 from lib import utils
 from lib import L3D
 from lib.color_print import cprint, Col
+from lib.map_read_write import write_2d_map
 
 if __name__ == "__main__":
 
@@ -52,14 +53,12 @@ if __name__ == "__main__":
 
         # The filename is made out of the date, then the resolution of the camera
         string_time = time.strftime("%Y%m%d-%H%M%S")
-        filename = (
-            f"capture_{string_time}_{l3d.cam.get_width()}_{l3d.cam.get_height()}.csv"
-        )
+        filename = f"capture_{string_time}.csv"
 
         filepath = os.path.join(output_dir_full, filename)
         cprint(f"Opening scan file {filepath}\n")
 
-        results_csv = []
+        map_data = []
 
         total_leds_found = 0
 
@@ -80,7 +79,8 @@ if __name__ == "__main__":
                 result = l3d.find_led(True)
 
             if result:
-                results_csv.append(f"{led_id},{result.center[0]},{result.center[1]}")
+                u, v = result.get_center_normalised()
+                map_data.append({"index": led_id, "u": u, "v": v})
                 total_leds_found += 1
 
             led_backend.set_led(led_id, False)
@@ -89,8 +89,7 @@ if __name__ == "__main__":
             while l3d.find_led() is not None:
                 pass
 
-        with open(filepath, "w") as output_file:
-            output_file.write("\n".join(results_csv))
+        write_2d_map(filename, map_data)
 
         cv2.destroyWindow("LED Detection Debug")
 

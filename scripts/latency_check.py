@@ -46,7 +46,7 @@ if __name__ == "__main__":
     result = l3d.find_led()
     if result is not None:
         cprint(
-            f"All LEDs should be off, however LED has been detected at {result.center},"
+            f"All LEDs should be off, however LED has been detected at {result.get_center()},"
             f" please run camera_check to ensure the detector is working properly",
             Col.FAIL,
         )

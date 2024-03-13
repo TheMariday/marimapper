@@ -3,15 +3,20 @@ import cv2
 
 class LedResults:
 
-    def __init__(self, center, contours):
-        self.center = center
+    def __init__(self, u, v, width, height, contours):
+        self.u = u
+        self.v = v
+        self.width = width
+        self.height = height
         self.contours = contours
 
-    def u(self):
-        return self.center[0]
+    def get_center_normalised(self):
+        v_offset = (self.width - self.height) / 2.0
 
-    def v(self):
-        return self.center[1]
+        return self.u / self.width, (self.v + v_offset) / self.width
+
+    def get_center(self):
+        return self.u, self.v
 
 
 class LedFinder:
@@ -30,10 +35,13 @@ class LedFinder:
         if moments["m00"] == 0:
             return None
 
-        center_x = moments["m10"] / moments["m00"]
-        center_y = moments["m01"] / moments["m00"]
+        img_height = image.shape[0]
+        img_width = image.shape[1]
 
-        return LedResults((center_x, center_y), contours)
+        center_u = moments["m10"] / moments["m00"]
+        center_v = (moments["m01"] / moments["m00"])
+
+        return LedResults(center_u, center_v, img_width, img_height, contours)
 
     @staticmethod
     def draw_results(image, results):
@@ -42,7 +50,7 @@ class LedFinder:
 
         if results:
             cv2.drawContours(render_image, results.contours, -1, (255, 0, 0), 1)
-            cv2.drawMarker(render_image, [int(i) for i in results.center], (0, 255, 0), markerSize=100)
+            cv2.drawMarker(render_image, [int(i) for i in results.get_center()], (0, 255, 0), markerSize=100)
 
         return render_image
 
