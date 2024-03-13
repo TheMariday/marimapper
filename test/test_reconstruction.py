@@ -59,8 +59,6 @@ def test_reconstruction():
     )
 
 
-# remove for now
-"""
 def test_sparse_reconstruction():
 
     maps = get_all_maps("test/scan")
@@ -78,9 +76,8 @@ def test_sparse_reconstruction():
     check_dimensions(
         sfm.maps_3d, max_error=0.03  # needs to have a max deviation of less than 3%
     )
-"""
 
-""" # this doesn't work on ubuntu and mac?
+
 def test_2_track_reconstruction():
 
     partial_map = get_all_maps("test/scan")[1:3]
@@ -92,7 +89,6 @@ def test_2_track_reconstruction():
     sfm.print_points()
 
     assert len(sfm.maps_3d) == 15
-"""
 
 
 def test_invalid_reconstruction_views():
