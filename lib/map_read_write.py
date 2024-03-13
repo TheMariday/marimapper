@@ -102,7 +102,7 @@ def write_3d_map(filename, data):
 def get_all_maps(directory):
     maps = []
 
-    for filename in os.listdir(directory):
+    for filename in sorted(os.listdir(directory)):
         map = read_2d_map(os.path.join(directory, filename))
         if map is not None:
             maps.append(map)
