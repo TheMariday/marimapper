@@ -10,6 +10,7 @@ sys.path.append("./")
 from lib import utils
 from lib import L3D
 from lib.color_print import cprint, Col
+from lib.map_read_write import write_2d_map
 
 if __name__ == "__main__":
 
@@ -57,7 +58,7 @@ if __name__ == "__main__":
         filepath = os.path.join(output_dir_full, filename)
         cprint(f"Opening scan file {filepath}\n")
 
-        results_csv = []
+        map_data = []
 
         total_leds_found = 0
 
@@ -79,7 +80,7 @@ if __name__ == "__main__":
 
             if result:
                 u, v = result.get_center_normalised()
-                results_csv.append(f"{led_id},{u},{v}")
+                map_data.append({"index": led_id, "u": u, "v": v})
                 total_leds_found += 1
 
             led_backend.set_led(led_id, False)
@@ -88,8 +89,7 @@ if __name__ == "__main__":
             while l3d.find_led() is not None:
                 pass
 
-        with open(filepath, "w") as output_file:
-            output_file.write("\n".join(results_csv))
+        write_2d_map(filename, map_data)
 
         cv2.destroyWindow("LED Detection Debug")
 
