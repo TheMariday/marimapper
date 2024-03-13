@@ -3,9 +3,8 @@ import pytest
 import numpy as np
 
 sys.path.append("./")
-
 from lib.sfm.sfm import SFM
-from lib import map_read_write
+from lib.map_read_write import get_all_maps
 
 
 def check_dimensions(map_3d, max_error):
@@ -45,7 +44,7 @@ def check_dimensions(map_3d, max_error):
 
 def test_reconstruction():
 
-    maps = map_read_write.get_all_maps("test/scan")
+    maps = get_all_maps("test/scan")
 
     sfm = SFM(maps)
 
@@ -62,7 +61,7 @@ def test_reconstruction():
 
 def test_sparse_reconstruction():
 
-    maps = map_read_write.get_all_maps("test/scan")
+    maps = get_all_maps("test/scan")
 
     maps_sparse = [maps[1], maps[3], maps[5], maps[7]]
 
@@ -81,7 +80,7 @@ def test_sparse_reconstruction():
 
 def test_2_track_reconstruction():
 
-    partial_map = map_read_write.get_all_maps("test/scan")[1:3]
+    partial_map = get_all_maps("test/scan")[1:3]
 
     sfm = SFM(partial_map)
 
@@ -94,7 +93,7 @@ def test_2_track_reconstruction():
 
 def test_invalid_reconstruction_views():
 
-    maps = map_read_write.get_all_maps("test/scan")
+    maps = get_all_maps("test/scan")
 
     invalid_maps = [maps[0], maps[4], maps[8]]  # no useful overlap
 
