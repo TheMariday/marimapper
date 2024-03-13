@@ -2,7 +2,7 @@ import sys
 
 sys.path.append("./")
 from lib import L3D
-from lib import map_read_write
+from lib.map_read_write import write_2d_map, read_2d_map
 from mock_camera import MockCamera
 import os
 
@@ -38,7 +38,7 @@ def test_capture_sequence():
 
         filepath = os.path.join(output_dir_full, f"capture_{view_index}.csv")
 
-        map_read_write.write_2d_map(filepath, map_data)
+        write_2d_map(filepath, map_data)
 
 
 def test_capture_sequence_correctness():
@@ -48,7 +48,7 @@ def test_capture_sequence_correctness():
 
         filepath = os.path.join(output_dir_full, f"capture_{view_index}.csv")
 
-        map_data = map_read_write.read_2d_map(filepath)
+        map_data = read_2d_map(filepath)
 
         print(map_data)
 

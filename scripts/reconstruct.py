@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.append("./")
 
 from lib.sfm.sfm import SFM
-from lib import map_read_write
+from lib.map_read_write import get_all_maps
 
 if __name__ == "__main__":
 
@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    maps = map_read_write.get_all_maps(args.input_dir)
+    maps = get_all_maps(args.input_dir)
 
     sfm = SFM(maps)
 

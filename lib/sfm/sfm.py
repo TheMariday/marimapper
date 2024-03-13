@@ -8,7 +8,7 @@ sys.path.append("./")
 from lib.sfm.model import get_map_and_cams
 from lib.sfm.visualize_model import render_model
 from lib.sfm.database_populator import populate
-from lib import map_read_write
+from lib.map_read_write import write_3d_map
 import os
 
 
@@ -54,4 +54,4 @@ class SFM:
             print(led)
 
     def save_points(self, filename):
-        map_read_write.write_3d_map(filename, self.maps_3d)
+        write_3d_map(filename, self.maps_3d)
