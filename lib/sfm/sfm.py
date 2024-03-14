@@ -41,10 +41,13 @@ class SFM:
                 options=options
             )
 
-            try:
-                self.maps_3d, self.cams = get_map_and_cams(temp_dir)
-            except FileNotFoundError:
-                raise Exception("Failed to reconstruct.")
+            if not os.path.exists(os.path.join(temp_dir, "0", "points3D.bin")):
+                return False
+
+            self.maps_3d, self.cams = get_map_and_cams(temp_dir)
+
+            return True
+
 
     def display(self):
         render_model(self.maps_3d, self.cams)

@@ -7,6 +7,7 @@ sys.path.append("./")
 
 from lib.sfm.sfm import SFM
 from lib.map_read_write import get_all_maps
+from lib.utils import cprint, Col
 
 if __name__ == "__main__":
 
@@ -29,8 +30,12 @@ if __name__ == "__main__":
 
     sfm = SFM(maps)
 
-    sfm.process()
+    success = sfm.process()
 
-    sfm.print_points()
-    sfm.save_points(Path(args.input_dir) / "reconstruction.csv")
-    sfm.display()
+    if success:
+        sfm.print_points()
+        sfm.save_points(Path(args.input_dir) / "reconstruction.csv")
+        sfm.display()
+    else:
+        cprint(f"L3D Failed to reconstruct {args.input_dir}", format=Col.FAIL)
+
