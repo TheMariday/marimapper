@@ -27,8 +27,7 @@ def render_model(led_map, cams):
     xyz = [led_map[led_id]["pos"] for led_id in led_map]
     errors = [led_map[led_id]["error"] for led_id in led_map]
 
-    errors_normalised = [(e - min(errors)) / (max(errors) - min(errors)) for e in errors]
-    rgb = [[1 - e, e, 0] for e in errors_normalised]
+    rgb = [[1 - e, e, 0] for e in errors]
 
     pcd.points = open3d.utility.Vector3dVector(xyz)
     pcd.colors = open3d.utility.Vector3dVector(rgb)
@@ -57,7 +56,7 @@ def draw_camera(K, R, t, w, h):
     """
 
     scale = 1
-    color = [0.8, 0.2, 0.8]
+    color = [0.8, 0.8, 0.8]
 
     # intrinsics
     K = K.copy()
@@ -83,14 +82,6 @@ def draw_camera(K, R, t, w, h):
     # pixel to camera coordinate system
     points = [Kinv @ p for p in points_pixel]
 
-    # image plane
-    width = abs(points[1][0]) + abs(points[3][0])
-    height = abs(points[1][1]) + abs(points[3][1])
-    plane = open3d.geometry.TriangleMesh.create_box(width, height, depth=1e-6)
-    plane.paint_uniform_color(color)
-    plane.translate([points[1][0], points[1][1], scale])
-    plane.transform(T)
-
     # pyramid
     points_in_world = [(R @ p + t) for p in points]
     lines = [
@@ -107,4 +98,4 @@ def draw_camera(K, R, t, w, h):
     line_set.colors = open3d.utility.Vector3dVector(colors)
 
     # return as list in Open3D format
-    return [axis, plane, line_set]
+    return [axis, line_set]

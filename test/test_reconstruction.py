@@ -61,7 +61,7 @@ def test_sparse_reconstruction():
 
     sfm = SFM(maps_sparse)
 
-    sfm.process()
+    assert sfm.process()
 
     sfm.print_points()
 
@@ -78,7 +78,7 @@ def test_2_track_reconstruction():
 
     sfm = SFM(partial_map)
 
-    sfm.process()
+    assert sfm.process()
 
     sfm.print_points()
 
@@ -93,6 +93,13 @@ def test_invalid_reconstruction_views():
 
     sfm = SFM(invalid_maps)
 
-    success = sfm.process()
+    assert not sfm.process()
 
-    assert not success
+
+def test_reconstruct_higbeam():
+
+    highbeam_map = get_all_maps("test/L3D-Test-Data/highbeam")
+
+    sfm = SFM(highbeam_map)
+
+    assert sfm.process()
