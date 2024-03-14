@@ -36,7 +36,7 @@ def test_capture_sequence():
                 u, v = result.get_center_normalised()
                 map_data.append({"index": led_id, "u": u, "v": v})
 
-        filepath = os.path.join(output_dir_full, f"capture_{view_index}.csv")
+        filepath = os.path.join(output_dir_full, f"capture_{view_index:04}.csv")
 
         write_2d_map(filepath, map_data)
 
@@ -46,7 +46,7 @@ def test_capture_sequence_correctness():
     for view_index in range(9):
         output_dir_full = os.path.join(os.getcwd(), "test", "scan")
 
-        filepath = os.path.join(output_dir_full, f"capture_{view_index}.csv")
+        filepath = os.path.join(output_dir_full, f"capture_{view_index:04}.csv")
 
         map_data = read_2d_map(filepath)
 

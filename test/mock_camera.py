@@ -50,7 +50,7 @@ class MockCamera:
         return frame
 
     def read_frame(self, frame_id):
-        filename = f"test/media/capture_sequence/cam_{self.device_id}/capture_{frame_id:04}.png"
+        filename = f"test/L3D-Test-Data/9_point_box/cam_{self.device_id}/capture_{frame_id:04}.png"
         return cv2.cvtColor(cv2.imread(filename), cv2.COLOR_BGR2GRAY)
 
     def ditch_frames(self, count=20):

@@ -13,7 +13,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser(
-        description="Reconstructs 3D information from LED flashes captured with capture_sequence.py"
+        description="Reconstructs 3D information from LED flashes captured with 9_point_box.py"
     )
 
     parser.add_argument(
