@@ -1,12 +1,10 @@
 import argparse
-import cv2
-import numpy as np
 
 import sys
 
 sys.path.append("./")
 from lib.map_read_write import read_2d_map, read_3d_map
-from lib.sfm.visualize_model import render_model
+from lib.sfm.visualize_model import render_2d_model, render_3d_model
 
 if __name__ == "__main__":
 
@@ -20,30 +18,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    display = np.zeros((640, 640, 3))
-
     map_data = read_2d_map(args.filename)
 
     if map_data:
-
-        for led_id in map_data:
-
-            image_point = (map_data[led_id]["pos"] * 640).astype(int)
-            cv2.drawMarker(display, image_point, color=(0, 255, 0))
-            cv2.putText(
-                display,
-                str(led_id),
-                image_point,
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1,
-                color=(0, 0, 255),
-            )
-
-        cv2.imshow("Visualise", display)
-        cv2.waitKey(0)
-
+        render_2d_model(map_data)
     else:
-
         map_data = read_3d_map(args.filename)
-
-        render_model(map_data, [])
+        if map_data:
+            render_3d_model(map_data)

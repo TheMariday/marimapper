@@ -6,7 +6,7 @@ import sys
 sys.path.append("./")
 
 from lib.sfm.model import get_map_and_cams
-from lib.sfm.visualize_model import render_model
+from lib.sfm.visualize_model import render_3d_model
 from lib.sfm.database_populator import populate
 from lib.map_read_write import write_3d_map
 import os
@@ -49,7 +49,7 @@ class SFM:
             return True
 
     def display(self):
-        render_model(self.maps_3d, self.cams)
+        render_3d_model(self.maps_3d, self.cams)
 
     def print_points(self):
         for led_id in sorted(self.maps_3d.keys(), reverse=True):
