@@ -26,13 +26,13 @@ if __name__ == "__main__":
 
     if map_data:
 
-        for led in map_data:
+        for led_id in map_data:
 
-            image_point = (int(led["u"] * 640), int(led["v"] * 640))
+            image_point = (map_data[led_id]["pos"] * 640).astype(int)
             cv2.drawMarker(display, image_point, color=(0, 255, 0))
             cv2.putText(
                 display,
-                str(led["index"]),
+                str(led_id),
                 image_point,
                 cv2.FONT_HERSHEY_SIMPLEX,
                 1,

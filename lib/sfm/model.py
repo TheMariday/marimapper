@@ -10,54 +10,27 @@ from lib.sfm.read_write_model import (
 
 def get_map_and_cams(path):
 
-    led_map = []
+    led_map = {}
 
     points_bin = read_points3D_binary(os.path.join(path, "0", "points3D.bin"))
 
-    for point in points_bin.values():
+    for point in points_bin.values():  # this will overwrite previous data! needs filtering
+        led_id = point.point2D_idxs[0]
+        if led_id not in led_map:
+            led_map[point.point2D_idxs[0]] = {"pos": [], "error": []}
 
-        led_map.append({
-            "index": point.point2D_idxs[0],
-            "x": point.xyz[0],
-            "y": point.xyz[1],
-            "z": point.xyz[2],
-            "error": point.error,
-        })
+        led_map[point.point2D_idxs[0]]["pos"].append(point.xyz)
+        led_map[point.point2D_idxs[0]]["error"].append(point.error)
 
-    center_x = np.average([led["x"] for led in led_map])
-    center_y = np.average([led["y"] for led in led_map])
-    center_z = np.average([led["z"] for led in led_map])
+    for led_id in led_map:
+        led_map[led_id]["pos"] = np.average(led_map[led_id]["pos"], axis=0)
+        led_map[led_id]["error"] = np.average(led_map[led_id]["error"], axis=0)
 
-    for i in range(len(led_map)):
-        led_map[i]["x"] -= center_x
-        led_map[i]["y"] -= center_y
-        led_map[i]["z"] -= center_z
+    center = np.average([led_map[led_id]["pos"] for led_id in led_map], axis=0)
 
-    # This is very gross and needs cleanup.
-    # I think the maps need to be changed from a list to a dict
+    for led_id in led_map:
+        led_map[led_id]["pos"] -= center
 
-    led_map_merged = {}
-
-    for led in led_map:
-        if led["index"] not in led_map_merged:
-            led_map_merged[led["index"]] = [led]
-        else:
-            led_map_merged[led["index"]].append(led)
-
-    led_map = []
-    for led_id in led_map_merged:
-        x = np.average([led["x"] for led in led_map_merged[led_id]])
-        y = np.average([led["y"] for led in led_map_merged[led_id]])
-        z = np.average([led["z"] for led in led_map_merged[led_id]])
-        e = np.sum([led["error"] for led in led_map_merged[led_id]])
-
-        led_map.append({
-            "index": led_id,
-            "x": x,
-            "y": y,
-            "z": z,
-            "error": e,
-        })
     cams = []
 
     cameras_bin = read_cameras_binary(os.path.join(path, "0", "cameras.bin"))
@@ -74,9 +47,7 @@ def get_map_and_cams(path):
         t = -R.T @ t
         R = R.T
 
-        t[0] -= center_x
-        t[1] -= center_y
-        t[2] -= center_z
+        t -= center
 
         # intrinsics
         cam = cameras_bin[img.camera_id]

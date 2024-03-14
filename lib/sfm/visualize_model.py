@@ -4,6 +4,9 @@ import numpy as np
 
 def render_model(led_map, cams):
 
+    if not led_map:
+        return
+
     __vis = open3d.visualization.Visualizer()
     __vis.create_window()
 
@@ -21,8 +24,8 @@ def render_model(led_map, cams):
 
     pcd = open3d.geometry.PointCloud()
 
-    xyz = [(led["x"], led["y"], led["z"]) for led in led_map]
-    errors = [led["error"] for led in led_map]
+    xyz = [led_map[led_id]["pos"] for led_id in led_map]
+    errors = [led_map[led_id]["error"] for led_id in led_map]
 
     errors_normalised = [(e - min(errors)) / (max(errors) - min(errors)) for e in errors]
     rgb = [[1 - e, e, 0] for e in errors_normalised]

@@ -1,5 +1,4 @@
 import sys
-import pytest
 import numpy as np
 
 sys.path.append("./")
@@ -9,26 +8,21 @@ from lib.map_read_write import get_all_maps
 
 def check_dimensions(map_3d, max_error):
 
-    led_remap = {}
-
-    for led in map_3d:
-        led_remap[led["index"]] = np.array((led["x"], led["y"], led["z"]))
-
     cube_sides = []
-    cube_sides.append(led_remap[2] - led_remap[0])
-    cube_sides.append(led_remap[4] - led_remap[6])
-    cube_sides.append(led_remap[18] - led_remap[16])
-    cube_sides.append(led_remap[20] - led_remap[22])
+    cube_sides.append(map_3d[2]["pos"] - map_3d[0]["pos"])
+    cube_sides.append(map_3d[4]["pos"] - map_3d[6]["pos"])
+    cube_sides.append(map_3d[18]["pos"] - map_3d[16]["pos"])
+    cube_sides.append(map_3d[20]["pos"] - map_3d[22]["pos"])
 
-    cube_sides.append(led_remap[4] - led_remap[2])
-    cube_sides.append(led_remap[20] - led_remap[18])
-    cube_sides.append(led_remap[6] - led_remap[0])
-    cube_sides.append(led_remap[22] - led_remap[16])
+    cube_sides.append(map_3d[4]["pos"] - map_3d[2]["pos"])
+    cube_sides.append(map_3d[20]["pos"] - map_3d[18]["pos"])
+    cube_sides.append(map_3d[6]["pos"] - map_3d[0]["pos"])
+    cube_sides.append(map_3d[22]["pos"] - map_3d[16]["pos"])
 
-    cube_sides.append(led_remap[16] - led_remap[0])
-    cube_sides.append(led_remap[18] - led_remap[2])
-    cube_sides.append(led_remap[20] - led_remap[4])
-    cube_sides.append(led_remap[22] - led_remap[6])
+    cube_sides.append(map_3d[16]["pos"] - map_3d[0]["pos"])
+    cube_sides.append(map_3d[18]["pos"] - map_3d[2]["pos"])
+    cube_sides.append(map_3d[20]["pos"] - map_3d[4]["pos"])
+    cube_sides.append(map_3d[22]["pos"] - map_3d[6]["pos"])
 
     cube_side_lengths = [np.linalg.norm(v) for v in cube_sides]
 
@@ -99,7 +93,6 @@ def test_invalid_reconstruction_views():
 
     sfm = SFM(invalid_maps)
 
-    with pytest.raises(Exception) as e_info:
-        sfm.process()
+    success = sfm.process()
 
-    assert str(e_info.value) == "Failed to reconstruct."
+    assert not success

@@ -53,7 +53,7 @@ if __name__ == "__main__":
         string_time = time.strftime("%Y%m%d-%H%M%S")
         filename = f"capture_{string_time}.csv"
 
-        map_data = []
+        map_data = {}
 
         total_leds_found = 0
 
@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
             if result:
                 u, v = result.get_center_normalised()
-                map_data.append({"index": led_id, "u": u, "v": v})
+                map_data[led_id] = {"pos": (u, v)}
                 total_leds_found += 1
 
             led_backend.set_led(led_id, False)

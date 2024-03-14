@@ -28,14 +28,20 @@ if __name__ == "__main__":
 
     maps = get_all_maps(args.input_dir)
 
+    if not maps:
+        cprint(f"Failed to load any maps from {args.input_dir}", format=Col.FAIL)
+        quit()
+
+    cprint(f"Loaded {len(maps)} maps from {args.input_dir}")
+
     sfm = SFM(maps)
 
     success = sfm.process()
 
-    if success:
-        sfm.print_points()
-        sfm.save_points(Path(args.input_dir) / "reconstruction.csv")
-        sfm.display()
-    else:
+    if not success:
         cprint(f"L3D Failed to reconstruct {args.input_dir}", format=Col.FAIL)
+        quit()
 
+    sfm.print_points()
+    sfm.save_points(Path(args.input_dir) / "reconstruction.csv")
+    sfm.display()

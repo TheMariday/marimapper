@@ -48,13 +48,12 @@ class SFM:
 
             return True
 
-
     def display(self):
         render_model(self.maps_3d, self.cams)
 
     def print_points(self):
-        for led in sorted(self.maps_3d, key=lambda x: x["index"], reverse=True):
-            print(led)
+        for led_id in sorted(self.maps_3d.keys(), reverse=True):
+            print(led_id, self.maps_3d[led_id])
 
     def save_points(self, filename):
         write_3d_map(filename, self.maps_3d)

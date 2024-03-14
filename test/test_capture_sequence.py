@@ -26,15 +26,14 @@ def test_capture_sequence():
             camera=mock_camera,
         )
 
-        map_data = []
+        map_data = {}
 
         for led_id in range(24):
 
             result = l3d.find_led(False)
 
             if result:
-                u, v = result.get_center_normalised()
-                map_data.append({"index": led_id, "u": u, "v": v})
+                map_data[led_id] = {"pos": result.get_center_normalised()}
 
         filepath = os.path.join(output_dir_full, f"capture_{view_index:04}.csv")
 

@@ -13,14 +13,13 @@ def populate(db_path, maps):
 
     for map_index, map in enumerate(maps):
 
-        for led_info in map:
+        for led_index in map:
 
-            pad_needed = led_info["index"] - map_features.shape[1] + 1
+            pad_needed = led_index - map_features.shape[1] + 1
             if pad_needed > 0:
                 map_features = np.pad(map_features, [(0, 0), (0, pad_needed), (0, 0)])
 
-            map_features[map_index][led_info["index"]][0] = led_info["u"] * 2000
-            map_features[map_index][led_info["index"]][1] = led_info["v"] * 2000
+            map_features[map_index][led_index] = np.array(map[led_index]["pos"]) * 2000
 
     db = COLMAPDatabase.connect(db_path)
 
