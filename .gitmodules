@@ -1,0 +1,3 @@
+[submodule "L3D-Test-Data"]
+	path = test/L3D-Test-Data
+	url = https://github.com/TheMariday/L3D-Test-Data
