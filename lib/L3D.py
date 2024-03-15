@@ -50,7 +50,7 @@ class L3D:
 
         if debug:
             rendered_image = self.led_finder.draw_results(image, results)
-            cv2.imshow("LED Detection Debug", rendered_image)
+            cv2.imshow("L3D", rendered_image)
             cv2.waitKey(1)
 
         return results

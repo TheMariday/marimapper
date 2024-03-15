@@ -6,9 +6,10 @@ import sys
 sys.path.append("./")
 
 from lib.sfm.model import get_map_and_cams
-from lib.sfm.visualize_model import render_3d_model
+from lib.visualize_model import render_3d_model
 from lib.sfm.database_populator import populate
 from lib.map_read_write import write_3d_map
+from lib.utils import cprint, Col
 import os
 
 
@@ -34,6 +35,8 @@ class SFM:
             options.mapper.abs_pose_min_num_inliers = 9  # default 30
             options.mapper.init_min_num_inliers = 50  # used to be 100
 
+            pycolmap.logging.minloglevel = 3
+
             pycolmap.incremental_mapping(
                 database_path=database_path,
                 image_path=temp_dir,
@@ -53,7 +56,11 @@ class SFM:
 
     def print_points(self):
         for led_id in sorted(self.maps_3d.keys(), reverse=True):
-            print(led_id, self.maps_3d[led_id])
+            cprint(f"{led_id}:\t"
+                   f"x: {self.maps_3d[led_id]['pos'][0]}, "
+                   f"y: {self.maps_3d[led_id]['pos'][1]}, "
+                   f"z: {self.maps_3d[led_id]['pos'][2]}, "
+                   f"error: {self.maps_3d[led_id]['error']}", format=Col.BLUE)
 
     def save_points(self, filename):
         write_3d_map(filename, self.maps_3d)

@@ -20,10 +20,9 @@ if __name__ == "__main__":
     utils.add_backend_args(parser)
 
     parser.add_argument(
-        "--output_dir",
+        "output_dir",
         type=str,
         help="The output folder for your capture",
-        required=True,
     )
 
     parser.add_argument(
@@ -86,7 +85,7 @@ if __name__ == "__main__":
 
         write_2d_map(os.path.join(args.output_dir, filename), map_data)
 
-        cv2.destroyWindow("LED Detection Debug")
+        cv2.destroyWindow("L3D")
 
         cprint(f"{total_leds_found}/{args.led_count} leds found", Col.BLUE)
         cprint("Scan complete, scan again? [y/n]", Col.PURPLE)

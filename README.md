@@ -10,6 +10,8 @@ This is a selection of tools to map LEDs into 2D and 3D space using only your we
 
 This works best in a dim environment so please make sure your camera isn't pointing at any other light sources! (Test in Step 1)
 
+All scripts can be run with the `--help` argument to list optional parameters such as resolution, exposure and latency.
+
 ## Step 0: Install requirements
 After downloading this repository and installing Python, run `pip install -r requirements.txt`
 
@@ -24,7 +26,6 @@ with a single crosshair on centered on your LED:
 
 ![alt text](docs/images/camera_check.png "Camera Check window")
 
-Run `python scripts/camera_check.py --help` to list the optional parameters
 
 ## Step 2: Write your LED interface
 Your LEDs are as unique as you are, 
@@ -67,16 +68,12 @@ After writing or choosing your backend, place one of your addressable LEDs in fr
 Once complete, the recommended latency will be listed in the console in milliseconds. 
 This can be used in the following steps using the `--latency` argument.
 
-Run `python scripts/latency_check.py --help` to list the optional parameters
-
 ## Step 4: Capture a 2D map
-Set up your LEDs in front of your camera and run `python scripts/capture_sequence.py --led_count 64 --output_dir my_scan`
+Set up your LEDs in front of your camera and run `python scripts/capture_sequence.py my_scan --led_count 64`
 
 Change `--led_count` to however many LEDs you want to scan and `--output_dir` to whatever folder you would like to export the 2D maps to.
 
 This will produce a timestamped CSV file with led index, u and v values.
-
-Run `python scripts/capture_sequence.py --help` to list the optional parameters
 
 ## Step 5: Reconstruct a 3D map
 
@@ -85,9 +82,9 @@ this can either be done by moving your webcam around your LEDs or rotating your 
 
 I would recommend at least 3 positions with around 20° between views.
 
-Once you have a selection of 2D maps captured with the `capture_sequence` script, run `python scripts/reconstruct.py --input_dir my_scan`
+Once you have a selection of 2D maps captured with the `capture_sequence` script, run `python scripts/reconstruct.py my_scan`
 
-This may take a while, however once complete will generate `reconstruction.csv` in the input directory
+This may take a while, however once complete will generate `reconstruction.csv`
 
 The below reconstruction uses 9 views, each 22.5° apart for optimal reconstruction
 

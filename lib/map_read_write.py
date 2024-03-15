@@ -83,8 +83,8 @@ def write_2d_map(filename, data):
 
     for led_id in data:
         lines.append(f"{led_id},"
-                     f"{data[led_id]['pos'][0]},"
-                     f"{data[led_id]['pos'][1]}")
+                     f"{data[led_id]['pos'][0]:f},"
+                     f"{data[led_id]['pos'][1]:f}")
 
     with open(filename, "w") as f:
         f.write("\n".join(lines))
@@ -98,10 +98,10 @@ def write_3d_map(filename, data):
 
     for led_id in data:
         lines.append(f"{led_id},"
-                     f"{data[led_id]['pos'][0]},"
-                     f"{data[led_id]['pos'][1]},"
-                     f"{data[led_id]['pos'][2]},"
-                     f"{data[led_id]['error']}")
+                     f"{data[led_id]['pos'][0]:f},"
+                     f"{data[led_id]['pos'][1]:f},"
+                     f"{data[led_id]['pos'][2]:f},"
+                     f"{data[led_id]['error']:f}")
 
     with open(filename, "w") as f:
         f.write("\n".join(lines))

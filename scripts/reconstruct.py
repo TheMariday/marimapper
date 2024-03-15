@@ -18,30 +18,36 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--input_dir",
+        "input_directory",
         type=str,
         help="Enter the input directory of CSV files",
-        required=True,
+    )
+
+    parser.add_argument(
+        "--output_file",
+        type=str,
+        help="Enter the output filepath for the csv",
+        default="reconstruction.csv",
     )
 
     args = parser.parse_args()
 
-    maps = get_all_maps(args.input_dir)
+    maps = get_all_maps(args.input_directory)
 
     if not maps:
-        cprint(f"Failed to load any maps from {args.input_dir}", format=Col.FAIL)
+        cprint(f"Failed to load any maps from {args.input_directory}", format=Col.FAIL)
         quit()
 
-    cprint(f"Loaded {len(maps)} maps from {args.input_dir}")
+    cprint(f"Loaded {len(maps)} maps from {args.input_directory}")
 
     sfm = SFM(maps)
 
     success = sfm.process()
 
     if not success:
-        cprint(f"L3D Failed to reconstruct {args.input_dir}", format=Col.FAIL)
+        cprint(f"L3D Failed to reconstruct {args.input_directory}", format=Col.FAIL)
         quit()
 
     sfm.print_points()
-    sfm.save_points(Path(args.input_dir) / "reconstruction.csv")
+    sfm.save_points(Path(args.output_file))
     sfm.display()
