@@ -31,10 +31,10 @@
 
 # This script is based on an original implementation by True Price.
 
-import sys
 import sqlite3
-import numpy as np
+import sys
 
+import numpy as np
 
 IS_PYTHON3 = sys.version_info[0] >= 3
 
@@ -173,13 +173,13 @@ class COLMAPDatabase(sqlite3.Connection):
         self.create_name_index = lambda: self.executescript(CREATE_NAME_INDEX)
 
     def add_camera(
-        self,
-        model,
-        width,
-        height,
-        params,
-        prior_focal_length=False,
-        camera_id=None,
+            self,
+            model,
+            width,
+            height,
+            params,
+            prior_focal_length=False,
+            camera_id=None,
     ):
         params = np.asarray(params, np.float64)
         cursor = self.execute(
@@ -196,12 +196,12 @@ class COLMAPDatabase(sqlite3.Connection):
         return cursor.lastrowid
 
     def add_image(
-        self,
-        name,
-        camera_id,
-        prior_q=np.full(4, np.NaN),
-        prior_t=np.full(3, np.NaN),
-        image_id=None,
+            self,
+            name,
+            camera_id,
+            prior_q=np.full(4, np.NaN),
+            prior_t=np.full(3, np.NaN),
+            image_id=None,
     ):
         cursor = self.execute(
             "INSERT INTO images VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -253,16 +253,16 @@ class COLMAPDatabase(sqlite3.Connection):
         )
 
     def add_two_view_geometry(
-        self,
-        image_id1,
-        image_id2,
-        matches,
-        F=np.eye(3),
-        E=np.eye(3),
-        H=np.eye(3),
-        qvec=np.array([1.0, 0.0, 0.0, 0.0]),
-        tvec=np.zeros(3),
-        config=2,
+            self,
+            image_id1,
+            image_id2,
+            matches,
+            F=np.eye(3),
+            E=np.eye(3),
+            H=np.eye(3),
+            qvec=np.array([1.0, 0.0, 0.0, 0.0]),
+            tvec=np.zeros(3),
+            config=2,
     ):
         assert len(matches.shape) == 2
         assert matches.shape[1] == 2

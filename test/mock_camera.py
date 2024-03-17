@@ -4,7 +4,6 @@ import cv2
 class MockCamera:
 
     def __init__(self, device_id=0):
-
         self.current_frame = 0
         self.device_id = device_id
 

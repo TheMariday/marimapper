@@ -1,13 +1,10 @@
-import sys
 import numpy as np
 
-sys.path.append("./")
-from lib.sfm.sfm import SFM
 from lib.map_read_write import get_all_maps
+from lib.sfm.sfm import SFM
 
 
 def check_dimensions(map_3d, max_error):
-
     cube_sides = []
     cube_sides.append(map_3d[2]["pos"] - map_3d[0]["pos"])
     cube_sides.append(map_3d[4]["pos"] - map_3d[6]["pos"])
@@ -37,7 +34,6 @@ def check_dimensions(map_3d, max_error):
 
 
 def test_reconstruction():
-
     maps = get_all_maps("test/scan")
 
     sfm = SFM(maps)
@@ -54,7 +50,6 @@ def test_reconstruction():
 
 
 def test_sparse_reconstruction():
-
     maps = get_all_maps("test/scan")
 
     maps_sparse = [maps[1], maps[3], maps[5], maps[7]]
@@ -73,7 +68,6 @@ def test_sparse_reconstruction():
 
 
 def test_2_track_reconstruction():
-
     partial_map = get_all_maps("test/scan")[1:3]
 
     sfm = SFM(partial_map)
@@ -86,7 +80,6 @@ def test_2_track_reconstruction():
 
 
 def test_invalid_reconstruction_views():
-
     maps = get_all_maps("test/scan")
 
     invalid_maps = [maps[0], maps[4], maps[8]]  # no useful overlap
@@ -97,7 +90,6 @@ def test_invalid_reconstruction_views():
 
 
 def test_reconstruct_higbeam():
-
     highbeam_map = get_all_maps("test/L3D-Test-Data/highbeam")
 
     sfm = SFM(highbeam_map)

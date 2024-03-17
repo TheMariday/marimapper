@@ -1,13 +1,12 @@
 import os.path
-from parse import parse
-import sys
-sys.path.append("./")
-from lib.utils import cprint, Col
+
 import numpy as np
+from parse import parse
+
+from lib.utils import cprint, Col
 
 
 def read_2d_map(filename):
-
     cprint(f"Reading 2D map {filename}...")
 
     if not os.path.exists(filename):
@@ -76,7 +75,6 @@ def read_3d_map(filename):
 
 
 def write_2d_map(filename, data):
-
     cprint(f"Writing 2D map to {filename}...")
 
     lines = ["index,u,v"]
@@ -91,7 +89,6 @@ def write_2d_map(filename, data):
 
 
 def write_3d_map(filename, data):
-
     cprint(f"Writing 3D map to {filename}...")
 
     lines = ["index,x,y,z,error"]

@@ -1,14 +1,11 @@
-import sys
+import os
 
-sys.path.append("./")
 from lib import L3D
 from lib.map_read_write import write_2d_map, read_2d_map
 from mock_camera import MockCamera
-import os
 
 
 def test_capture_sequence():
-
     output_dir_full = os.path.join(os.getcwd(), "test", "scan")
 
     os.makedirs(output_dir_full, exist_ok=True)
@@ -17,31 +14,30 @@ def test_capture_sequence():
 
         mock_camera = MockCamera(device_id=view_index)
 
-        l3d = L3D.L3D(
+        with L3D.L3D(
             device=view_index,
             exposure=0,
             threshold=128,
             width=mock_camera.get_width(),
             height=mock_camera.get_height(),
             camera=mock_camera,
-        )
+        ) as l3d:
 
-        map_data = {}
+            map_data = {}
 
-        for led_id in range(24):
+            for led_id in range(24):
 
-            result = l3d.find_led(False)
+                result = l3d.find_led(False)
 
-            if result:
-                map_data[led_id] = {"pos": result.get_center_normalised()}
+                if result:
+                    map_data[led_id] = {"pos": result.get_center_normalised()}
 
-        filepath = os.path.join(output_dir_full, f"capture_{view_index:04}.csv")
+            filepath = os.path.join(output_dir_full, f"capture_{view_index:04}.csv")
 
-        write_2d_map(filepath, map_data)
+            write_2d_map(filepath, map_data)
 
 
 def test_capture_sequence_correctness():
-
     for view_index in range(9):
         output_dir_full = os.path.join(os.getcwd(), "test", "scan")
 

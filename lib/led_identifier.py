@@ -56,5 +56,4 @@ class LedFinder:
 
 
 if __name__ == "__main__":
-
     led_finder = LedFinder()

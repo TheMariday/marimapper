@@ -8,28 +8,32 @@
 
 This is a selection of tools to map LEDs into 2D and 3D space using only your webcam!
 
-This works best in a dim environment so please make sure your camera isn't pointing at any other light sources! (Test in Step 1)
+This works best in a dim environment so please make sure your camera isn't pointing at any other light sources! (Test in
+Step 1)
 
 All scripts can be run with the `--help` argument to list optional parameters such as resolution, exposure and latency.
 
 ## Step 0: Install requirements
+
 After downloading this repository and installing Python, run `pip install -r requirements.txt`
 
 ## Step 1: Run the camera checker (recommended)
+
 This will check your camera is compatible with L3D.
 
-Run `python scripts/camera_check.py`
+Run `python scripts/check_camera.py`
 
 Test LED identification by turning down the lights and holding a torch or led up to the camera
-This should start with few warnings, no errors and produce a **very** dark image 
+This should start with few warnings, no errors and produce a **very** dark image
 with a single crosshair on centered on your LED:
 
 ![alt text](docs/images/camera_check.png "Camera Check window")
 
-
 ## Step 2: Write your LED interface
-Your LEDs are as unique as you are, 
-so the fastest way to connect L3D to your system is to fill in the blanks in [backends/custom/custom_backend.py](backends/custom/custom_backend.py):
+
+Your LEDs are as unique as you are,
+so the fastest way to connect L3D to your system is to fill in the blanks
+in [backends/custom/custom_backend.py](backends/custom/custom_backend.py):
 
 ```python
 # import some_led_library
@@ -52,9 +56,10 @@ class Backend:
 
 ```
 
-You can test your backend with `python backends/test_backend.py`
+You can test your backend with `python scripts/check_backend.py`
 
-There are also plans to support the following backends. This can be selected in the following steps using the `--backend` argument.
+L3D also support the following pre-made backends. This can be selected in the following steps using the `--backend`
+argument.
 
 | Backend   | Supported |
 |-----------|-----------|
@@ -63,44 +68,53 @@ There are also plans to support the following backends. This can be selected in 
 | LCM       | todo      |
 
 ## Step 3: Run the LED latency checker (recommended)
-After writing or choosing your backend, place one of your addressable LEDs in front of your camera and run `python scripts/latency_check.py`
 
-Once complete, the recommended latency will be listed in the console in milliseconds. 
-This can be used in the following steps using the `--latency` argument.
+After writing or choosing your backend, place one of your addressable LEDs in front of your camera
+
+run `python scripts/check_latency.py --backend fadecandy`
+
+Change `--backend` to whatever backend you're using.
+
+Once complete, the recommended latency will be listed in the console in milliseconds.
+This can be used in the following steps using the `--latency` argument to speed up scans
 
 ## Step 4: Capture a 2D map
-Set up your LEDs in front of your camera and run `python scripts/capture_sequence.py my_scan --led_count 64`
 
-Change `--led_count` to however many LEDs you want to scan and `--output_dir` to whatever folder you would like to export the 2D maps to.
+Set up your LEDs in front of your camera and
+run `python scripts/capture_sequence.py my_scan --led_count 64 --backend fadecandy`
 
-This will produce a timestamped CSV file with led index, u and v values.
+Change `--led_count` to however many LEDs you want to scan and `--backend` to whatever backend you're using
+
+This will produce a timestamped CSV file in the `my_scan` folder with led index, u and v values.
+
+Run `python scripts/visualise.py <filename>` to visualise 2D or 3D map files.
 
 ## Step 5: Reconstruct a 3D map
 
-To create a 3D map, run `capture_sequence` multiple times from different views of your LEDs, 
+> It's time to thunderise
+
+To create a 3D map, run `capture_sequence` multiple times from different views of your LEDs,
 this can either be done by moving your webcam around your LEDs or rotating your LEDs.
 
-I would recommend at least 3 positions with around 20° between views.
+You can move your webcam to wherever you like as long as your leds are mostly in view.
 
-Once you have a selection of 2D maps captured with the `capture_sequence` script, run `python scripts/reconstruct.py my_scan`
+Try and get at least 3 views between 6° - 20° apart
 
-This may take a while, however once complete will generate `reconstruction.csv`
+Once you have a selection of 2D maps captured with the `capture_sequence` script,
+run `python scripts/reconstruct.py my_scan`
 
-The below reconstruction uses 9 views, each 22.5° apart for optimal reconstruction
+This may take a while, however once complete will generate `reconstruction.csv` in the `my_scan` folder.
 
-Green points have a low error, red have a high error.
+Here is an example reconstruction of Highbeam's body LEDs
 
-![alt text](docs/images/reconstruct.png "Reconstruct window")
-
-
-## Step 6: Visualise!
-
-Run `python scripts/visualise.py <filename>` to visualise 2D and 3D map files.
+![alt text](docs/images/reconstruct.png "Highbeam LED reconstruction")
 
 # Feedback
 
-I would really love to hear what you think and if you have any bugs or improvements, please raise them here or drop me a line on [Telegram](https://t.me/themariday).
+I would really love to hear what you think and if you have any bugs or improvements, please raise them here or drop me a
+line on [Telegram](https://t.me/themariday).
 
-If you implement a backend that you think others might use, please raise a pull request or just drop me a message on Telegram!
+If you implement a backend that you think others might use, please raise a pull request or just drop me a message on
+Telegram!
 
 If you want a super speed PR, run flake8, flake8-bugbear and black before submitting changes!
