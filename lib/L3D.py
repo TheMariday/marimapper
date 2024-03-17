@@ -1,7 +1,8 @@
+import cv2
+
 from lib.camera import Camera, CameraSettings
 from lib.led_identifier import LedFinder
-from lib.color_print import cprint
-import cv2
+from lib.utils import cprint
 
 
 class L3D:
@@ -13,19 +14,27 @@ class L3D:
         self.cam = Camera(device) if camera is None else camera
         self.settings_backup = CameraSettings(self.cam)
 
-        if width != -1 or height != -1:
-            self.cam.set_resolution(width, height)
+        self.width = width
+        self.height = height
+        self.exposure = exposure
+
+        self.led_finder = LedFinder(threshold)
+
+    def __enter__(self):
+
+        if self.width != -1 or self.height != -1:
+            self.cam.set_resolution(self.width, self.height)
 
         self.cam.set_autofocus(0, 0)
         self.cam.set_exposure_mode(0)
         self.cam.set_gain(0)
-        self.cam.set_exposure(exposure)
+        self.cam.set_exposure(self.exposure)
 
         self.cam.ditch_frames(20)
 
-        self.led_finder = LedFinder(threshold)
+        return self
 
-    def __del__(self):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         if self.settings_backup is not None:
             cprint("Reverting camera changes...")
             self.settings_backup.apply(self.cam)
@@ -33,13 +42,11 @@ class L3D:
 
     def show_debug(self):
 
-        window_name = "LED Detection Debug"
-
-        cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
+        cv2.namedWindow("L3D", cv2.WINDOW_AUTOSIZE)
 
         while True:
 
-            if cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) <= 0:
+            if cv2.getWindowProperty("L3D", cv2.WND_PROP_VISIBLE) <= 0:
                 break
 
             self.find_led(debug=True)

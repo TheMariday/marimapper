@@ -1,11 +1,12 @@
-from lib.sfm.database import COLMAPDatabase
-import numpy as np
-from math import radians, tan
 from itertools import combinations
+from math import radians, tan
+
+import numpy as np
+
+from lib.sfm.database import COLMAPDatabase
 
 
 def populate(db_path, maps):
-
     if not maps:
         raise Exception("Failed to populate reconstruction database due to no maps being provided")
 

@@ -38,6 +38,7 @@ import socket
 import struct
 import sys
 
+
 class Client(object):
 
     def __init__(self, server_ip_port, long_connection=True, verbose=False):
@@ -147,16 +148,16 @@ class Client(object):
             return False
 
         # build OPC message
-        len_hi_byte = int(len(pixels)*3 / 256)
-        len_lo_byte = (len(pixels)*3) % 256
+        len_hi_byte = int(len(pixels) * 3 / 256)
+        len_lo_byte = (len(pixels) * 3) % 256
         command = 0  # set pixel colors from openpixelcontrol.org
 
         header = struct.pack("BBBB", channel, command, len_hi_byte, len_lo_byte)
 
-        pieces = [ struct.pack( "BBB",
-                     min(255, max(0, int(r))),
-                     min(255, max(0, int(g))),
-                     min(255, max(0, int(b)))) for r, g, b in pixels ]
+        pieces = [struct.pack("BBB",
+                              min(255, max(0, int(r))),
+                              min(255, max(0, int(g))),
+                              min(255, max(0, int(b)))) for r, g, b in pixels]
 
         if sys.version_info[0] == 3:
             # bytes!
@@ -179,7 +180,7 @@ class Client(object):
 
         return True
 
-    def set_interpolation(self, enabled = True):
+    def set_interpolation(self, enabled=True):
         """
         Enables or disables frame interpolation on runtime.
 
@@ -190,15 +191,15 @@ class Client(object):
         if not is_connected:
             self._debug('set_interpolation: not connected.  ignoring reconfiguration.')
             return False
-    
-        #build firmaware configuration message as documented on
-        #https://github.com/scanlime/fadecandy/blob/master/doc/fc_protocol_opc.md#set-firmware-configuration
+
+        # build firmaware configuration message as documented on
+        # https://github.com/scanlime/fadecandy/blob/master/doc/fc_protocol_opc.md#set-firmware-configuration
         if enabled:
             config_bit = 0
         else:
             config_bit = 2
         message = struct.pack('BBBBBBBBB', 0, 255, 0, 5, 0, 1, 0, 2, config_bit)
-    
+
         self._debug('set_interpolation: sending firmware configuration')
         try:
             self._socket.send(message)
@@ -210,6 +211,5 @@ class Client(object):
             self._debug('set_interpolation: disconnecting')
             self.disconnect()
         return True
-
 
 # fmt: on

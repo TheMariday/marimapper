@@ -1,11 +1,11 @@
-import open3d
-import numpy as np
 import colorsys
+
 import cv2
+import numpy as np
+import open3d
 
 
 def render_2d_model(led_map):
-
     display = np.ones((640, 640, 3)) * 0.2
 
     max_id = max(led_map.keys())
@@ -28,7 +28,6 @@ def render_2d_model(led_map):
 
 
 def render_3d_model(led_map, cams=()):
-
     if not led_map:
         return
 

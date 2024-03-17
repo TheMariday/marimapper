@@ -1,10 +1,11 @@
 import argparse
 import sys
+import time
 
 sys.path.append("./")
+
 from lib import utils
-from lib.color_print import cprint
-import time
+from lib.utils import cprint
 
 if __name__ == "__main__":
 
@@ -32,7 +33,6 @@ if __name__ == "__main__":
     cprint("Press ctrl-c to cancel")
 
     while True:
-
         time.sleep(1)
 
         cprint(f"Turning on LED {args.reference_led}")

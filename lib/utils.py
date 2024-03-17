@@ -1,6 +1,16 @@
-import sys
-sys.path.append('./')
-from lib.color_print import cprint, Col
+class Col:
+    PURPLE = '\033[95m'
+    BLUE = '\033[94m'
+    CYAN = '\033[96m'
+    GREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
+def cprint(str, format=""):
+    print(f"{format}{str}\033[0m")
 
 
 def add_camera_args(parser):
@@ -17,15 +27,13 @@ def add_camera_args(parser):
 
 
 def add_backend_args(parser):
-
     parser.add_argument("--backend", type=str, help="The backend used for led communication",
-                        choices=["custom", "fadecandy", "wled", "lcm"], default="custom")
+                        choices=["custom", "fadecandy", "wled", "lcm"], required=True)
 
     parser.add_argument("--server", type=str, help="Some backends require a server")
 
 
 def get_backend(backend_name, led_count, server=""):
-
     try:
         if backend_name == "custom":
             from backends.custom import custom_backend

@@ -29,12 +29,12 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-import os
-import collections
-import numpy as np
-import struct
 import argparse
+import collections
+import os
+import struct
 
+import numpy as np
 
 CameraModel = collections.namedtuple(
     "CameraModel", ["model_id", "model_name", "num_params"]
@@ -176,9 +176,9 @@ def write_cameras_text(cameras, path):
         void Reconstruction::ReadCamerasText(const std::string& path)
     """
     HEADER = (
-        "# Camera list with one line of data per camera:\n"
-        + "#   CAMERA_ID, MODEL, WIDTH, HEIGHT, PARAMS[]\n"
-        + "# Number of cameras: {}\n".format(len(cameras))
+            "# Camera list with one line of data per camera:\n"
+            + "#   CAMERA_ID, MODEL, WIDTH, HEIGHT, PARAMS[]\n"
+            + "# Number of cameras: {}\n".format(len(cameras))
     )
     with open(path, "w") as fid:
         fid.write(HEADER)
@@ -308,12 +308,12 @@ def write_images_text(images, path):
             (len(img.point3D_ids) for _, img in images.items())
         ) / len(images)
     HEADER = (
-        "# Image list with two lines of data per image:\n"
-        + "#   IMAGE_ID, QW, QX, QY, QZ, TX, TY, TZ, CAMERA_ID, NAME\n"
-        + "#   POINTS2D[] as (X, Y, POINT3D_ID)\n"
-        + "# Number of images_all_the_same: {}, mean observations per image: {}\n".format(
-            len(images), mean_observations
-        )
+            "# Image list with two lines of data per image:\n"
+            + "#   IMAGE_ID, QW, QX, QY, QZ, TX, TY, TZ, CAMERA_ID, NAME\n"
+            + "#   POINTS2D[] as (X, Y, POINT3D_ID)\n"
+            + "# Number of images_all_the_same: {}, mean observations per image: {}\n".format(
+        len(images), mean_observations
+    )
     )
 
     with open(path, "w") as fid:
@@ -439,11 +439,11 @@ def write_points3D_text(points3D, path):
             (len(pt.image_ids) for _, pt in points3D.items())
         ) / len(points3D)
     HEADER = (
-        "# 3D point list with one line of data per point:\n"
-        + "#   POINT3D_ID, X, Y, Z, R, G, B, ERROR, TRACK[] as (IMAGE_ID, POINT2D_IDX)\n"
-        + "# Number of points: {}, mean track length: {}\n".format(
-            len(points3D), mean_track_length
-        )
+            "# 3D point list with one line of data per point:\n"
+            + "#   POINT3D_ID, X, Y, Z, R, G, B, ERROR, TRACK[] as (IMAGE_ID, POINT2D_IDX)\n"
+            + "# Number of points: {}, mean track length: {}\n".format(
+        len(points3D), mean_track_length
+    )
     )
 
     with open(path, "w") as fid:
@@ -478,9 +478,9 @@ def write_points3D_binary(points3D, path_to_model_file):
 
 def detect_model_format(path, ext):
     if (
-        os.path.isfile(os.path.join(path, "cameras" + ext))
-        and os.path.isfile(os.path.join(path, "images_all_the_same" + ext))
-        and os.path.isfile(os.path.join(path, "points3D" + ext))
+            os.path.isfile(os.path.join(path, "cameras" + ext))
+            and os.path.isfile(os.path.join(path, "images_all_the_same" + ext))
+            and os.path.isfile(os.path.join(path, "points3D" + ext))
     ):
         print("Detected model format: '" + ext + "'")
         return True
@@ -547,15 +547,15 @@ def qvec2rotmat(qvec):
 def rotmat2qvec(R):
     Rxx, Ryx, Rzx, Rxy, Ryy, Rzy, Rxz, Ryz, Rzz = R.flat
     K = (
-        np.array(
-            [
-                [Rxx - Ryy - Rzz, 0, 0, 0],
-                [Ryx + Rxy, Ryy - Rxx - Rzz, 0, 0],
-                [Rzx + Rxz, Rzy + Ryz, Rzz - Rxx - Ryy, 0],
-                [Ryz - Rzy, Rzx - Rxz, Rxy - Ryx, Rxx + Ryy + Rzz],
-            ]
-        )
-        / 3.0
+            np.array(
+                [
+                    [Rxx - Ryy - Rzz, 0, 0, 0],
+                    [Ryx + Rxy, Ryy - Rxx - Rzz, 0, 0],
+                    [Rzx + Rxz, Rzy + Ryz, Rzz - Rxx - Ryy, 0],
+                    [Ryz - Rzy, Rzx - Rxz, Rxy - Ryx, Rxx + Ryy + Rzz],
+                ]
+            )
+            / 3.0
     )
     eigvals, eigvecs = np.linalg.eigh(K)
     qvec = eigvecs[[3, 0, 1, 2], np.argmax(eigvals)]

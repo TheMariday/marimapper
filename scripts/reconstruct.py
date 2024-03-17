@@ -1,17 +1,14 @@
-import logging
 import argparse
 import sys
 from pathlib import Path
 
 sys.path.append("./")
 
-from lib.sfm.sfm import SFM
 from lib.map_read_write import get_all_maps
+from lib.sfm.sfm import SFM
 from lib.utils import cprint, Col
 
 if __name__ == "__main__":
-
-    logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser(
         description="Reconstructs 3D information from LED flashes captured with 9_point_box.py"

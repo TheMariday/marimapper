@@ -1,5 +1,7 @@
-import numpy as np
 import os
+
+import numpy as np
+
 from lib.sfm.read_write_model import (
     qvec2rotmat,
     read_cameras_binary,
@@ -9,7 +11,6 @@ from lib.sfm.read_write_model import (
 
 
 def get_map_and_cams(path):
-
     led_map = {}
 
     points_bin = read_points3D_binary(os.path.join(path, "0", "points3D.bin"))
@@ -57,10 +58,10 @@ def get_map_and_cams(path):
             cx = cam.params[1]
             cy = cam.params[2]
         elif cam.model in (
-            "PINHOLE",
-            "OPENCV",
-            "OPENCV_FISHEYE",
-            "FULL_OPENCV",
+                "PINHOLE",
+                "OPENCV",
+                "OPENCV_FISHEYE",
+                "FULL_OPENCV",
         ):
             fx = cam.params[0]
             fy = cam.params[1]

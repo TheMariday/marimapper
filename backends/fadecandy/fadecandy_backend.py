@@ -14,7 +14,6 @@ class Backend:
         self.client.put_pixels(black)
 
     def set_led(self, led_index: int, on: bool):
-
         self.buffer[led_index] = (255, 255, 255) if on else (0, 0, 0)
         self.client.put_pixels(self.buffer)
         self.client.put_pixels(self.buffer)

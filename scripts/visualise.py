@@ -1,8 +1,8 @@
 import argparse
-
 import sys
 
 sys.path.append("./")
+
 from lib.map_read_write import read_2d_map, read_3d_map
 from lib.visualize_model import render_2d_model, render_3d_model
 

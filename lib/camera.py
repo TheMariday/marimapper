@@ -1,7 +1,6 @@
 import cv2
-import sys
-sys.path.append('./')
-from lib.color_print import cprint, Col
+
+from lib.utils import cprint, Col
 
 
 class CameraSettings:

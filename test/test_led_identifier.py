@@ -1,6 +1,3 @@
-import sys
-
-sys.path.append("./")
 from lib.led_identifier import LedFinder
 from mock_camera import MockCamera
 
@@ -25,7 +22,6 @@ def test_basic_image_loading():
 
 
 def test_none_found():
-
     led_finder = LedFinder()
 
     mock_camera = MockCamera()

@@ -1,16 +1,13 @@
+import os
 from tempfile import TemporaryDirectory
 
 import pycolmap
-import sys
 
-sys.path.append("./")
-
-from lib.sfm.model import get_map_and_cams
-from lib.visualize_model import render_3d_model
-from lib.sfm.database_populator import populate
 from lib.map_read_write import write_3d_map
+from lib.sfm.database_populator import populate
+from lib.sfm.model import get_map_and_cams
 from lib.utils import cprint, Col
-import os
+from lib.visualize_model import render_3d_model
 
 
 class SFM:
@@ -24,7 +21,6 @@ class SFM:
     def process(self):
 
         with TemporaryDirectory() as temp_dir:
-
             database_path = os.path.join(temp_dir, "database.db")
 
             populate(database_path, self.maps_2d)

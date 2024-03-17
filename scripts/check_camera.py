@@ -2,9 +2,9 @@ import argparse
 import sys
 
 sys.path.append("./")
-from lib.utils import add_camera_args
+
 from lib import L3D
-from lib.color_print import cprint, Col
+from lib.utils import add_camera_args, cprint, Col
 
 if __name__ == "__main__":
 
@@ -23,13 +23,13 @@ if __name__ == "__main__":
         )
         quit()
 
-    l3d = L3D.L3D(
+    with L3D.L3D(
         args.device, args.exposure, args.threshold, width=args.width, height=args.height
-    )
+    ) as l3d:
 
-    cprint(
-        "Camera connected! Hold an LED up to the camera to check LED identification",
-        format=Col.BLUE,
-    )
+        cprint(
+            "Camera connected! Hold an LED up to the camera to check LED identification",
+            format=Col.BLUE,
+        )
 
-    l3d.show_debug()
+        l3d.show_debug()
