@@ -27,10 +27,14 @@ class Camera:
     def __init__(self, device_id):
         cprint(f"Connecting to camera {device_id} ...")
         self.device_id = device_id
-        self.device = cv2.VideoCapture(device_id)
-        if self.device.isOpened():
-            cprint(f"Connected to camera {device_id}")
-        else:
+
+        for capture_method in [cv2.CAP_DSHOW, cv2.CAP_V4L2, cv2.CAP_ANY]:
+            self.device = cv2.VideoCapture(device_id, capture_method)
+            if self.device.isOpened():
+                cprint(f"Connected to camera {device_id} with capture method {capture_method}")
+                break
+
+        if not self.device.isOpened():
             cprint(f"Failed to connect to camera {device_id}", format=Col.FAIL)
             quit()
 
