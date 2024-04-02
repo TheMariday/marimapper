@@ -8,7 +8,7 @@ from lib.sfm.database_populator import populate
 from lib.sfm.model import get_map_and_cams
 from lib.utils import cprint, Col
 from lib.visualize_model import render_3d_model
-
+from lib.remesher import remesh
 
 class SFM:
 
@@ -17,6 +17,7 @@ class SFM:
 
         self.cams = None
         self.maps_3d = None
+        self.mesh = None
 
     def process(self):
 
@@ -45,10 +46,12 @@ class SFM:
 
             self.maps_3d, self.cams = get_map_and_cams(temp_dir)
 
+            self.mesh = remesh(self.maps_3d)
+
             return True
 
     def display(self):
-        render_3d_model(self.maps_3d, self.cams)
+        render_3d_model(self.maps_3d, self.cams, self.mesh)
 
     def print_points(self):
         for led_id in sorted(self.maps_3d.keys(), reverse=True):
