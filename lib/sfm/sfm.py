@@ -8,7 +8,7 @@ from lib.sfm.database_populator import populate
 from lib.sfm.model import get_map_and_cams
 from lib.utils import cprint, Col
 from lib.visualize_model import render_3d_model
-from lib.remesher import remesh
+
 
 class SFM:
 

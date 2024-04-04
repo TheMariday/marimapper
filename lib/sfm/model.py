@@ -90,7 +90,6 @@ def get_map_and_cams(path):
         all_views = np.array([camera_positions[view] for view in led_map[led_id]["views"]])
         led_map[led_id]["normal"] = np.average(all_views, axis=0) - led_map[led_id]["pos"]
 
-
     led_map = fix_normals(led_map)
 
     return led_map, cams
