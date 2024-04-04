@@ -89,9 +89,9 @@ This will produce a timestamped CSV file in the `my_scan` folder with led index,
 
 Run `python scripts/visualise.py <filename>` to visualise 2D or 3D map files.
 
-## Step 5: Reconstruct a 3D map
+## Step 5: Construct a 3D map
 
-> It's time to thunderise
+[It's time to thunderize!](https://cdn.jwplayer.com/previews/dtA2LXBr)
 
 To create a 3D map, run `capture_sequence` multiple times from different views of your LEDs,
 this can either be done by moving your webcam around your LEDs or rotating your LEDs.
@@ -108,6 +108,16 @@ This may take a while, however once complete will generate `reconstruction.csv` 
 Here is an example reconstruction of Highbeam's body LEDs
 
 ![alt text](docs/images/reconstruct.png "Highbeam LED reconstruction")
+
+## Step 6: Construct a mesh (optional)
+
+If you have a high enough density 3d map, you can use the remesh tool to create a 3D mesh based on your leds!
+
+Run `python scripts/remesh.py reconstruction.csv my_mesh.ply`
+
+This will generate a ply file which you can open and look at with your eyes
+
+![alt text](docs/images/remesh.png "Highbeam LED mesh reconstruction")
 
 # Feedback
 

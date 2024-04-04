@@ -27,7 +27,7 @@ def render_2d_model(led_map):
     cv2.waitKey(0)
 
 
-def render_3d_model(led_map, cams=()):
+def render_3d_model(led_map, cams=(), mesh=None):
     if not led_map:
         return
 
@@ -41,23 +41,17 @@ def render_3d_model(led_map, cams=()):
     for c in cam_geometry:
         __vis.add_geometry(c)
 
-    arrow = open3d.geometry.TriangleMesh.create_coordinate_frame(
-        size=0.6, origin=[0, 0, 0]
-    )
-    __vis.add_geometry(arrow)
-
     pcd = open3d.geometry.PointCloud()
 
     xyz = [led_map[led_id]["pos"] for led_id in led_map]
-
-    max_id = max(led_map.keys())
-
-    rgb = [colorsys.hsv_to_rgb(led_id / max_id, 0.5, 1.0) for led_id in led_map]
+    normals = [led_map[led_id]["normal"] * 0.5 for led_id in led_map]
 
     pcd.points = open3d.utility.Vector3dVector(xyz)
-    pcd.colors = open3d.utility.Vector3dVector(rgb)
+    pcd.normals = open3d.utility.Vector3dVector(normals)
 
     __vis.add_geometry(pcd)
+    if mesh is not None:
+        __vis.add_geometry(mesh)
     __vis.poll_events()
     __vis.update_renderer()
 

@@ -17,6 +17,7 @@ class SFM:
 
         self.cams = None
         self.maps_3d = None
+        self.mesh = None
 
     def process(self):
 
@@ -48,7 +49,7 @@ class SFM:
             return True
 
     def display(self):
-        render_3d_model(self.maps_3d, self.cams)
+        render_3d_model(self.maps_3d, self.cams, self.mesh)
 
     def print_points(self):
         for led_id in sorted(self.maps_3d.keys(), reverse=True):

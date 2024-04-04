@@ -53,18 +53,19 @@ def read_3d_map(filename):
         lines = f.readlines()
         headings = lines[0].strip().split(",")
 
-        if headings != ["index", "x", "y", "z", "error"]:
-            cprint(f"Cannot read 2d map {filename} as headings don't match index,u,v", format=Col.FAIL)
+        if headings != ["index", "x", "y", "z", "xn", "yn", "zn", "error"]:
+            cprint(f"Cannot read 3d map {filename} as headings don't match", format=Col.FAIL)
             return None
 
         for i in range(1, len(lines)):
 
             line = lines[i].strip()
 
-            values = parse("{index:^d},{x:^f},{y:^f},{z:^f},{error:^f}", line)
+            values = parse("{index:^d},{x:^f},{y:^f},{z:^f},{xn:^f},{yn:^f},{zn:^f},{error:^f}", line)
             if values is not None:
                 pos = np.array([values.named["x"], values.named["y"], values.named["z"]])
-                data[values.named["index"]] = {"pos": pos, "error": values.named["error"]}
+                normal = np.array([values.named["xn"], values.named["yn"], values.named["zn"]])
+                data[values.named["index"]] = {"pos": pos, "normal": normal, "error": values.named["error"]}
             else:
                 cprint(f"Failed to read line {i} of {filename}: {line}", format=Col.WARNING)
                 continue
@@ -79,7 +80,7 @@ def write_2d_map(filename, data):
 
     lines = ["index,u,v"]
 
-    for led_id in data:
+    for led_id in sorted(data.keys()):
         lines.append(f"{led_id},"
                      f"{data[led_id]['pos'][0]:f},"
                      f"{data[led_id]['pos'][1]:f}")
@@ -91,13 +92,16 @@ def write_2d_map(filename, data):
 def write_3d_map(filename, data):
     cprint(f"Writing 3D map to {filename}...")
 
-    lines = ["index,x,y,z,error"]
+    lines = ["index,x,y,z,xn,yn,zn,error"]
 
-    for led_id in data:
+    for led_id in sorted(data.keys()):
         lines.append(f"{led_id},"
                      f"{data[led_id]['pos'][0]:f},"
                      f"{data[led_id]['pos'][1]:f},"
                      f"{data[led_id]['pos'][2]:f},"
+                     f"{data[led_id]['normal'][0]:f},"
+                     f"{data[led_id]['normal'][1]:f},"
+                     f"{data[led_id]['normal'][2]:f},"
                      f"{data[led_id]['error']:f}")
 
     with open(filename, "w") as f:
