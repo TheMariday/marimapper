@@ -48,4 +48,4 @@ def remesh(led_map, mesh_detail=12):
     return rec_mesh
 
 def save_mesh(mesh, filename):
-    open3d.io.write_triangle_mesh(filename, mesh)
+    return open3d.io.write_triangle_mesh(filename, mesh)

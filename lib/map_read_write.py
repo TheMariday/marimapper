@@ -54,7 +54,7 @@ def read_3d_map(filename):
         headings = lines[0].strip().split(",")
 
         if headings != ["index", "x", "y", "z", "xn", "yn", "zn", "error"]:
-            cprint(f"Cannot read 2d map {filename} as headings don't match index,u,v", format=Col.FAIL)
+            cprint(f"Cannot read 3d map {filename} as headings don't match", format=Col.FAIL)
             return None
 
         for i in range(1, len(lines)):

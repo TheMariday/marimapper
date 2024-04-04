@@ -41,11 +41,6 @@ def render_3d_model(led_map, cams=(), mesh=None):
     for c in cam_geometry:
         __vis.add_geometry(c)
 
-    arrow = open3d.geometry.TriangleMesh.create_coordinate_frame(
-        size=0.6, origin=[0, 0, 0]
-    )
-    __vis.add_geometry(arrow)
-
     pcd = open3d.geometry.PointCloud()
 
     xyz = [led_map[led_id]["pos"] for led_id in led_map]
