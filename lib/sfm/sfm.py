@@ -46,8 +46,6 @@ class SFM:
 
             self.maps_3d, self.cams = get_map_and_cams(temp_dir)
 
-            self.mesh = remesh(self.maps_3d)
-
             return True
 
     def display(self):

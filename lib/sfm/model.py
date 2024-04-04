@@ -8,6 +8,7 @@ from lib.sfm.read_write_model import (
     read_images_binary,
     read_points3D_binary,
 )
+from lib.remesher import fix_normals
 
 
 def get_map_and_cams(path):
@@ -87,7 +88,9 @@ def get_map_and_cams(path):
 
     for led_id in led_map:
         all_views = np.array([camera_positions[view] for view in led_map[led_id]["views"]])
-        led_map[led_id]["normal"] = np.average(all_views,axis=0) - led_map[led_id]["pos"]
+        led_map[led_id]["normal"] = np.average(all_views, axis=0) - led_map[led_id]["pos"]
 
+
+    led_map = fix_normals(led_map)
 
     return led_map, cams
