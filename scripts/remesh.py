@@ -22,7 +22,9 @@ if __name__ == "__main__":
         "mesh_filename", type=str, help="The output PLY filename", default="mesh.ply"
     )
 
-    parser.add_argument("--detail", type=int, help="the detail level of the mesh", default=12)
+    parser.add_argument(
+        "--detail", type=int, help="the detail level of the mesh", default=8
+    )
 
     args = parser.parse_args()
 

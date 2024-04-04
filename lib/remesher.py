@@ -30,7 +30,7 @@ def fix_normals(led_map):
 
     return led_map
 
-def remesh(led_map, mesh_detail=12):
+def remesh(led_map, mesh_detail=8):
 
     pcd = open3d.geometry.PointCloud()
 
@@ -38,7 +38,7 @@ def remesh(led_map, mesh_detail=12):
     pcd.normals = open3d.utility.Vector3dVector([led_map[led_id]["normal"] for led_id in led_map])
 
     with open3d.utility.VerbosityContextManager(open3d.utility.VerbosityLevel.Debug) as cm:
-        rec_mesh, densities = open3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=12)
+        rec_mesh, densities = open3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=mesh_detail)
 
     rec_mesh = rec_mesh.compute_vertex_normals()
     rec_mesh = rec_mesh.compute_triangle_normals()

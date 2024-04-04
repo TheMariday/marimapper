@@ -109,11 +109,13 @@ Here is an example reconstruction of Highbeam's body LEDs
 
 ![alt text](docs/images/reconstruct.png "Highbeam LED reconstruction")
 
-## Step 5: Construct a mesh
+## Step 6: Construct a mesh (optional)
 
 If you have a high enough density 3d map, you can use the remesh tool to create a 3D mesh based on your leds!
 
 Run `python scripts/remesh.py reconstruction.csv my_mesh.ply`
+
+This will generate a ply file which you can open and look at with your eyes
 
 ![alt text](docs/images/remesh.png "Highbeam LED mesh reconstruction")
 
