@@ -4,7 +4,7 @@ from lib.remesher import remesh
 
 
 def test_remesh_higbeam():
-    highbeam_map = get_all_maps("test/L3D-Test-Data/highbeam")
+    highbeam_map = get_all_maps("test/MariMapper-Test-Data/highbeam")
 
     sfm = SFM(highbeam_map)
 

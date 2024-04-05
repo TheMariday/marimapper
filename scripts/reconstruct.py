@@ -42,7 +42,9 @@ if __name__ == "__main__":
     success = sfm.process()
 
     if not success:
-        cprint(f"L3D Failed to reconstruct {args.input_directory}", format=Col.FAIL)
+        cprint(
+            f"MariMapper Failed to reconstruct {args.input_directory}", format=Col.FAIL
+        )
         quit()
 
     sfm.print_points()

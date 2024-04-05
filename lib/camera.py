@@ -31,7 +31,9 @@ class Camera:
         for capture_method in [cv2.CAP_DSHOW, cv2.CAP_V4L2, cv2.CAP_ANY]:
             self.device = cv2.VideoCapture(device_id, capture_method)
             if self.device.isOpened():
-                cprint(f"Connected to camera {device_id} with capture method {capture_method}")
+                cprint(
+                    f"Connected to camera {device_id} with capture method {capture_method}"
+                )
                 break
 
         if not self.device.isOpened():
@@ -72,7 +74,10 @@ class Camera:
         new_height = self.get_height()
 
         if width != new_width or height != new_height:
-            cprint(f"Failed to set camera {self.device_id} resolution to {width} x {height}", Col.WARNING)
+            cprint(
+                f"Failed to set camera {self.device_id} resolution to {width} x {height}",
+                Col.WARNING,
+            )
 
         self.device.read()  # do not remove! do not ask why, just accept it
 

@@ -1,9 +1,9 @@
-# L3D LED Mapper
+# Mari-Mapper
 
 [![Supported Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue)]()
-[![Windows](https://github.com/TheMariday/L3D/actions/workflows/test_windows.yml/badge.svg)](https://github.com/TheMariday/L3D/actions/workflows/test_windows.yml)
-[![Ubuntu](https://github.com/TheMariday/L3D/actions/workflows/test_ubuntu.yml/badge.svg)](https://github.com/TheMariday/L3D/actions/workflows/test_ubuntu.yml)
-[![MacOS](https://github.com/TheMariday/L3D/actions/workflows/test_mac.yml/badge.svg)](https://github.com/TheMariday/L3D/actions/workflows/test_mac.yml)
+[![Windows](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml)
+[![Ubuntu](https://github.com/TheMariday/MariMapper/actions/workflows/test_ubuntu.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_ubuntu.yml)
+[![MacOS](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 This is a selection of tools to map LEDs into 2D and 3D space using only your webcam!
@@ -19,7 +19,7 @@ After downloading this repository and installing Python, run `pip install -r req
 
 ## Step 1: Run the camera checker (recommended)
 
-This will check your camera is compatible with L3D.
+This will check your camera is compatible with MariMapper.
 
 Run `python scripts/check_camera.py`
 
@@ -32,7 +32,7 @@ with a single crosshair on centered on your LED:
 ## Step 2: Write your LED interface
 
 Your LEDs are as unique as you are,
-so the fastest way to connect L3D to your system is to fill in the blanks
+so the fastest way to connect MariMapper to your system is to fill in the blanks
 in [backends/custom/custom_backend.py](backends/custom/custom_backend.py):
 
 ```python
@@ -58,7 +58,7 @@ class Backend:
 
 You can test your backend with `python scripts/check_backend.py`
 
-L3D also support the following pre-made backends. This can be selected in the following steps using the `--backend`
+MariMapper also support the following pre-made backends. This can be selected in the following steps using the `--backend`
 argument.
 
 | Backend   | Supported |
@@ -91,7 +91,7 @@ Run `python scripts/visualise.py <filename>` to visualise 2D or 3D map files.
 
 ## Step 5: Construct a 3D map
 
-[It's time to thunderize!](https://cdn.jwplayer.com/previews/dtA2LXBr)
+[It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
 
 To create a 3D map, run `capture_sequence` multiple times from different views of your LEDs,
 this can either be done by moving your webcam around your LEDs or rotating your LEDs.

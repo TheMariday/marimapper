@@ -23,7 +23,7 @@ def render_2d_model(led_map):
             color=col,
         )
 
-    cv2.imshow("L3D", display)
+    cv2.imshow("MariMapper", display)
     cv2.waitKey(0)
 
 
@@ -32,7 +32,7 @@ def render_3d_model(led_map, cams=(), mesh=None):
         return
 
     __vis = open3d.visualization.Visualizer()
-    __vis.create_window(window_name="L3D", width=640, height=640)
+    __vis.create_window(window_name="MariMapper", width=640, height=640)
 
     cam_geometry = []
     for K, R, t, width, height in cams:

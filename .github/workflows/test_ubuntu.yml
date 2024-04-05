@@ -3,6 +3,10 @@ name: Ubuntu
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - "README.md"
+      - "docs/**"
+      - "scripts/**"
   pull_request:
     branches: [ "main" ]
 

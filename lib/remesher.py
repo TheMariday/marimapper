@@ -21,12 +21,18 @@ def fix_normals(led_map):
     assert len(pcd.normals) == len(normals_from_camera)
 
     for i in range(len(normals_from_camera)):
-        normal_from_camera = normals_from_camera[i] / np.linalg.norm(normals_from_camera[i])
+        normal_from_camera = normals_from_camera[i] / np.linalg.norm(
+            normals_from_camera[i]
+        )
         normal_from_estimator = pcd.normals[i] / np.linalg.norm(pcd.normals[i])
 
-        angle = np.arccos(np.clip(np.dot(normal_from_camera, normal_from_estimator), -1.0, 1.0))
+        angle = np.arccos(
+            np.clip(np.dot(normal_from_camera, normal_from_estimator), -1.0, 1.0)
+        )
 
-        led_map[led_ids[i]]["normal"] = pcd.normals[i] * (-1 if angle > math.pi / 2.0 else 1)
+        led_map[led_ids[i]]["normal"] = pcd.normals[i] * (
+            -1 if angle > math.pi / 2.0 else 1
+        )
 
     return led_map
 
@@ -35,11 +41,21 @@ def remesh(led_map, mesh_detail=8):
 
     pcd = open3d.geometry.PointCloud()
 
-    pcd.points = open3d.utility.Vector3dVector([led_map[led_id]["pos"] for led_id in led_map])
-    pcd.normals = open3d.utility.Vector3dVector([led_map[led_id]["normal"] for led_id in led_map])
+    pcd.points = open3d.utility.Vector3dVector(
+        [led_map[led_id]["pos"] for led_id in led_map]
+    )
+    pcd.normals = open3d.utility.Vector3dVector(
+        [led_map[led_id]["normal"] for led_id in led_map]
+    )
 
-    with open3d.utility.VerbosityContextManager(open3d.utility.VerbosityLevel.Debug) as _:
-        rec_mesh, densities = open3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=mesh_detail)
+    with open3d.utility.VerbosityContextManager(
+        open3d.utility.VerbosityLevel.Debug
+    ) as _:
+        rec_mesh, densities = (
+            open3d.geometry.TriangleMesh.create_from_point_cloud_poisson(
+                pcd, depth=mesh_detail
+            )
+        )
 
     rec_mesh = rec_mesh.compute_vertex_normals()
     rec_mesh = rec_mesh.compute_triangle_normals()

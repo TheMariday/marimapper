@@ -7,7 +7,7 @@ import numpy as np
 
 sys.path.append("./")
 
-from lib import L3D
+from lib.reconstructor import Reconstructor
 from lib import utils
 from lib.utils import cprint, Col
 
@@ -37,14 +37,14 @@ if __name__ == "__main__":
 
     led_backend.set_led(args.reference_led, False)
 
-    with L3D.L3D(
+    with Reconstructor(
         args.device, args.exposure, args.threshold, width=args.width, height=args.height
-    ) as l3d:
+    ) as reconstructor:
 
         #  wait for 1 seconds for the backend to update, we don't know the latency at this point
         time.sleep(1)
 
-        result = l3d.find_led()
+        result = reconstructor.find_led()
         if result is not None:
             cprint(
                 f"All LEDs should be off, however LED has been detected at {result.get_center()},"
@@ -62,14 +62,14 @@ if __name__ == "__main__":
             total=100,
             smoothing=0,
         ):
-            # Set reference led to off and spin until L3D can't find the led anymore
+            # Set reference led to off and spin until MariMapper can't find the led anymore
             led_backend.set_led(args.reference_led, False)
-            while l3d.find_led() is not None:
+            while reconstructor.find_led() is not None:
                 pass
-            # Set reference led to on and see how long it takes for L3D to find it
+            # Set reference led to on and see how long it takes for MariMapper to find it
             led_update_time = time.time()
             led_backend.set_led(args.reference_led, True)
-            while l3d.find_led() is None:
+            while reconstructor.find_led() is None:
                 pass
             latencies.append(time.time() - led_update_time)
 

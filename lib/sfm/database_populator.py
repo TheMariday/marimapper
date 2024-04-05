@@ -8,7 +8,9 @@ from lib.sfm.database import COLMAPDatabase
 
 def populate(db_path, maps):
     if not maps:
-        raise Exception("Failed to populate reconstruction database due to no maps being provided")
+        raise Exception(
+            "Failed to populate reconstruction database due to no maps being provided"
+        )
 
     map_features = np.zeros((len(maps), 1, 2))
 

@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 sys.path.append("./")
 
-from lib import L3D
+from lib.reconstructor import Reconstructor
 from lib import utils
 from lib.map_read_write import write_2d_map
 from lib.utils import cprint, Col
@@ -44,9 +44,9 @@ if __name__ == "__main__":
 
     os.makedirs(args.output_dir, exist_ok=True)
 
-    with L3D.L3D(
+    with Reconstructor(
         args.device, args.exposure, args.threshold, width=args.width, height=args.height
-    ) as l3d:
+    ) as reconstructor:
 
         while True:
 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
                 max_time = time.time() + float(args.latency) / 1000
                 result = None
                 while result is None and time.time() < max_time:
-                    result = l3d.find_led(True)
+                    result = reconstructor.find_led(True)
 
                 if result:
                     u, v = result.get_center_normalised()
@@ -82,12 +82,12 @@ if __name__ == "__main__":
                 led_backend.set_led(led_id, False)
 
                 #  wait for LED to turn off
-                while l3d.find_led() is not None:
+                while reconstructor.find_led() is not None:
                     pass
 
             write_2d_map(os.path.join(args.output_dir, filename), map_data)
 
-            cv2.destroyWindow("L3D")
+            cv2.destroyWindow("MariMapper")
 
             cprint(f"{total_leds_found}/{args.led_count} leds found", Col.BLUE)
             cprint("Scan complete, scan again? [y/n]", Col.PURPLE)

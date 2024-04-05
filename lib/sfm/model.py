@@ -16,7 +16,9 @@ def get_map_and_cams(path):
 
     points_bin = read_points3D_binary(os.path.join(path, "0", "points3D.bin"))
 
-    for point in points_bin.values():  # this will overwrite previous data! needs filtering
+    for (
+        point
+    ) in points_bin.values():  # this will overwrite previous data! needs filtering
         led_id = point.point2D_idxs[0]
         if led_id not in led_map:
             led_map[point.point2D_idxs[0]] = {"pos": [], "error": [], "views": []}
@@ -65,10 +67,10 @@ def get_map_and_cams(path):
             cx = cam.params[1]
             cy = cam.params[2]
         elif cam.model in (
-                "PINHOLE",
-                "OPENCV",
-                "OPENCV_FISHEYE",
-                "FULL_OPENCV",
+            "PINHOLE",
+            "OPENCV",
+            "OPENCV_FISHEYE",
+            "FULL_OPENCV",
         ):
             fx = cam.params[0]
             fy = cam.params[1]
@@ -87,8 +89,12 @@ def get_map_and_cams(path):
         cams.append([K, R, t, cam.width, cam.height])
 
     for led_id in led_map:
-        all_views = np.array([camera_positions[view] for view in led_map[led_id]["views"]])
-        led_map[led_id]["normal"] = np.average(all_views, axis=0) - led_map[led_id]["pos"]
+        all_views = np.array(
+            [camera_positions[view] for view in led_map[led_id]["views"]]
+        )
+        led_map[led_id]["normal"] = (
+            np.average(all_views, axis=0) - led_map[led_id]["pos"]
+        )
 
     led_map = fix_normals(led_map)
 

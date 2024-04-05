@@ -1,6 +1,6 @@
 import os
 
-from lib import L3D
+from lib.reconstructor import Reconstructor
 from lib.map_read_write import write_2d_map, read_2d_map
 from mock_camera import MockCamera
 
@@ -14,20 +14,20 @@ def test_capture_sequence():
 
         mock_camera = MockCamera(device_id=view_index)
 
-        with L3D.L3D(
+        with Reconstructor(
             device=view_index,
             exposure=0,
             threshold=128,
             width=mock_camera.get_width(),
             height=mock_camera.get_height(),
             camera=mock_camera,
-        ) as l3d:
+        ) as reconstructor:
 
             map_data = {}
 
             for led_id in range(24):
 
-                result = l3d.find_led(False)
+                result = reconstructor.find_led(False)
 
                 if result:
                     map_data[led_id] = {"pos": result.get_center_normalised()}

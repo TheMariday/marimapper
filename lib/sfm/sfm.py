@@ -38,7 +38,7 @@ class SFM:
                 database_path=database_path,
                 image_path=temp_dir,
                 output_path=temp_dir,
-                options=options
+                options=options,
             )
 
             if not os.path.exists(os.path.join(temp_dir, "0", "points3D.bin")):
@@ -53,11 +53,14 @@ class SFM:
 
     def print_points(self):
         for led_id in sorted(self.maps_3d.keys(), reverse=True):
-            cprint(f"{led_id}:\t"
-                   f"x: {self.maps_3d[led_id]['pos'][0]}, "
-                   f"y: {self.maps_3d[led_id]['pos'][1]}, "
-                   f"z: {self.maps_3d[led_id]['pos'][2]}, "
-                   f"error: {self.maps_3d[led_id]['error']}", format=Col.BLUE)
+            cprint(
+                f"{led_id}:\t"
+                f"x: {self.maps_3d[led_id]['pos'][0]}, "
+                f"y: {self.maps_3d[led_id]['pos'][1]}, "
+                f"z: {self.maps_3d[led_id]['pos'][2]}, "
+                f"error: {self.maps_3d[led_id]['error']}",
+                format=Col.BLUE,
+            )
 
     def save_points(self, filename):
         write_3d_map(filename, self.maps_3d)

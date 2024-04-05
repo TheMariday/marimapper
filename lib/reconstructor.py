@@ -5,10 +5,10 @@ from lib.led_identifier import LedFinder
 from lib.utils import cprint
 
 
-class L3D:
+class Reconstructor:
 
     def __init__(self, device, exposure, threshold, width=-1, height=-1, camera=None):
-        cprint("Starting L3D...")
+        cprint("Starting MariMapper...")
 
         self.settings_backup = None
         self.cam = Camera(device) if camera is None else camera
@@ -42,11 +42,11 @@ class L3D:
 
     def show_debug(self):
 
-        cv2.namedWindow("L3D", cv2.WINDOW_AUTOSIZE)
+        cv2.namedWindow("MariMapper", cv2.WINDOW_AUTOSIZE)
 
         while True:
 
-            if cv2.getWindowProperty("L3D", cv2.WND_PROP_VISIBLE) <= 0:
+            if cv2.getWindowProperty("MariMapper", cv2.WND_PROP_VISIBLE) <= 0:
                 break
 
             self.find_led(debug=True)
@@ -57,7 +57,7 @@ class L3D:
 
         if debug:
             rendered_image = self.led_finder.draw_results(image, results)
-            cv2.imshow("L3D", rendered_image)
+            cv2.imshow("MariMapper", rendered_image)
             cv2.waitKey(1)
 
         return results

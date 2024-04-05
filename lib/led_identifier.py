@@ -28,7 +28,9 @@ class LedFinder:
 
         _, image_thresh = cv2.threshold(image, self.threshold, 255, cv2.THRESH_TOZERO)
 
-        contours, _ = cv2.findContours(image_thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(
+            image_thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+        )
 
         moments = cv2.moments(image_thresh)
 
@@ -39,7 +41,7 @@ class LedFinder:
         img_width = image.shape[1]
 
         center_u = moments["m10"] / moments["m00"]
-        center_v = (moments["m01"] / moments["m00"])
+        center_v = moments["m01"] / moments["m00"]
 
         return LedResults(center_u, center_v, img_width, img_height, contours)
 
@@ -50,7 +52,12 @@ class LedFinder:
 
         if results:
             cv2.drawContours(render_image, results.contours, -1, (255, 0, 0), 1)
-            cv2.drawMarker(render_image, [int(i) for i in results.get_center()], (0, 255, 0), markerSize=100)
+            cv2.drawMarker(
+                render_image,
+                [int(i) for i in results.get_center()],
+                (0, 255, 0),
+                markerSize=100,
+            )
 
         return render_image
 

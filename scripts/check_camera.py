@@ -3,7 +3,7 @@ import sys
 
 sys.path.append("./")
 
-from lib import L3D
+from lib.reconstructor import Reconstructor
 from lib.utils import add_camera_args, cprint, Col
 
 if __name__ == "__main__":
@@ -23,13 +23,13 @@ if __name__ == "__main__":
         )
         quit()
 
-    with L3D.L3D(
+    with Reconstructor(
         args.device, args.exposure, args.threshold, width=args.width, height=args.height
-    ) as l3d:
+    ) as reconstructor:
 
         cprint(
             "Camera connected! Hold an LED up to the camera to check LED identification",
             format=Col.BLUE,
         )
 
-        l3d.show_debug()
+        reconstructor.show_debug()
