@@ -119,7 +119,7 @@ This may take a while, however once complete will generate `reconstruction.csv` 
 
 Here is an example reconstruction of Highbeam's body LEDs
 
-![alt text](docs/images/reconstruct.png "Highbeam LED reconstruction")
+![alt text](docs/images/reconstruct_with_normals.png "Highbeam LED reconstruction")
 
 > [!TIP]
 > Click and drag to rotate the model around
@@ -136,7 +136,7 @@ Run `python scripts/remesh.py reconstruction.csv my_mesh.ply`
 
 This will generate a ply file which you can open and look at with your eyes
 
-![alt text](docs/images/remesh.png "Highbeam LED mesh reconstruction")
+![alt text](docs/images/remesh_with_normals.png "Highbeam LED mesh reconstruction")
 
 # Feedback
 
