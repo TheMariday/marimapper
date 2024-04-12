@@ -1,5 +1,5 @@
 import cv2
-
+from lib.utils import cprint, Col
 
 class LedResults:
 
@@ -31,6 +31,12 @@ class LedFinder:
         contours, _ = cv2.findContours(
             image_thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
         )
+
+        led_response_count = len(contours)
+        if led_response_count == 0:
+            return None
+        elif led_response_count > 1:
+            cprint(f"Warning! More than 1 light source found, found {led_response_count} light sources", format=Col.WARNING)
 
         moments = cv2.moments(image_thresh)
 

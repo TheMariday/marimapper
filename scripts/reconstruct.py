@@ -47,6 +47,5 @@ if __name__ == "__main__":
         )
         quit()
 
-    sfm.print_points()
     sfm.save_points(Path(args.output_file))
     sfm.display()

@@ -8,10 +8,8 @@
 
 This is a selection of tools to map LEDs into 2D and 3D space using only your webcam!
 
-This works best in a dim environment so please make sure your camera isn't pointing at any other light sources! (Test in
-Step 1)
-
-All scripts can be run with the `--help` argument to list optional parameters such as resolution, exposure and latency.
+> [!TIP]
+> All scripts can be run with the `--help` argument to list optional parameters such as resolution, exposure and latency.
 
 ## Step 0: Install requirements
 
@@ -19,13 +17,24 @@ After downloading this repository and installing Python, run `pip install -r req
 
 ## Step 1: Run the camera checker (recommended)
 
-This will check your camera is compatible with MariMapper.
+Run `python scripts/check_camera.py` to ensure your camera is compatible with MariMapper, or check the list below:
 
-Run `python scripts/check_camera.py`
+<details>
+
+<summary>Tested cameras</summary>
+
+- [x] HP Webcam HD 4310 - settings may not revert
+- [x] Logitech c920 - Works perfectly
+- [ ] Alienware built in webcam - cannot set exposure times due to custom V4L2 controls
+
+</details>
 
 Test LED identification by turning down the lights and holding a torch or led up to the camera
 This should start with few warnings, no errors and produce a **very** dark image
 with a single crosshair on centered on your LED:
+
+> [!IMPORTANT]
+> This works best in a dim environment so please make sure your camera isn't pointing at any other light sources!
 
 ![alt text](docs/images/camera_check.png "Camera Check window")
 
@@ -61,24 +70,12 @@ You can test your backend with `python scripts/check_backend.py`
 MariMapper also support the following pre-made backends. This can be selected in the following steps using the `--backend`
 argument.
 
-| Backend   | Supported |
-|-----------|-----------|
-| FadeCandy | yes       |
-| WLED      | yes       |
-| LCM       | todo      |
+- [x] Fadecandy / OPC
+- [x] WLED
+- [ ] LCM
 
-## Step 3: Run the LED latency checker (recommended)
 
-After writing or choosing your backend, place one of your addressable LEDs in front of your camera
-
-run `python scripts/check_latency.py --backend fadecandy`
-
-Change `--backend` to whatever backend you're using.
-
-Once complete, the recommended latency will be listed in the console in milliseconds.
-This can be used in the following steps using the `--latency` argument to speed up scans
-
-## Step 4: Capture a 2D map
+## Step 3: Capture a 2D map
 
 Set up your LEDs in front of your camera and
 run `python scripts/capture_sequence.py my_scan --led_count 64 --backend fadecandy`
@@ -89,18 +86,33 @@ This will produce a timestamped CSV file in the `my_scan` folder with led index,
 
 Run `python scripts/visualise.py <filename>` to visualise 2D or 3D map files.
 
-## Step 5: Construct a 3D map
+<details>
+
+<summary>Speed this up with an extra step</summary>
+
+Place one of your addressable LEDs in front of your camera
+
+Run `python scripts/check_latency.py --backend fadecandy`
+
+Change `--backend` to whatever backend you're using.
+
+Once complete, the recommended latency will be listed in the console in milliseconds.
+This can be used in `capture_sequence.py` using the `--latency` argument to speed up scans
+
+</details>
+
+## Step 4: Construct a 3D map
 
 [It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
 
 To create a 3D map, run `capture_sequence` multiple times from different views of your LEDs,
 this can either be done by moving your webcam around your LEDs or rotating your LEDs.
 
-You can move your webcam to wherever you like as long as your leds are mostly in view.
+> [!TIP]
+> You can move your webcam to wherever you like as long as some of your leds are mostly in view
+> Try and get at least 3 views between 6° - 20° apart
 
-Try and get at least 3 views between 6° - 20° apart
-
-Once you have a selection of 2D maps captured with the `capture_sequence` script,
+Once you have a selection of 2D maps captured with the `capture_sequence.py` script,
 run `python scripts/reconstruct.py my_scan`
 
 This may take a while, however once complete will generate `reconstruction.csv` in the `my_scan` folder.
@@ -109,7 +121,14 @@ Here is an example reconstruction of Highbeam's body LEDs
 
 ![alt text](docs/images/reconstruct.png "Highbeam LED reconstruction")
 
-## Step 6: Construct a mesh (optional)
+> [!TIP]
+> Click and drag to rotate the model around
+> Hold shift to roll the camera
+> Use the scroll wheel to zoom in / out
+> Use the `n` key to hide / show normals
+> Use the `+` / `-` keys to increase / decrease point sizes
+
+## Step 5: Construct a mesh (optional)
 
 If you have a high enough density 3d map, you can use the remesh tool to create a 3D mesh based on your leds!
 
