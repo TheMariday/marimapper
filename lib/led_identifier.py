@@ -1,6 +1,7 @@
 import cv2
 from lib.utils import cprint, Col
 
+
 class LedResults:
 
     def __init__(self, u, v, width, height, contours):
@@ -36,7 +37,10 @@ class LedFinder:
         if led_response_count == 0:
             return None
         elif led_response_count > 1:
-            cprint(f"Warning! More than 1 light source found, found {led_response_count} light sources", format=Col.WARNING)
+            cprint(
+                f"Warning! More than 1 light source found, found {led_response_count} light sources",
+                format=Col.WARNING,
+            )
 
         moments = cv2.moments(image_thresh)
 
