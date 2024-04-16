@@ -27,7 +27,7 @@ def render_2d_model(led_map):
     cv2.waitKey(0)
 
 
-def render_3d_model(led_map, cams=(), mesh=None):
+def render_3d_model(led_map, cams=(), mesh=None, strips=None):
     if not led_map:
         return
 
@@ -44,10 +44,33 @@ def render_3d_model(led_map, cams=(), mesh=None):
     pcd = open3d.geometry.PointCloud()
 
     xyz = [led_map[led_id]["pos"] for led_id in led_map]
-    normals = [led_map[led_id]["normal"] * 0.5 for led_id in led_map]
+    normals = [led_map[led_id]["normal"] * 0.02 for led_id in led_map]
 
     pcd.points = open3d.utility.Vector3dVector(xyz)
     pcd.normals = open3d.utility.Vector3dVector(normals)
+
+    if strips is not None:
+
+        strip_points = []
+        strip_connections = []
+        colors = []
+
+        for strip in strips:
+            if not strip:
+                continue
+            strip_points.append(led_map[strip[0]]["pos"])
+            for i in range(1, len(strip)):
+                strip_points.append(led_map[strip[i]]["pos"])
+                strip_connections.append([len(strip_points) - 2, len(strip_points) - 1])
+                colors.append([1.0, 1.0, 1.0])
+
+        line_set = open3d.geometry.LineSet(
+            points=open3d.utility.Vector3dVector(strip_points),
+            lines=open3d.utility.Vector2iVector(strip_connections),
+        )
+        line_set.colors = open3d.utility.Vector3dVector(colors)
+
+        __vis.add_geometry(line_set)
 
     __vis.add_geometry(pcd)
     if mesh is not None:
@@ -60,7 +83,12 @@ def render_3d_model(led_map, cams=(), mesh=None):
     view_ctl.set_lookat((0, 0, 0))
     view_ctl.set_zoom(0.3)
 
-    __vis.get_render_option().background_color = [0.2, 0.2, 0.2]
+    render_options = __vis.get_render_option()
+    render_options.point_show_normal = True
+    render_options.point_color_option = (
+        open3d.visualization.PointColorOption.YCoordinate
+    )
+    render_options.background_color = [0.2, 0.2, 0.2]
 
     __vis.run()
     __vis.destroy_window()

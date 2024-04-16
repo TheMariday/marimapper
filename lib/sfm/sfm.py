@@ -7,6 +7,7 @@ from lib.map_read_write import write_3d_map
 from lib.sfm.database_populator import populate
 from lib.sfm.model import get_map_and_cams
 from lib.utils import cprint, Col
+from lib import map_cleaner
 from lib.visualize_model import render_3d_model
 
 
@@ -19,7 +20,7 @@ class SFM:
         self.maps_3d = None
         self.mesh = None
 
-    def process(self):
+    def process(self, rescale=False, interpolate=False):
 
         with TemporaryDirectory() as temp_dir:
             database_path = os.path.join(temp_dir, "database.db")
@@ -46,10 +47,19 @@ class SFM:
 
             self.maps_3d, self.cams = get_map_and_cams(temp_dir)
 
+            if rescale:
+                map_cleaner.rescale(self.maps_3d, self.cams)
+
+            if interpolate:
+                leds_interpolated = map_cleaner.fill_gaps(self.maps_3d)
+                cprint(f"Interpolated {leds_interpolated} leds", format=Col.BLUE)
+
             return True
 
     def display(self):
-        render_3d_model(self.maps_3d, self.cams, self.mesh)
+        # This would be good if it could be saved to disk as well
+        strips = map_cleaner.extract_strips(self.maps_3d)
+        render_3d_model(self.maps_3d, self.cams, self.mesh, strips=strips)
 
     def print_points(self):
         for led_id in sorted(self.maps_3d.keys(), reverse=True):

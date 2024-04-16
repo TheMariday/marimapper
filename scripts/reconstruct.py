@@ -27,6 +27,16 @@ if __name__ == "__main__":
         default="reconstruction.csv",
     )
 
+    parser.add_argument(
+        "--no_rescale", help="Use this to disable rescaling", action="store_true"
+    )
+
+    parser.add_argument(
+        "--no_interpolation",
+        help="Use this to disable led interpolation",
+        action="store_true",
+    )
+
     args = parser.parse_args()
 
     maps = get_all_maps(args.input_directory)
@@ -39,7 +49,9 @@ if __name__ == "__main__":
 
     sfm = SFM(maps)
 
-    success = sfm.process()
+    success = sfm.process(
+        rescale=(not args.no_rescale), interpolate=(not args.no_interpolation)
+    )
 
     if not success:
         cprint(
