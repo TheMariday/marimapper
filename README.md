@@ -119,7 +119,7 @@ This may take a while, however once complete will generate `reconstruction.csv` 
 
 Here is an example reconstruction of Highbeam's body LEDs
 
-![alt text](docs/images/reconstruct_with_normals.png "Highbeam LED reconstruction")
+![alt text](docs/images/reconstruct_with_normals_and_strips.png "Highbeam LED reconstruction")
 
 > [!TIP]
 > Click and drag to rotate the model around
