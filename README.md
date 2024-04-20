@@ -6,6 +6,8 @@
 [![MacOS](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
+![logo.png](docs%2Fimages%2Flogo.png)
+
 This is a selection of tools to map LEDs into 2D and 3D space using only your webcam!
 
 > [!TIP]
