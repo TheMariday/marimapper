@@ -23,11 +23,12 @@ Run `python scripts/check_camera.py` to ensure your camera is compatible with Ma
 
 <details>
 
-<summary>Tested cameras</summary>
+<summary>Working Cameras</summary>
 
-- [x] HP Webcam HD 4310 - settings may not revert
-- [x] Logitech c920 - Works perfectly
-- [ ] Alienware built in webcam - cannot set exposure times due to custom V4L2 controls
+- HP 4310 (settings may not revert)
+- Logitech C920
+- Dell Lattitude 5521 built-in
+- HP Envy x360 built-in 
 
 </details>
 
@@ -73,8 +74,9 @@ MariMapper also support the following pre-made backends. This can be selected in
 argument.
 
 - [x] Fadecandy / OPC
-- [x] WLED
-- [ ] LCM
+- [x] [WLED](https://kno.wled.ge/)
+- [x] [FC Mega](https://github.com/TheMariday/FC-Mega)
+- [ ] [LCM](https://lcm-proj.github.io/lcm/)
 
 
 ## Step 3: Capture a 2D map
@@ -123,12 +125,17 @@ Here is an example reconstruction of Highbeam's body LEDs
 
 ![alt text](docs/images/reconstruct_with_normals_and_strips.png "Highbeam LED reconstruction")
 
-> [!TIP]
-> Click and drag to rotate the model around
-> Hold shift to roll the camera
-> Use the scroll wheel to zoom in / out
-> Use the `n` key to hide / show normals
-> Use the `+` / `-` keys to increase / decrease point sizes
+<details>
+<summary>How to move the model around</summary>
+
+- Click and drag to rotate the model around. 
+- Hold shift to roll the camera
+- Use the scroll wheel to zoom in / out
+- Use the `n` key to hide / show normals
+- Use the `+` / `-` keys to increase / decrease point sizes
+- Use `1`, `2` & `3` keys to change colour scheme
+</details>
+
 
 ## Step 5: Construct a mesh (optional)
 
