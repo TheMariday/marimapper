@@ -51,7 +51,7 @@ def add_backend_args(parser):
         "--backend",
         type=str,
         help="The backend used for led communication",
-        choices=["custom", "fadecandy", "wled", "lcm"],
+        choices=["custom", "fadecandy", "wled", "lcm", "fcmega"],
         required=True,
     )
 
@@ -85,6 +85,11 @@ def get_backend(backend_name, led_count, server=""):
             from backends.lcm import lcm_backend
 
             return lcm_backend.Backend(led_count)
+
+        if backend_name == "fcmega":
+            from backends.fcmega import fcmega_backend
+
+            return fcmega_backend.Backend(led_count)
 
         raise RuntimeError("Invalid backend name")
 

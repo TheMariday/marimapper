@@ -97,7 +97,7 @@ def read_3d_map(filename):
 
 
 def write_2d_map(filename, data):
-    cprint(f"Writing 2D map to {filename}...")
+    cprint(f"Writing 2D map with {len(data)} leds to {filename}...", format=Col.BLUE)
 
     lines = ["index,u,v"]
 
@@ -111,7 +111,7 @@ def write_2d_map(filename, data):
 
 
 def write_3d_map(filename, data):
-    cprint(f"Writing 3D map to {filename}...")
+    cprint(f"Writing 3D map with {len(data)} leds to {filename}...", format=Col.BLUE)
 
     lines = ["index,x,y,z,xn,yn,zn,error"]
 

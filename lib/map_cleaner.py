@@ -59,8 +59,9 @@ def fill_gaps(led_map, max_dist_err=0.2, max_missing=5):
     max_distance = (1 + max_dist_err) * led_to_led_distance
 
     max_led_id = max(led_map.keys())
+    min_led_id = min(led_map.keys())
 
-    led_id = 0
+    led_id = min_led_id
     while led_id < max_led_id:
 
         while led_id in led_map and led_id < max_led_id:

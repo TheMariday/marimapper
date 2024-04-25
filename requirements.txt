@@ -6,3 +6,4 @@ requests
 open3d
 pycolmap
 parse
+pyserial
