@@ -8,7 +8,7 @@ class Backend:
 
     def __init__(self, led_count: int):
         self.fc_mega = FCMega()
-        self.leds = [(0, 0, 0) for _ in range(400)]
+        self.leds = [(0, 0, 0) for _ in range(led_count)]
         self.running = True
         self.update_thread = threading.Thread(target=self._run)
         self.update_thread.start()

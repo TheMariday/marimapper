@@ -33,7 +33,7 @@ class FCMega:
         return None
 
     def set_pixels(self, pixels, offset=0):
-        update_buffer = struct.pack('<BHH', self.DATA_MODE, offset, len(pixels))
+        update_buffer = struct.pack("<BHH", self.DATA_MODE, offset, len(pixels))
         for led in pixels:
             update_buffer += struct.pack("BBB", led[0], led[1], led[2])
         self.serial.write(update_buffer)
@@ -44,7 +44,7 @@ class FCMega:
 
     def update(self):
 
-        self.serial.write(struct.pack('<B', self.UPDATE_MODE))
+        self.serial.write(struct.pack("<B", self.UPDATE_MODE))
         update_response = struct.unpack("<B", self.serial.read(1))[0]
 
         return update_response == 1
