@@ -6,7 +6,7 @@ import pycolmap
 from lib.map_read_write import write_3d_map
 from lib.sfm.database_populator import populate
 from lib.sfm.model import get_map_and_cams
-from lib.utils import cprint, Col
+from lib.utils import cprint, Col, SupressLogging
 from lib import map_cleaner
 from lib.visualize_model import render_3d_model
 
@@ -33,14 +33,13 @@ class SFM:
             options.mapper.abs_pose_min_num_inliers = 9  # default 30
             options.mapper.init_min_num_inliers = 50  # used to be 100
 
-            pycolmap.logging.minloglevel = 3
-
-            pycolmap.incremental_mapping(
-                database_path=database_path,
-                image_path=temp_dir,
-                output_path=temp_dir,
-                options=options,
-            )
+            with SupressLogging():
+                pycolmap.incremental_mapping(
+                    database_path=database_path,
+                    image_path=temp_dir,
+                    output_path=temp_dir,
+                    options=options,
+                )
 
             if not os.path.exists(os.path.join(temp_dir, "0", "points3D.bin")):
                 return False
