@@ -14,27 +14,28 @@ def test_capture_sequence():
 
         mock_camera = MockCamera(device_id=view_index)
 
-        with Reconstructor(
+        reconstructor = Reconstructor(
             device=view_index,
             exposure=0,
             threshold=128,
+            led_backend=None,
             width=mock_camera.get_width(),
             height=mock_camera.get_height(),
             camera=mock_camera,
-        ) as reconstructor:
+        )
 
-            map_data = {}
+        map_data = {}
 
-            for led_id in range(24):
+        for led_id in range(24):
 
-                result = reconstructor.find_led(False)
+            result = reconstructor.find_led(False)
 
-                if result:
-                    map_data[led_id] = {"pos": result.get_center_normalised()}
+            if result:
+                map_data[led_id] = {"pos": result.get_center_normalised()}
 
-            filepath = os.path.join(output_dir_full, f"capture_{view_index:04}.csv")
+        filepath = os.path.join(output_dir_full, f"capture_{view_index:04}.csv")
 
-            write_2d_map(filepath, map_data)
+        write_2d_map(filepath, map_data)
 
 
 def test_capture_sequence_correctness():

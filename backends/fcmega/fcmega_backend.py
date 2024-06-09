@@ -17,7 +17,7 @@ class Backend:
         self.running = False
 
     def get_led_count(self):
-        return 24*400
+        return 24 * 400
 
     def _run(self):
         while self.running:

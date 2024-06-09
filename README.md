@@ -11,7 +11,7 @@
 This is a selection of tools to map LEDs into 2D and 3D space using only your webcam!
 
 > [!TIP]
-> All scripts can be run with the `--help` argument to list optional parameters such as resolution, exposure and latency.
+> All scripts can be run with the `--help` argument to list optional parameters such as resolution and exposure.
 
 ## Step 0: Install requirements
 
