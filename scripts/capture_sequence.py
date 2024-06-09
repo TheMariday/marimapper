@@ -12,6 +12,7 @@ from lib.reconstructor import Reconstructor
 from lib import utils
 from lib.map_read_write import write_2d_map
 from lib.utils import cprint, Col
+from lib.latency_controller import LatencyController
 
 
 if __name__ == "__main__":
@@ -33,9 +34,9 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--latency",
-        type=int,
-        help="The expected latency in ms from an LED being updated to that being updated in the camera",
-        default=1000,
+        type=float,
+        help="The expected latency in seconds from an LED being updated to that being updated in the camera",
+        default=1,
     )
 
     args = parser.parse_args()
@@ -43,6 +44,8 @@ if __name__ == "__main__":
     led_backend = utils.get_backend(args.backend, args.led_count, args.server)
 
     os.makedirs(args.output_dir, exist_ok=True)
+
+    latency_controller = LatencyController(default_latency_sec=args.latency)
 
     with Reconstructor(
         args.device, args.exposure, args.threshold, width=args.width, height=args.height
@@ -66,15 +69,19 @@ if __name__ == "__main__":
                 smoothing=0,
             ):
 
+                latency_start = time.time()
                 led_backend.set_led(led_id, True)
 
                 #  wait for LED to turn on
-                max_time = time.time() + float(args.latency) / 1000
                 result = None
-                while result is None and time.time() < max_time:
+                while (
+                    result is None
+                    and time.time() < latency_start + latency_controller.latency
+                ):
                     result = reconstructor.find_led(True)
 
                 if result:
+                    latency_controller.add_latency(time.time() - latency_start)
                     u, v = result.get_center_normalised()
                     map_data[led_id] = {"pos": (u, v)}
                     total_leds_found += 1

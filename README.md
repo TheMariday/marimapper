@@ -90,21 +90,6 @@ This will produce a timestamped CSV file in the `my_scan` folder with led index,
 
 Run `python scripts/visualise.py <filename>` to visualise 2D or 3D map files.
 
-<details>
-
-<summary>Speed this up with an extra step</summary>
-
-Place one of your addressable LEDs in front of your camera
-
-Run `python scripts/check_latency.py --backend fadecandy`
-
-Change `--backend` to whatever backend you're using.
-
-Once complete, the recommended latency will be listed in the console in milliseconds.
-This can be used in `capture_sequence.py` using the `--latency` argument to speed up scans
-
-</details>
-
 ## Step 4: Construct a 3D map
 
 [It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
