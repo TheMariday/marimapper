@@ -1,5 +1,6 @@
 import cv2
 import time
+import math
 from threading import Thread
 
 from lib.camera import Camera, CameraSettings
@@ -137,3 +138,16 @@ class Reconstructor:
             pass
 
         return result
+
+    def get_camera_motion(self, valid_leds, map_data, max_movement_perc=1):
+
+        for led_id in valid_leds:
+            result = self.enable_and_find_led(led_id, debug=True)
+            if result:
+                u_orig, v_orig = map_data[led_id]["pos"]
+                u, v = result.get_center_normalised()
+
+                distance_between_first_and_last = math.hypot(u_orig - u, v_orig - v)
+                return distance_between_first_and_last * 100
+
+        return 100

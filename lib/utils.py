@@ -62,6 +62,20 @@ def add_backend_args(parser):
     parser.add_argument("--server", type=str, help="Some backends require a server")
 
 
+def get_user_confirmation():
+
+    try:
+        uin = input()
+
+        while uin.lower() not in ("y", "n"):
+            uin = input()
+
+    except KeyboardInterrupt:
+        return False
+
+    return uin == "y"
+
+
 def get_backend(backend_name, server=""):
     try:
         if backend_name == "custom":

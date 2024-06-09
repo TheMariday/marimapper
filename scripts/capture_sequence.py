@@ -10,7 +10,7 @@ sys.path.append("./")
 from lib.reconstructor import Reconstructor
 from lib import utils
 from lib.map_read_write import write_2d_map
-from lib.utils import cprint, Col
+from lib.utils import cprint, Col, get_user_confirmation
 
 
 if __name__ == "__main__":
@@ -41,23 +41,19 @@ if __name__ == "__main__":
         height=args.height,
     )
 
-    first_scan = True
-
     while True:
 
         reconstructor.light()
         reconstructor.open_live_feed()
-        cprint(f"Start scan{'' if first_scan else ' again'}? [y/n]", Col.PURPLE)
-        uin = input()
-        while uin not in ("y", "n"):
-            uin = input()
+        cprint("Start scan? [y/n]", Col.PURPLE)
+
+        start_scan = get_user_confirmation()
 
         reconstructor.close_live_feed()
 
-        if uin == "n":
+        if not start_scan:
             break
 
-        first_scan = False
         reconstructor.dark()
 
         # The filename is made out of the date, then the resolution of the camera
@@ -68,7 +64,14 @@ if __name__ == "__main__":
 
         total_leds_found = 0
 
+        visible_leds = []
+
         led_count = led_backend.get_led_count()
+
+        last_camera_motion_check_time = time.time()
+        camera_motion_interval_sec = 5
+
+        capture_success = True
 
         for led_id in tqdm(
             range(led_count),
@@ -81,10 +84,28 @@ if __name__ == "__main__":
             result = reconstructor.enable_and_find_led(led_id, debug=True)
 
             if result:
+                visible_leds.append(led_id)
                 u, v = result.get_center_normalised()
                 map_data[led_id] = {"pos": (u, v)}
                 total_leds_found += 1
 
-        write_2d_map(os.path.join(args.output_dir, filename), map_data)
+            is_last = led_id == led_count - 1
+            camera_motion_check_overdue = (
+                time.time() - last_camera_motion_check_time
+            ) > camera_motion_interval_sec
 
-        cprint(f"{total_leds_found}/{led_count} leds found", Col.BLUE)
+            if camera_motion_check_overdue or is_last:
+                camera_motion = reconstructor.get_camera_motion(visible_leds, map_data)
+                last_camera_motion_check_time = time.time()
+
+                if camera_motion > 1.0:
+                    cprint(
+                        f"\nFailed to capture sequence as camera moved by {int(camera_motion)}%",
+                        format=Col.FAIL,
+                    )
+                    capture_success = False
+                    break
+
+        if capture_success:
+            write_2d_map(os.path.join(args.output_dir, filename), map_data)
+            cprint(f"{total_leds_found}/{led_count} leds found", Col.BLUE)
