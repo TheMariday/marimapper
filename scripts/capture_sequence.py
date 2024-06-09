@@ -9,8 +9,8 @@ sys.path.append("./")
 
 from lib.reconstructor import Reconstructor
 from lib import utils
-from lib.map_read_write import write_2d_map
 from lib.utils import cprint, Col, get_user_confirmation
+from lib.led_map import LEDMap2D
 
 
 if __name__ == "__main__":
@@ -58,9 +58,10 @@ if __name__ == "__main__":
 
         # The filename is made out of the date, then the resolution of the camera
         string_time = time.strftime("%Y%m%d-%H%M%S")
-        filename = f"capture_{string_time}.csv"
 
-        map_data = {}
+        filepath = os.path.join(args.output_dir, f"capture_{string_time}.csv")
+
+        led_map_2d = LEDMap2D()
 
         total_leds_found = 0
 
@@ -76,7 +77,7 @@ if __name__ == "__main__":
         for led_id in tqdm(
             range(led_count),
             unit="LEDs",
-            desc=f"Capturing sequence to {filename}",
+            desc=f"Capturing sequence to {filepath}",
             total=led_count,
             smoothing=0,
         ):
@@ -85,8 +86,7 @@ if __name__ == "__main__":
 
             if result:
                 visible_leds.append(led_id)
-                u, v = result.get_center_normalised()
-                map_data[led_id] = {"pos": (u, v)}
+                led_map_2d.add_detection(led_id, result)
                 total_leds_found += 1
 
             is_last = led_id == led_count - 1
@@ -95,7 +95,9 @@ if __name__ == "__main__":
             ) > camera_motion_interval_sec
 
             if camera_motion_check_overdue or is_last:
-                camera_motion = reconstructor.get_camera_motion(visible_leds, map_data)
+                camera_motion = reconstructor.get_camera_motion(
+                    visible_leds, led_map_2d
+                )
                 last_camera_motion_check_time = time.time()
 
                 if camera_motion > 1.0:
@@ -107,5 +109,5 @@ if __name__ == "__main__":
                     break
 
         if capture_success:
-            write_2d_map(os.path.join(args.output_dir, filename), map_data)
+            led_map_2d.write_to_file(filepath)
             cprint(f"{total_leds_found}/{led_count} leds found", Col.BLUE)

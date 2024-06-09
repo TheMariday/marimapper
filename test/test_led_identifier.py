@@ -3,7 +3,7 @@ from mock_camera import MockCamera
 
 
 def close(x, y):
-    return abs(x - y) < 1.0
+    return abs(x - y) < 0.000001
 
 
 def test_init():
@@ -15,10 +15,9 @@ def test_basic_image_loading():
 
     mock_camera = MockCamera()
 
-    led_results = led_finder.find_led(mock_camera.read())
-    u, v = led_results.get_center()
-    assert close(u, 257)
-    assert close(v, 177)
+    detection = led_finder.find_led(mock_camera.read())
+    assert close(detection.u, 0.4029418361244019)
+    assert close(detection.v, 0.4029538809144072)
 
 
 def test_none_found():

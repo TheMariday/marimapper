@@ -4,45 +4,7 @@ import numpy as np
 from parse import parse
 
 from lib.utils import cprint, Col
-
-
-def read_2d_map(filename):
-    cprint(f"Reading 2D map {filename}...")
-
-    if not os.path.exists(filename):
-        cprint(f"Cannot read 2d map {filename} as file does not exist", format=Col.FAIL)
-        return None
-
-    with open(filename, "r") as f:
-        lines = f.readlines()
-
-    headings = lines[0].strip().split(",")
-
-    if headings != ["index", "u", "v"]:
-        cprint(
-            f"Cannot read 2d map {filename} as headings don't match index,u,v",
-            format=Col.FAIL,
-        )
-        return None
-
-    data = {}
-
-    for i in range(1, len(lines)):
-
-        line = lines[i].strip()
-
-        values = parse("{index:^d},{u:^f},{v:^f}", line)
-        if values is not None:
-            data[values.named["index"]] = {
-                "pos": np.array([values.named["u"], values.named["v"]])
-            }
-        else:
-            cprint(f"Failed to read line {i} of {filename}: {line}", format=Col.WARNING)
-            continue
-
-    cprint(f"Read {len(data)} lines from 2D map {filename}...")
-
-    return data if data else None
+from lib.led_map import LEDMap2D
 
 
 def read_3d_map(filename):
@@ -96,20 +58,6 @@ def read_3d_map(filename):
     return data if data else None
 
 
-def write_2d_map(filename, data):
-    cprint(f"Writing 2D map with {len(data)} leds to {filename}...", format=Col.BLUE)
-
-    lines = ["index,u,v"]
-
-    for led_id in sorted(data.keys()):
-        lines.append(
-            f"{led_id}," f"{data[led_id]['pos'][0]:f}," f"{data[led_id]['pos'][1]:f}"
-        )
-
-    with open(filename, "w") as f:
-        f.write("\n".join(lines))
-
-
 def write_3d_map(filename, data):
     cprint(f"Writing 3D map with {len(data)} leds to {filename}...", format=Col.BLUE)
 
@@ -132,7 +80,7 @@ def write_3d_map(filename, data):
 
 
 def get_all_maps(directory):
-    maps = []
+    led_maps_2d = []
 
     for filename in sorted(os.listdir(directory)):
         full_path = os.path.join(directory, filename)
@@ -140,8 +88,8 @@ def get_all_maps(directory):
         if not os.path.isfile(full_path):
             continue
 
-        map = read_2d_map(full_path)
-        if map is not None:
-            maps.append(map)
+        led_map_2d = LEDMap2D(full_path)
+        if led_map_2d is not None:
+            led_maps_2d.append(led_map_2d)
 
-    return maps
+    return led_maps_2d

@@ -1,7 +1,7 @@
 import os
 
 from lib.reconstructor import Reconstructor
-from lib.map_read_write import write_2d_map, read_2d_map
+from lib.led_map import LEDMap2D
 from mock_camera import MockCamera
 
 
@@ -24,18 +24,18 @@ def test_capture_sequence():
             camera=mock_camera,
         )
 
-        map_data = {}
+        led_map_2d = LEDMap2D()
 
         for led_id in range(24):
 
             result = reconstructor.find_led(False)
 
             if result:
-                map_data[led_id] = {"pos": result.get_center_normalised()}
+                led_map_2d.add_detection(led_id, result)
 
         filepath = os.path.join(output_dir_full, f"capture_{view_index:04}.csv")
 
-        write_2d_map(filepath, map_data)
+        led_map_2d.write_to_file(filepath)
 
 
 def test_capture_sequence_correctness():
@@ -44,15 +44,13 @@ def test_capture_sequence_correctness():
 
         filepath = os.path.join(output_dir_full, f"capture_{view_index:04}.csv")
 
-        map_data = read_2d_map(filepath)
-
-        print(map_data)
+        led_map_2d = LEDMap2D(filepath)
 
         if view_index in [0, 4, 8]:
             assert (  # If it's a straight on view, there should be 9 points
-                len(map_data) == 9
+                len(led_map_2d) == 9
             )
         else:
             assert (  # If it's a diagonal-ish view, then we see 15 points
-                len(map_data) == 15
+                len(led_map_2d) == 15
             )

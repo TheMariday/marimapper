@@ -139,15 +139,17 @@ class Reconstructor:
 
         return result
 
-    def get_camera_motion(self, valid_leds, map_data, max_movement_perc=1):
+    def get_camera_motion(self, valid_leds, map_data_2d):
 
         for led_id in valid_leds:
-            result = self.enable_and_find_led(led_id, debug=True)
-            if result:
-                u_orig, v_orig = map_data[led_id]["pos"]
-                u, v = result.get_center_normalised()
+            detection_new = self.enable_and_find_led(led_id, debug=True)
+            if detection_new:
+                detection_orig = map_data_2d.get_detection(led_id)
 
-                distance_between_first_and_last = math.hypot(u_orig - u, v_orig - v)
+                distance_between_first_and_last = math.hypot(
+                    detection_orig.u - detection_new.u,
+                    detection_orig.v - detection_new.v,
+                )
                 return distance_between_first_and_last * 100
 
         return 100
