@@ -52,9 +52,13 @@ in [backends/custom/custom_backend.py](backends/custom/custom_backend.py):
 
 class Backend:
 
-    def __init__(self, led_count: int):
+    def __init__(self):
         # Remove the following line after you have implemented the set_led function!
         raise NotImplementedError("Could not load backend as it has not been implemented, go implement it!")
+
+    def get_led_count(self):
+        # return the number of LEDs in your system here
+        return 0
 
     def set_led(self, led_index: int, on: bool):
         # Write your code for controlling your LEDs here
@@ -82,9 +86,9 @@ argument.
 ## Step 3: Capture a 2D map
 
 Set up your LEDs in front of your camera and
-run `python scripts/capture_sequence.py my_scan --led_count 64 --backend fadecandy`
+run `python scripts/capture_sequence.py my_scan --backend fadecandy`
 
-Change `--led_count` to however many LEDs you want to scan and `--backend` to whatever backend you're using
+Change `--backend` to whatever backend you're using
 
 This will produce a timestamped CSV file in the `my_scan` folder with led index, u and v values.
 

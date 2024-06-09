@@ -29,10 +29,6 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--led_count", type=int, help="How many LEDs are in your system", required=True
-    )
-
-    parser.add_argument(
         "--latency",
         type=float,
         help="The expected latency in seconds from an LED being updated to that being updated in the camera",
@@ -41,7 +37,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    led_backend = utils.get_backend(args.backend, args.led_count, args.server)
+    led_backend = utils.get_backend(args.backend, args.server)
 
     os.makedirs(args.output_dir, exist_ok=True)
 
@@ -61,11 +57,13 @@ if __name__ == "__main__":
 
             total_leds_found = 0
 
+            led_count = led_backend.get_led_count()
+
             for led_id in tqdm(
-                range(args.led_count),
+                range(led_count),
                 unit="LEDs",
                 desc=f"Capturing sequence to {filename}",
-                total=args.led_count,
+                total=led_count,
                 smoothing=0,
             ):
 
@@ -96,7 +94,7 @@ if __name__ == "__main__":
 
             cv2.destroyWindow("MariMapper")
 
-            cprint(f"{total_leds_found}/{args.led_count} leds found", Col.BLUE)
+            cprint(f"{total_leds_found}/{led_count} leds found", Col.BLUE)
             cprint("Scan complete, scan again? [y/n]", Col.PURPLE)
             uin = input()
             while uin not in ("y", "n"):

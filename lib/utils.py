@@ -62,20 +62,20 @@ def add_backend_args(parser):
     parser.add_argument("--server", type=str, help="Some backends require a server")
 
 
-def get_backend(backend_name, led_count, server=""):
+def get_backend(backend_name, server=""):
     try:
         if backend_name == "custom":
             from backends.custom import custom_backend
 
-            return custom_backend.Backend(led_count)
+            return custom_backend.Backend()
 
         if backend_name == "fadecandy":
             from backends.fadecandy import fadecandy_backend
 
             if server:
-                return fadecandy_backend.Backend(led_count, server)
+                return fadecandy_backend.Backend(server)
             else:
-                return fadecandy_backend.Backend(led_count)
+                return fadecandy_backend.Backend()
 
         if backend_name == "wled":
             from backends.wled import wled_backend
@@ -88,12 +88,12 @@ def get_backend(backend_name, led_count, server=""):
         if backend_name == "lcm":
             from backends.lcm import lcm_backend
 
-            return lcm_backend.Backend(led_count)
+            return lcm_backend.Backend()
 
         if backend_name == "fcmega":
             from backends.fcmega import fcmega_backend
 
-            return fcmega_backend.Backend(led_count)
+            return fcmega_backend.Backend()
 
         raise RuntimeError("Invalid backend name")
 

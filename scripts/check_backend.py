@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     led_count = args.reference_led + 1
 
-    led_backend = utils.get_backend(args.backend, led_count, args.server)
+    led_backend = utils.get_backend(args.backend, args.server)
 
     cprint("Press ctrl-c to cancel")
 
