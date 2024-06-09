@@ -41,7 +41,24 @@ if __name__ == "__main__":
         height=args.height,
     )
 
+    first_scan = True
+
     while True:
+
+        reconstructor.light()
+        reconstructor.open_live_feed()
+        cprint(f"Start scan{'' if first_scan else ' again'}? [y/n]", Col.PURPLE)
+        uin = input()
+        while uin not in ("y", "n"):
+            uin = input()
+
+        reconstructor.close_live_feed()
+
+        if uin == "n":
+            break
+
+        first_scan = False
+        reconstructor.dark()
 
         # The filename is made out of the date, then the resolution of the camera
         string_time = time.strftime("%Y%m%d-%H%M%S")
@@ -71,10 +88,3 @@ if __name__ == "__main__":
         write_2d_map(os.path.join(args.output_dir, filename), map_data)
 
         cprint(f"{total_leds_found}/{led_count} leds found", Col.BLUE)
-        cprint("Scan complete, scan again? [y/n]", Col.PURPLE)
-        uin = input()
-        while uin not in ("y", "n"):
-            uin = input()
-
-        if uin == "n":
-            break

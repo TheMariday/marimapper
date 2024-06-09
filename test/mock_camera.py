@@ -52,5 +52,7 @@ class MockCamera:
         filename = f"test/MariMapper-Test-Data/9_point_box/cam_{self.device_id}/capture_{frame_id:04}.png"
         return cv2.cvtColor(cv2.imread(filename), cv2.COLOR_BGR2GRAY)
 
-    def ditch_frames(self, count=20):
+    def set_exposure_and_wait(
+        self, exposure, max_frames_to_wait=20, min_brightness_change=2.0
+    ):
         pass

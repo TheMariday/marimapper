@@ -114,12 +114,26 @@ class Camera:
         if not self.device.set(cv2.CAP_PROP_EXPOSURE, exposure):
             cprint(f"Failed to set exposure to {exposure}", Col.FAIL)
 
-    def read(self):
+    def set_exposure_and_wait(
+        self, exposure, max_frames_to_wait=20, min_brightness_change=2.0
+    ):
+
+        initial_mean = cv2.mean(self.read())[0]
+
+        self.set_exposure(exposure)
+
+        for i in range(max_frames_to_wait):
+            mean = cv2.mean(self.read())[0]
+            ratio = mean / initial_mean
+            if ratio > min_brightness_change or 1 / ratio > min_brightness_change:
+                return
+
+    def read(self, color=False):
         ret_val, image = self.device.read()
         if not ret_val:
             cprint("Failed to grab frame", Col.FAIL)
-        return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    def ditch_frames(self, count=20):
-        for _ in range(count):
-            self.read()
+        if not color:
+            return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        else:
+            return image

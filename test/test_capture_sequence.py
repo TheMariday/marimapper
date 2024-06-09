@@ -16,7 +16,7 @@ def test_capture_sequence():
 
         reconstructor = Reconstructor(
             device=view_index,
-            exposure=0,
+            dark_exposure=-10,
             threshold=128,
             led_backend=None,
             width=mock_camera.get_width(),
