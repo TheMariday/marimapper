@@ -122,7 +122,7 @@ class Camera:
 
         self.set_exposure(exposure)
 
-        for i in range(max_frames_to_wait):
+        for _ in range(max_frames_to_wait):
             mean = cv2.mean(self.read())[0]
             ratio = mean / initial_mean
             if ratio > min_brightness_change or 1 / ratio > min_brightness_change:
