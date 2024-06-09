@@ -23,13 +23,10 @@ if __name__ == "__main__":
         )
         quit()
 
-    with Reconstructor(
-        args.device, args.exposure, args.threshold, width=args.width, height=args.height
-    ) as reconstructor:
+    reconstructor = Reconstructor(args.device, args.exposure, args.threshold, None, width=args.width, height=args.height)
 
-        cprint(
-            "Camera connected! Hold an LED up to the camera to check LED identification",
-            format=Col.BLUE,
-        )
-
-        reconstructor.show_debug()
+    cprint(
+        "Camera connected! Hold an LED up to the camera to check LED identification",
+        format=Col.BLUE,
+    )
+    reconstructor.show_debug()

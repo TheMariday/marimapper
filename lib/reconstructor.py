@@ -89,6 +89,10 @@ class Reconstructor:
 
     def show_debug(self):
 
+        self.dark()
+
+        cv2.namedWindow("MariMapper", cv2.WINDOW_AUTOSIZE)
+
         while True:
 
             if cv2.getWindowProperty("MariMapper", cv2.WND_PROP_VISIBLE) <= 0:
