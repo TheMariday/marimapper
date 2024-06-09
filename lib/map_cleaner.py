@@ -41,7 +41,7 @@ def rescale(led_map, cameras=(), led_to_led_dist=1.0):
 
     scale = (1.0 / find_inter_led_distance(led_map)) * led_to_led_dist
 
-    for led_id in led_map:
+    for led_id in led_map.data:
         led_map[led_id]["pos"] *= scale
         led_map[led_id]["normal"] *= scale
         led_map[led_id]["error"] *= scale

@@ -4,9 +4,9 @@ from pathlib import Path
 
 sys.path.append("./")
 
-from lib.map_read_write import get_all_maps
 from lib.sfm.sfm import SFM
 from lib.utils import cprint, Col
+from lib.led_map_2d import get_all_2d_led_maps
 
 if __name__ == "__main__":
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    maps = get_all_maps(args.input_directory)
+    maps = get_all_2d_led_maps(args.input_directory)
 
     if not maps:
         cprint(f"Failed to load any maps from {args.input_directory}", format=Col.FAIL)

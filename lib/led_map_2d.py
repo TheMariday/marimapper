@@ -2,10 +2,10 @@ from lib.utils import cprint, Col
 import os
 from parse import parse
 
+
 class LEDDetection:
 
     def __init__(self, u, v, contours=()):
-
         self.u = u
         self.v = v
         self.contours = contours
@@ -18,8 +18,9 @@ class LEDMap2D:
 
     def __init__(self, filepath=None):
         self._detections = {}
+        self.valid = True
         if filepath:
-            self._load(filepath)
+            self.valid = self._load(filepath)
 
     def _load(self, filename):
         cprint(f"Reading 2D map {filename}...")
@@ -28,7 +29,7 @@ class LEDMap2D:
             cprint(
                 f"Cannot read 2d map {filename} as file does not exist", format=Col.FAIL
             )
-            return None
+            return False
 
         with open(filename, "r") as f:
             lines = f.readlines()
@@ -40,7 +41,7 @@ class LEDMap2D:
                 f"Cannot read 2d map {filename} as headings don't match index,u,v",
                 format=Col.FAIL,
             )
-            return None
+            return False
 
         for i in range(1, len(lines)):
 
@@ -85,3 +86,19 @@ class LEDMap2D:
 
         with open(filename, "w") as f:
             f.write("\n".join(lines))
+
+
+def get_all_2d_led_maps(directory):
+    led_maps_2d = []
+
+    for filename in sorted(os.listdir(directory)):
+        full_path = os.path.join(directory, filename)
+
+        if not os.path.isfile(full_path):
+            continue
+
+        led_map_2d = LEDMap2D(full_path)
+        if led_map_2d is not None:
+            led_maps_2d.append(led_map_2d)
+
+    return led_maps_2d

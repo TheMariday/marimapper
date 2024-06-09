@@ -43,8 +43,8 @@ def render_3d_model(led_map, cams=(), mesh=None, strips=None):
 
     pcd = open3d.geometry.PointCloud()
 
-    xyz = [led_map[led_id]["pos"] for led_id in led_map]
-    normals = [led_map[led_id]["normal"] for led_id in led_map]
+    xyz = [led_map[led_id]["pos"] for led_id in led_map.keys()]
+    normals = [led_map[led_id]["normal"] for led_id in led_map.keys()]
 
     pcd.points = open3d.utility.Vector3dVector(xyz)
     pcd.normals = open3d.utility.Vector3dVector(normals)

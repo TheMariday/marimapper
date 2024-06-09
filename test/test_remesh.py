@@ -1,10 +1,10 @@
-from lib.map_read_write import get_all_maps
+from lib.led_map_2d import get_all_2d_led_maps
 from lib.sfm.sfm import SFM
 from lib.remesher import remesh
 
 
 def test_remesh_higbeam():
-    highbeam_map = get_all_maps("test/MariMapper-Test-Data/highbeam")
+    highbeam_map = get_all_2d_led_maps("test/MariMapper-Test-Data/highbeam")
 
     sfm = SFM(highbeam_map)
 

@@ -4,9 +4,9 @@ import sys
 sys.path.append("./")
 
 from lib.remesher import remesh, save_mesh
-from lib.map_read_write import read_3d_map
 from lib.visualize_model import render_3d_model
 from lib.utils import cprint, Col
+from lib.led_map_3d import LEDMap3D
 
 if __name__ == "__main__":
 
@@ -32,7 +32,7 @@ if __name__ == "__main__":
         cprint("Failed to remesh, file output extension must by .ply", format=Col.FAIL)
         quit()
 
-    led_map = read_3d_map(args.map_filename)
+    led_map = LEDMap3D(args.map_filename)
 
     if led_map is None:
         quit()

@@ -1,6 +1,6 @@
 import cv2
 from lib.utils import cprint, Col
-from lib.led_map import LEDDetection
+from lib.led_map_2d import LEDDetection
 
 
 class LedFinder:

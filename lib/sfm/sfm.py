@@ -3,7 +3,6 @@ from tempfile import TemporaryDirectory
 
 import pycolmap
 
-from lib.map_read_write import write_3d_map
 from lib.sfm.database_populator import populate
 from lib.sfm.model import get_map_and_cams
 from lib.utils import cprint, Col, SupressLogging
@@ -72,4 +71,4 @@ class SFM:
             )
 
     def save_points(self, filename):
-        write_3d_map(filename, self.maps_3d)
+        self.maps_3d.write_to_file(filename)

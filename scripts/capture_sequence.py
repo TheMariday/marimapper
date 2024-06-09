@@ -10,7 +10,7 @@ sys.path.append("./")
 from lib.reconstructor import Reconstructor
 from lib import utils
 from lib.utils import cprint, Col, get_user_confirmation
-from lib.led_map import LEDMap2D
+from lib.led_map_2d import LEDMap2D
 
 
 if __name__ == "__main__":

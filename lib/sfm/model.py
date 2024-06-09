@@ -9,6 +9,7 @@ from lib.sfm.read_write_model import (
     read_points3D_binary,
 )
 from lib.remesher import fix_normals
+from lib.led_map_3d import LEDMap3D
 
 
 def get_map_and_cams(path):
@@ -98,4 +99,4 @@ def get_map_and_cams(path):
 
     led_map = fix_normals(led_map)
 
-    return led_map, cams
+    return LEDMap3D(led_map), cams

@@ -1,7 +1,7 @@
 import os
 
 from lib.reconstructor import Reconstructor
-from lib.led_map import LEDMap2D
+from lib.led_map_2d import LEDMap2D
 from mock_camera import MockCamera
 
 
