@@ -1,8 +1,10 @@
 import colorsys
-
+import time
 import cv2
 import numpy as np
 import open3d
+from lib.led_map_3d import LEDMap3D
+from lib.file_monitor import FileMonitor
 
 
 def render_2d_model(led_map):
@@ -27,71 +29,60 @@ def render_2d_model(led_map):
     cv2.waitKey(0)
 
 
-def render_3d_model(led_map, cams=(), mesh=None, strips=None):
-    if not led_map:
-        return
+class Renderer3D:
 
-    __vis = open3d.visualization.Visualizer()
-    __vis.create_window(window_name="MariMapper", width=640, height=640)
-
-    cam_geometry = []
-    for K, R, t, width, height in cams:
-        cam_geometry.extend(draw_camera(K, R, t, width, height))
-
-    for c in cam_geometry:
-        __vis.add_geometry(c)
-
-    pcd = open3d.geometry.PointCloud()
-
-    xyz = [led_map[led_id]["pos"] for led_id in led_map.keys()]
-    normals = [led_map[led_id]["normal"] for led_id in led_map.keys()]
-
-    pcd.points = open3d.utility.Vector3dVector(xyz)
-    pcd.normals = open3d.utility.Vector3dVector(normals)
-
-    if strips is not None:
-
-        strip_points = []
-        strip_connections = []
-        colors = []
-
-        for strip in strips:
-            if not strip:
-                continue
-            strip_points.append(led_map[strip[0]]["pos"])
-            for i in range(1, len(strip)):
-                strip_points.append(led_map[strip[i]]["pos"])
-                strip_connections.append([len(strip_points) - 2, len(strip_points) - 1])
-                colors.append([1.0, 1.0, 1.0])
-
-        line_set = open3d.geometry.LineSet(
-            points=open3d.utility.Vector3dVector(strip_points),
-            lines=open3d.utility.Vector2iVector(strip_connections),
+    def __init__(self, filename):
+        self.file_monitor = FileMonitor(filename)
+        self._vis = open3d.visualization.Visualizer()
+        self._vis.create_window(
+            window_name=f"MariMapper - {filename}", width=640, height=640
         )
-        line_set.colors = open3d.utility.Vector3dVector(colors)
 
-        __vis.add_geometry(line_set)
+        self.point_cloud = open3d.geometry.PointCloud()
 
-    __vis.add_geometry(pcd)
-    if mesh is not None:
-        __vis.add_geometry(mesh)
-    __vis.poll_events()
-    __vis.update_renderer()
+        view_ctl = self._vis.get_view_control()
+        view_ctl.set_up((0, 1, 0))
+        view_ctl.set_lookat((0, 0, 0))
+        view_ctl.set_zoom(0.3)
 
-    view_ctl = __vis.get_view_control()
-    view_ctl.set_up((0, 1, 0))
-    view_ctl.set_lookat((0, 0, 0))
-    view_ctl.set_zoom(0.3)
+        render_options = self._vis.get_render_option()
+        render_options.point_show_normal = True
+        render_options.point_color_option = (
+            open3d.visualization.PointColorOption.YCoordinate
+        )
+        render_options.background_color = [0.2, 0.2, 0.2]
 
-    render_options = __vis.get_render_option()
-    render_options.point_show_normal = True
-    render_options.point_color_option = (
-        open3d.visualization.PointColorOption.YCoordinate
-    )
-    render_options.background_color = [0.2, 0.2, 0.2]
+    def __del__(self):
+        self._vis.destroy_window()
 
-    __vis.run()
-    __vis.destroy_window()
+    def run(self):
+        self.reload_geometry(first=True)
+        last_file_check = time.time()
+        while True:
+            if time.time() - last_file_check > 1:
+                last_file_check = time.time()
+                if self.file_monitor.file_changed():
+                    self.reload_geometry()
+
+            if not self._vis.poll_events():
+                break
+
+            self._vis.update_renderer()
+
+    def reload_geometry(self, first=False):
+
+        led_map = LEDMap3D(filename=self.file_monitor.filepath)
+
+        xyz = [led_map[led_id]["pos"] for led_id in led_map.keys()]
+        normals = [led_map[led_id]["normal"] for led_id in led_map.keys()]
+
+        self.point_cloud.points = open3d.utility.Vector3dVector(xyz)
+        self.point_cloud.normals = open3d.utility.Vector3dVector(normals)
+
+        if first:
+            self._vis.add_geometry(self.point_cloud, reset_bounding_box=True)
+
+        self._vis.update_geometry(self.point_cloud)
 
 
 def draw_camera(K, R, t, w, h):

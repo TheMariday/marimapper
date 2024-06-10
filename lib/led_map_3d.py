@@ -9,13 +9,14 @@ from lib.utils import cprint, Col
 
 class LEDMap3D:
 
-    def __init__(self, data, filename=None):
+    def __init__(self, data=None, filename=None):
 
         self.valid = True
+        self.data = {}
+        if data is not None:
+            self.data = data
         if filename is not None:
             self.valid = self._load(filename)
-
-        self.data = data
 
     def __setitem__(self, led_index, led_data):
         self.data[led_index] = led_data
@@ -80,6 +81,7 @@ class LEDMap3D:
                     continue
 
         cprint(f"Read {len(self.data)} lines from 3D map {filename}...")
+        return True
 
     def write_to_file(self, filename):
         cprint(

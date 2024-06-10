@@ -3,9 +3,8 @@ import sys
 
 sys.path.append("./")
 
-from lib.visualize_model import render_2d_model, render_3d_model
+from lib.visualize_model import render_2d_model, Renderer3D
 from lib.led_map_2d import LEDMap2D
-from lib.led_map_3d import LEDMap3D
 
 
 if __name__ == "__main__":
@@ -20,11 +19,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    map_data = LEDMap2D(args.filename)
+    map_data = LEDMap2D(filepath=args.filename)
 
     if map_data.valid:
         render_2d_model(map_data)
     else:
-        map_data = LEDMap3D(args.filename)
-        if map_data.valid:
-            render_3d_model(map_data)
+        r3d = Renderer3D(filename=args.filename)
+        r3d.run()

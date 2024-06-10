@@ -7,6 +7,7 @@ sys.path.append("./")
 from lib.sfm.sfm import SFM
 from lib.utils import cprint, Col
 from lib.led_map_2d import get_all_2d_led_maps
+from lib.visualize_model import Renderer3D
 
 if __name__ == "__main__":
 
@@ -60,4 +61,5 @@ if __name__ == "__main__":
         quit()
 
     sfm.save_points(Path(args.output_file))
-    sfm.display()
+    r3d = Renderer3D(Path(args.output_file))
+    r3d.run()

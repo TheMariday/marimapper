@@ -7,7 +7,6 @@ from lib.sfm.database_populator import populate
 from lib.sfm.model import get_map_and_cams
 from lib.utils import cprint, Col, SupressLogging
 from lib import map_cleaner
-from lib.visualize_model import render_3d_model
 
 
 class SFM:
@@ -53,11 +52,6 @@ class SFM:
                 cprint(f"Interpolated {leds_interpolated} leds", format=Col.BLUE)
 
             return True
-
-    def display(self):
-        # This would be good if it could be saved to disk as well
-        strips = map_cleaner.extract_strips(self.maps_3d)
-        render_3d_model(self.maps_3d, self.cams, self.mesh, strips=strips)
 
     def print_points(self):
         for led_id in sorted(self.maps_3d.keys(), reverse=True):

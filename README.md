@@ -10,6 +10,10 @@
 
 This is a selection of tools to map LEDs into 2D and 3D space using only your webcam!
 
+> [!CAUTION]
+> This tool is currently undergoing a rework (10/06/2024) and therefore some features such as rendering strips and cameras may not be available
+
+
 > [!TIP]
 > All scripts can be run with the `--help` argument to list optional parameters such as resolution and exposure.
 
