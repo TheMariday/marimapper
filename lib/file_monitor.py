@@ -11,7 +11,10 @@ class FileMonitor:
 
         self.current_hash = self._get_hash()
 
+
     def _get_hash(self):
+        if not os.path.isfile(self.filepath):
+            return None
         with open(self.filepath, "rb") as f:
             return hashlib.md5(f.read()).hexdigest()
 
