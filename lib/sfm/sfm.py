@@ -28,7 +28,11 @@ class SFM(Process):
 
     def reload(self):
         maps_2d = get_all_2d_led_maps(self.directory_monitor.directory)
+        if len(maps_2d) < 2:
+            return None
         map_3d = self.process(maps_2d, self.rescale, self.interpolate)
+        if map_3d is None:
+            return None
         map_3d.write_to_file(self.directory_monitor.directory / "reconstruction.csv")
         return map_3d
 

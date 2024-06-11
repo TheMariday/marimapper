@@ -20,10 +20,11 @@ class LedFinder:
         if led_response_count == 0:
             return None
         elif led_response_count > 1:
-            cprint(
-                f"Warning! More than 1 light source found, found {led_response_count} light sources",
-                format=Col.WARNING,
-            )
+            pass
+            #cprint(
+            #    f"Warning! More than 1 light source found, found {led_response_count} light sources",
+            #    format=Col.WARNING,
+            #)
 
         moments = cv2.moments(image_thresh)
 
