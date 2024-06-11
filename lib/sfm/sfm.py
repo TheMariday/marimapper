@@ -3,7 +3,7 @@ from tempfile import TemporaryDirectory
 from pathlib import Path
 import pycolmap
 from multiprocessing import Process
-
+import time
 from lib.sfm.database_populator import populate
 from lib.sfm.model import get_map_and_cams
 from lib.utils import cprint, Col, SupressLogging
@@ -21,27 +21,32 @@ class SFM(Process):
         self.interpolate = interpolate
 
     def run(self):
+        print("running sfm, reloading")
         self.reload()
         while True:
             self.directory_monitor.wait_for_change()
             self.reload()
 
     def reload(self):
+        print("reloading")
         maps_2d = get_all_2d_led_maps(self.directory_monitor.directory)
         map_3d, cams = self.process(maps_2d, self.rescale, self.interpolate)
+        if map_3d is None:
+            return
         map_3d.write_to_file(
             self.directory_monitor.directory / "reconstruction.csv"
         )
-        cams.write_to_file(
-            self.directory_monitor.directory / "cameras.csv"
-        )
+        #cams.write_to_file(
+        #    self.directory_monitor.directory / "cameras.csv"
+        #)
+        print("reloaded")
         return map_3d
 
     @staticmethod
     def process(maps_2d, rescale=False, interpolate=False):
 
         if len(maps_2d) < 2:
-            return None
+            return None, None
 
         with TemporaryDirectory() as temp_dir:
             database_path = os.path.join(temp_dir, "database.db")
@@ -63,7 +68,7 @@ class SFM(Process):
                 )
 
             if not os.path.exists(os.path.join(temp_dir, "0", "points3D.bin")):
-                return None
+                return None, None
 
             map_3d, cams = get_map_and_cams(temp_dir)
 

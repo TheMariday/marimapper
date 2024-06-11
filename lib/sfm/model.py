@@ -4,7 +4,6 @@ import numpy as np
 
 from lib.sfm.read_write_model import (
     qvec2rotmat,
-    read_cameras_binary,
     read_images_binary,
     read_points3D_binary,
 )
@@ -41,10 +40,9 @@ def get_map_and_cams(path):
 
     cams = CameraMap3D()
 
-    cameras_bin = read_cameras_binary(os.path.join(path, "0", "cameras.bin"))
     images_bin = read_images_binary(os.path.join(path, "0", "images.bin"))
 
-    for camera_id, img in enumerate(images_bin.values()):
+    for img in images_bin.values():
         # rotation
         R = qvec2rotmat(img.qvec)
 
@@ -56,14 +54,11 @@ def get_map_and_cams(path):
 
         t -= center
 
-        # intrinsics
-        cam = cameras_bin[img.camera_id]
-
-        cams.add_cam(camera_id, t, img.qvec)
+        cams.add_cam(img.id, t, img.qvec)
 
     for led_id in led_map:
         all_views = np.array(
-            [cams.get_cam(view) for view in led_map[led_id]["views"]]
+            [cams.get_cam(view)["position"] for view in led_map[led_id]["views"]]
         )
         led_map[led_id]["normal"] = (
             np.average(all_views, axis=0) - led_map[led_id]["pos"]
