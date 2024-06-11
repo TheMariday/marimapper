@@ -29,9 +29,7 @@ class SFM(Process):
     def reload(self):
         maps_2d = get_all_2d_led_maps(self.directory_monitor.directory)
         map_3d = self.process(maps_2d, self.rescale, self.interpolate)
-        map_3d.write_to_file(
-            self.directory_monitor.directory / "reconstruction.csv"
-        )
+        map_3d.write_to_file(self.directory_monitor.directory / "reconstruction.csv")
         return map_3d
 
     @staticmethod
