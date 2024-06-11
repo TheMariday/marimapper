@@ -23,12 +23,7 @@ class LEDMap2D:
             self.valid = self._load(filepath)
 
     def _load(self, filename):
-        cprint(f"Reading 2D map {filename}...")
-
         if not os.path.exists(filename):
-            cprint(
-                f"Cannot read 2d map {filename} as file does not exist", format=Col.FAIL
-            )
             return False
 
         with open(filename, "r") as f:
@@ -37,10 +32,6 @@ class LEDMap2D:
         headings = lines[0].strip().split(",")
 
         if headings != ["index", "u", "v"]:
-            cprint(
-                f"Cannot read 2d map {filename} as headings don't match index,u,v",
-                format=Col.FAIL,
-            )
             return False
 
         for i in range(1, len(lines)):
@@ -59,7 +50,7 @@ class LEDMap2D:
                 )
                 continue
 
-        cprint(f"Read {len(self)} lines from 2D map {filename}...")
+        return True
 
     def __len__(self):
         return len(self._detections)
@@ -98,7 +89,7 @@ def get_all_2d_led_maps(directory):
             continue
 
         led_map_2d = LEDMap2D(full_path)
-        if led_map_2d is not None:
+        if led_map_2d.valid:
             led_maps_2d.append(led_map_2d)
 
     return led_maps_2d

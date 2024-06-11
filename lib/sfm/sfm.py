@@ -1,29 +1,44 @@
 import os
 from tempfile import TemporaryDirectory
-
+from pathlib import Path
 import pycolmap
+from multiprocessing import Process
 
 from lib.sfm.database_populator import populate
 from lib.sfm.model import get_map_and_cams
 from lib.utils import cprint, Col, SupressLogging
 from lib import map_cleaner
+from lib.file_monitor import DirectoryMonitor
+from lib.led_map_2d import get_all_2d_led_maps
 
 
-class SFM:
+class SFM(Process):
 
-    def __init__(self, maps):
-        self.maps_2d = maps
+    def __init__(self, directory: Path, rescale=False, interpolate=False):
+        super().__init__()
+        self.directory_monitor = DirectoryMonitor(directory)
+        self.rescale = rescale
+        self.interpolate = interpolate
 
-        self.cams = None
-        self.maps_3d = None
-        self.mesh = None
+    def run(self):
+        self.reload()
+        while True:
+            self.directory_monitor.wait_for_change()
+            self.reload()
 
-    def process(self, rescale=False, interpolate=False):
+    def reload(self):
+        maps_2d = get_all_2d_led_maps(self.directory_monitor.directory)
+        self.process(maps_2d, self.rescale, self.interpolate)
+
+    def process(self, maps_2d, rescale=False, interpolate=False):
+
+        if len(maps_2d) < 2:
+            return
 
         with TemporaryDirectory() as temp_dir:
             database_path = os.path.join(temp_dir, "database.db")
 
-            populate(database_path, self.maps_2d)
+            populate(database_path, maps_2d)
 
             options = pycolmap.IncrementalPipelineOptions()
             options.triangulation.ignore_two_view_tracks = False  # used to be true
@@ -42,27 +57,15 @@ class SFM:
             if not os.path.exists(os.path.join(temp_dir, "0", "points3D.bin")):
                 return False
 
-            self.maps_3d, self.cams = get_map_and_cams(temp_dir)
+            map_3d, cams = get_map_and_cams(temp_dir)
 
             if rescale:
-                map_cleaner.rescale(self.maps_3d, self.cams)
+                map_cleaner.rescale(map_3d, cams)
 
             if interpolate:
-                leds_interpolated = map_cleaner.fill_gaps(self.maps_3d)
+                leds_interpolated = map_cleaner.fill_gaps(map_3d)
                 cprint(f"Interpolated {leds_interpolated} leds", format=Col.BLUE)
 
-            return True
-
-    def print_points(self):
-        for led_id in sorted(self.maps_3d.keys(), reverse=True):
-            cprint(
-                f"{led_id}:\t"
-                f"x: {self.maps_3d[led_id]['pos'][0]}, "
-                f"y: {self.maps_3d[led_id]['pos'][1]}, "
-                f"z: {self.maps_3d[led_id]['pos'][2]}, "
-                f"error: {self.maps_3d[led_id]['error']}",
-                format=Col.BLUE,
+            map_3d.write_to_file(
+                self.directory_monitor.directory / "reconstruction.csv"
             )
-
-    def save_points(self, filename):
-        self.maps_3d.write_to_file(filename)

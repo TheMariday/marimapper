@@ -11,7 +11,6 @@ class FileMonitor:
 
         self.current_hash = self._get_hash()
 
-
     def _get_hash(self):
         if not os.path.isfile(self.filepath):
             return None
@@ -23,6 +22,10 @@ class FileMonitor:
         self.current_hash = self._get_hash()
         return self.current_hash != last_hash
 
+    def wait_for_existence(self):
+        while not os.path.isfile(self.filepath):
+            time.sleep(1)
+
     def wait_for_change(self):
         while True:
             if self.file_changed():
@@ -33,14 +36,14 @@ class FileMonitor:
 
 class DirectoryMonitor:
 
-    def __init__(self, filepath: Path):
-        self.filepath = filepath
+    def __init__(self, directory: Path):
+        self.directory = directory
         self.current_files = self._get_filenames()
 
     def _get_filenames(self):
         return [
-            self.filepath / filename
-            for filename in os.listdir(self.filepath)
+            self.directory / filename
+            for filename in os.listdir(self.directory)
             if filename.endswith(".csv")
         ]
 

@@ -3,6 +3,7 @@ import time
 import cv2
 import numpy as np
 import open3d
+from multiprocessing import Process
 from lib.led_map_3d import LEDMap3D
 from lib.file_monitor import FileMonitor
 
@@ -29,13 +30,24 @@ def render_2d_model(led_map):
     cv2.waitKey(0)
 
 
-class Renderer3D:
+class Renderer3D(Process):
 
     def __init__(self, filename):
+        super().__init__()
         self.file_monitor = FileMonitor(filename)
+        self._vis = None
+
+    def __del__(self):
+        if self._vis is not None:
+            self._vis.destroy_window()
+
+    def _initialise_visualiser(self):
+
         self._vis = open3d.visualization.Visualizer()
         self._vis.create_window(
-            window_name=f"MariMapper - {filename}", width=640, height=640
+            window_name=f"MariMapper - {self.file_monitor.filepath}",
+            width=640,
+            height=640,
         )
 
         self.point_cloud = open3d.geometry.PointCloud()
@@ -52,10 +64,12 @@ class Renderer3D:
         )
         render_options.background_color = [0.2, 0.2, 0.2]
 
-    def __del__(self):
-        self._vis.destroy_window()
-
     def run(self):
+
+        self.file_monitor.wait_for_existence()
+
+        self._initialise_visualiser()
+
         self.reload_geometry(first=True)
         last_file_check = time.time()
         while True:

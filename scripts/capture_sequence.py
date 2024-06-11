@@ -2,8 +2,8 @@ import argparse
 import os
 import sys
 import time
-
 from tqdm import tqdm
+from pathlib import Path
 
 sys.path.append("./")
 
@@ -11,6 +11,8 @@ from lib.reconstructor import Reconstructor
 from lib import utils
 from lib.utils import cprint, Col, get_user_confirmation
 from lib.led_map_2d import LEDMap2D
+from lib.sfm.sfm import SFM
+from lib.visualize_model import Renderer3D
 
 
 if __name__ == "__main__":
@@ -40,6 +42,12 @@ if __name__ == "__main__":
         width=args.width,
         height=args.height,
     )
+
+    sfm = SFM(Path(args.output_dir), rescale=True, interpolate=True)
+    sfm.start()
+
+    renderer3d = Renderer3D(Path(args.output_dir) / "reconstruction.csv")
+    renderer3d.start()
 
     while True:
 
