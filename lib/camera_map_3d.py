@@ -45,7 +45,7 @@ class CameraMap3D:
                 if values is not None:
                     pos = [values.named["x"], values.named["y"], values.named["z"]]
                     rot = [values.named["rw"], values.named["rx"], values.named["ry"], values.named["rz"]]
-                    self.cameras[values.named["camera_id"]] = {"position": pos, "rotation": rot}
+                    self.cameras[values.named["camera_id"]] = {"position":pos, "rotation": rot}
 
                 else:
                     cprint(
@@ -54,27 +54,27 @@ class CameraMap3D:
                     )
                     continue
 
-        cprint(f"Read {len(self.cameras)} lines from camera map {filename}...")
+        cprint(f"Read {len(self.data)} lines from camera map {filename}...")
         return True
 
     def write_to_file(self, filename):
         cprint(
-            f"Writing camera map with {len(self.cameras)} leds to {filename}...",
+            f"Writing camera map with {len(self.data)} leds to {filename}...",
             format=Col.BLUE,
         )
 
-        lines = ["camera_id,x,y,z,rw,rx,ry,rz"]
+        lines = ["camera_id", "x", "y", "z", "rw", "rx", "ry", "rz"]
 
-        for camera_id in sorted(self.cameras.keys()):
+        for camera_id in sorted(self.data.keys()):
             lines.append(
                 f"{camera_id},"
-                f"{self.cameras[camera_id]['position'][0]:f},"
-                f"{self.cameras[camera_id]['position'][1]:f},"
-                f"{self.cameras[camera_id]['position'][2]:f},"
-                f"{self.cameras[camera_id]['rotation'][0]:f},"
-                f"{self.cameras[camera_id]['rotation'][1]:f},"
-                f"{self.cameras[camera_id]['rotation'][2]:f},"
-                f"{self.cameras[camera_id]['rotation'][3]:f}"
+                f"{self.cameras[camera_id]['position']['x']:f},"
+                f"{self.cameras[camera_id]['position']['y']:f},"
+                f"{self.cameras[camera_id]['position']['z']:f},"
+                f"{self.cameras[camera_id]['rotation']['rw']:f},"
+                f"{self.cameras[camera_id]['rotation']['rx']:f},"
+                f"{self.cameras[camera_id]['rotation']['ry']:f},"
+                f"{self.cameras[camera_id]['rotation']['rz']:f}"
             )
 
         with open(filename, "w") as f:

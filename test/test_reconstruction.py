@@ -36,7 +36,7 @@ def check_dimensions(map_3d, max_error):
 def test_reconstruction():
     maps = get_all_2d_led_maps("test/scan")
 
-    map_3d, _ = SFM.process(maps)
+    map_3d, cams = SFM.process(maps)
 
     assert len(map_3d) == 21
 
@@ -50,7 +50,7 @@ def test_sparse_reconstruction():
 
     maps_sparse = [maps[1], maps[3], maps[5], maps[7]]
 
-    map_3d, _ = SFM.process(maps_sparse)
+    map_3d, cams = SFM.process(maps_sparse)
 
     assert map_3d is not None
 
@@ -64,7 +64,7 @@ def test_sparse_reconstruction():
 def test_2_track_reconstruction():
     partial_map = get_all_2d_led_maps("test/scan")[1:3]
 
-    map_3d, _ = SFM.process(partial_map)
+    map_3d, cams = SFM.process(partial_map)
 
     assert map_3d is not None
 
@@ -76,7 +76,7 @@ def test_invalid_reconstruction_views():
 
     invalid_maps = [maps[0], maps[4], maps[8]]  # no useful overlap
 
-    map_3d, _ = SFM.process(invalid_maps)
+    map_3d, cams = SFM.process(invalid_maps)
 
     assert map_3d is None
 
@@ -84,6 +84,6 @@ def test_invalid_reconstruction_views():
 def test_reconstruct_higbeam():
     highbeam_map = get_all_2d_led_maps("test/MariMapper-Test-Data/highbeam")
 
-    map_3d, _ = SFM.process(highbeam_map)
+    map_3d, cams = SFM.process(highbeam_map)
 
     assert map_3d is not None

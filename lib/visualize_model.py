@@ -5,9 +5,8 @@ import numpy as np
 import open3d
 from multiprocessing import Process
 from lib.led_map_3d import LEDMap3D
-from lib.camera_map_3d import CameraMap3D
 from lib.file_monitor import FileMonitor
-from lib.sfm.read_write_model import qvec2rotmat
+
 
 def render_2d_model(led_map):
     display = np.ones((640, 640, 3)) * 0.2
@@ -33,10 +32,9 @@ def render_2d_model(led_map):
 
 class Renderer3D(Process):
 
-    def __init__(self, map_filename, camera_filename=None):
+    def __init__(self, filename):
         super().__init__()
-        self.file_monitor = FileMonitor(map_filename)
-        self.camera_filename = camera_filename
+        self.file_monitor = FileMonitor(filename)
         self._vis = None
 
     def __del__(self):
@@ -101,23 +99,45 @@ class Renderer3D(Process):
         self._vis.update_geometry(self.point_cloud)
 
 
-def draw_camera(position, rotation):
-    t = position
-    R = qvec2rotmat(rotation)
+def draw_camera(K, R, t, w, h):
+    """Create axis, plane and pyramed geometries in Open3D format.
+    :param K: calibration matrix (camera intrinsics)
+    :param R: rotation matrix
+    :param t: translation
+    :param w: image width
+    :param h: image height
+    :return: camera model geometries (axis, plane and pyramid)
+    """
+
+    # scale = 1
     color = [0.8, 0.8, 0.8]
+
+    # intrinsics
+    K = K.copy()
+    Kinv = np.linalg.inv(K)
+
+    # 4x4 transformation
+    T = np.column_stack((R, t))
+    T = np.vstack((T, (0, 0, 0, 1)))
+
+    # axis
+    # axis = open3d.geometry.TriangleMesh.create_coordinate_frame(size=0.5 * scale)
+    # axis.transform(T)
 
     # points in pixel
     points_pixel = [
         [0, 0, 0],
         [0, 0, 1],
-        [1, 0, 1],
-        [0, 1, 1],
-        [1, 1, 1],
+        [w, 0, 1],
+        [0, h, 1],
+        [w, h, 1],
     ]
 
+    # pixel to camera coordinate system
+    points = [Kinv @ p for p in points_pixel]
 
     # pyramid
-    points_in_world = [(R @ p + t) for p in points_pixel]
+    points_in_world = [(R @ p + t) for p in points]
     lines = [
         [0, 1],
         [0, 2],
@@ -132,4 +152,4 @@ def draw_camera(position, rotation):
     line_set.colors = open3d.utility.Vector3dVector(colors)
 
     # return as list in Open3D format
-    return line_set
+    return [line_set]

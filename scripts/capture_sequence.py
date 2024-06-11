@@ -49,8 +49,6 @@ if __name__ == "__main__":
     renderer3d = Renderer3D(Path(args.output_dir) / "reconstruction.csv")
     renderer3d.start()
 
-
-
     while True:
 
         reconstructor.light()

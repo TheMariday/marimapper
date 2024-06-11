@@ -6,7 +6,6 @@ class Backend:
     def __init__(self, uri="localhost:7890"):
         self.client = opc.Client(uri)
         self.buffer = [(0, 0, 0) for _ in range(self.get_led_count())]
-        self.client.put_pixels(self.buffer)
 
     def __del__(self):
         black = [(0, 0, 0) for _ in range(self.get_led_count())]
