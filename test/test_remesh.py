@@ -6,7 +6,7 @@ from lib.remesher import remesh
 def test_remesh_higbeam():
     highbeam_map = get_all_2d_led_maps("test/MariMapper-Test-Data/highbeam")
 
-    map_3d = SFM.process(highbeam_map)
+    map_3d, cams = SFM.process(highbeam_map)
 
     mesh_high_res = remesh(map_3d, 8)
 

@@ -46,8 +46,8 @@ def rescale(led_map, cameras=(), led_to_led_dist=1.0):
         led_map[led_id]["normal"] *= scale
         led_map[led_id]["error"] *= scale
 
-    for cam in cameras:
-        cam[2] *= scale
+#    for cam in cameras:
+#        cam[2] *= scale
 
 
 def fill_gaps(led_map, max_dist_err=0.2, max_missing=5):

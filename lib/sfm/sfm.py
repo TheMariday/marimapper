@@ -28,9 +28,12 @@ class SFM(Process):
 
     def reload(self):
         maps_2d = get_all_2d_led_maps(self.directory_monitor.directory)
-        map_3d = self.process(maps_2d, self.rescale, self.interpolate)
+        map_3d, cams = self.process(maps_2d, self.rescale, self.interpolate)
         map_3d.write_to_file(
             self.directory_monitor.directory / "reconstruction.csv"
+        )
+        cams.write_to_file(
+            self.directory_monitor.directory / "cameras.csv"
         )
         return map_3d
 
@@ -71,4 +74,4 @@ class SFM(Process):
                 leds_interpolated = map_cleaner.fill_gaps(map_3d)
                 cprint(f"Interpolated {leds_interpolated} leds", format=Col.BLUE)
 
-        return map_3d
+        return map_3d, cams
