@@ -10,7 +10,6 @@ from lib.sfm.read_write_model import (
 )
 from lib.remesher import fix_normals
 from lib.led_map_3d import LEDMap3D
-from lib.camera_map_3d import CameraMap3D
 
 
 def get_map_and_cams(path):
@@ -39,12 +38,14 @@ def get_map_and_cams(path):
     for led_id in led_map:
         led_map[led_id]["pos"] -= center
 
-    cams = CameraMap3D()
+    cams = []
 
     cameras_bin = read_cameras_binary(os.path.join(path, "0", "cameras.bin"))
     images_bin = read_images_binary(os.path.join(path, "0", "images.bin"))
 
-    for camera_id, img in enumerate(images_bin.values()):
+    camera_positions = {}
+
+    for img in images_bin.values():
         # rotation
         R = qvec2rotmat(img.qvec)
 
@@ -53,17 +54,44 @@ def get_map_and_cams(path):
 
         # invert
         t = -R.T @ t
+        R = R.T
 
         t -= center
+
+        camera_positions[img.id] = t
 
         # intrinsics
         cam = cameras_bin[img.camera_id]
 
-        cams.add_cam(camera_id, t, img.qvec)
+        if cam.model in ("SIMPLE_PINHOLE", "SIMPLE_RADIAL", "RADIAL"):
+            fx = fy = cam.params[0]
+            cx = cam.params[1]
+            cy = cam.params[2]
+        elif cam.model in (
+            "PINHOLE",
+            "OPENCV",
+            "OPENCV_FISHEYE",
+            "FULL_OPENCV",
+        ):
+            fx = cam.params[0]
+            fy = cam.params[1]
+            cx = cam.params[2]
+            cy = cam.params[3]
+        else:
+            raise Exception("Camera model not supported")
+
+        # intrinsics
+        K = np.identity(3)
+        K[0, 0] = fx
+        K[1, 1] = fy
+        K[0, 2] = cx
+        K[1, 2] = cy
+
+        cams.append([K, R, t, cam.width, cam.height])
 
     for led_id in led_map:
         all_views = np.array(
-            [cams.get_cam(view) for view in led_map[led_id]["views"]]
+            [camera_positions[view] for view in led_map[led_id]["views"]]
         )
         led_map[led_id]["normal"] = (
             np.average(all_views, axis=0) - led_map[led_id]["pos"]

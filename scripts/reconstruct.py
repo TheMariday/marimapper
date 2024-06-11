@@ -40,7 +40,15 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    sfm = SFM(Path(args.input_directory))
+    maps = get_all_2d_led_maps(args.input_directory)
+
+    if not maps:
+        cprint(f"Failed to load any maps from {args.input_directory}", format=Col.FAIL)
+        quit()
+
+    cprint(f"Loaded {len(maps)} maps from {args.input_directory}")
+
+    sfm = SFM(maps)
 
     success = sfm.process(
         rescale=(not args.no_rescale), interpolate=(not args.no_interpolation)
@@ -52,5 +60,6 @@ if __name__ == "__main__":
         )
         quit()
 
+    sfm.save_points(Path(args.output_file))
     r3d = Renderer3D(Path(args.output_file))
     r3d.run()
