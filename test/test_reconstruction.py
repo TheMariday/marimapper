@@ -36,16 +36,12 @@ def check_dimensions(map_3d, max_error):
 def test_reconstruction():
     maps = get_all_2d_led_maps("test/scan")
 
-    sfm = SFM(maps)
+    map_3d = SFM.process(maps)
 
-    sfm.process()
-
-    sfm.print_points()
-
-    assert len(sfm.maps_3d) == 21
+    assert len(map_3d) == 21
 
     check_dimensions(
-        sfm.maps_3d, max_error=0.01  # needs to have a max deviation of less than 1%
+        map_3d, max_error=0.01  # needs to have a max deviation of less than 1%
     )
 
 
@@ -54,29 +50,25 @@ def test_sparse_reconstruction():
 
     maps_sparse = [maps[1], maps[3], maps[5], maps[7]]
 
-    sfm = SFM(maps_sparse)
+    map_3d = SFM.process(maps_sparse)
 
-    assert sfm.process()
+    assert map_3d is not None
 
-    sfm.print_points()
-
-    assert len(sfm.maps_3d) == 21
+    assert len(map_3d) == 21
 
     check_dimensions(
-        sfm.maps_3d, max_error=0.03  # needs to have a max deviation of less than 3%
+        map_3d, max_error=0.03  # needs to have a max deviation of less than 3%
     )
 
 
 def test_2_track_reconstruction():
     partial_map = get_all_2d_led_maps("test/scan")[1:3]
 
-    sfm = SFM(partial_map)
+    map_3d = SFM.process(partial_map)
 
-    assert sfm.process()
+    assert map_3d is not None
 
-    sfm.print_points()
-
-    assert len(sfm.maps_3d) == 15
+    assert len(map_3d) == 15
 
 
 def test_invalid_reconstruction_views():
@@ -84,14 +76,14 @@ def test_invalid_reconstruction_views():
 
     invalid_maps = [maps[0], maps[4], maps[8]]  # no useful overlap
 
-    sfm = SFM(invalid_maps)
+    map_3d = SFM.process(invalid_maps)
 
-    assert not sfm.process()
+    assert map_3d is None
 
 
 def test_reconstruct_higbeam():
     highbeam_map = get_all_2d_led_maps("test/MariMapper-Test-Data/highbeam")
 
-    sfm = SFM(highbeam_map)
+    map_3d = SFM.process(highbeam_map)
 
-    assert sfm.process()
+    assert map_3d is not None
