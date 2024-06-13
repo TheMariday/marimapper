@@ -11,35 +11,45 @@ from lib.utils import cprint, Col, get_user_confirmation
 from lib.led_map_2d import LEDMap2D
 from lib.sfm.sfm import SFM
 from lib.visualize_model import Renderer3D
-
+from multiprocessing import Queue
+from lib.led_map_2d import get_all_2d_led_maps
 
 # PYCHARM DEVELOPER WARNING!
-# You MUST enabled "Emulate terminal in output console" in the run configuration or
+# You MUST enable "Emulate terminal in output console" in the run configuration or
 # really weird  stuff happens with multiprocessing!
 
 
 class MariMapper:
 
-    def __init__(self, args):
-        self.led_backend = utils.get_backend(args.backend, args.server)
+    def __init__(self, cli_args):
+        self.led_backend = utils.get_backend(cli_args.backend, cli_args.server)
         os.makedirs(args.output_dir, exist_ok=True)
 
+        self.led_map_2d_queue = Queue()
+        self.led_map_3d_queue = Queue()
+
         self.reconstructor = Reconstructor(
-            args.device,
-            args.exposure,
-            args.threshold,
+            cli_args.device,
+            cli_args.exposure,
+            cli_args.threshold,
             self.led_backend,
-            width=args.width,
-            height=args.height,
+            width=cli_args.width,
+            height=cli_args.height,
         )
 
-        self.renderer3d = Renderer3D(Path(args.output_dir) / "led_map_3d.csv")
+        self.renderer3d = Renderer3D(led_map_3d_queue=self.led_map_3d_queue)
         self.sfm = SFM(
-            Path(args.output_dir),
+            Path(cli_args.output_dir),
             rescale=True,
             interpolate=True,
-            event_on_update=self.renderer3d.reload_event,
+            event_on_update=self.renderer3d.get_reload_event(),
+            led_map_2d_queue=self.led_map_2d_queue,
+            led_map_3d_queue=self.led_map_3d_queue,
         )
+
+        self.led_maps_2d = get_all_2d_led_maps(Path(cli_args.output_dir))
+
+        self.sfm.add_led_maps_2d(self.led_maps_2d)
 
         self.sfm.start()
         self.renderer3d.start()
@@ -124,6 +134,8 @@ class MariMapper:
                 led_map_2d.write_to_file(filepath)
                 cprint(f"{total_leds_found}/{led_count} leds found", Col.BLUE)
 
+                self.led_maps_2d.append(led_map_2d)
+                self.sfm.add_led_maps_2d(self.led_maps_2d)
                 self.sfm.reload()
 
 
@@ -146,6 +158,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    marimapper = MariMapper(args=args)
+    marimapper = MariMapper(cli_args=args)
 
     marimapper.mainloop()

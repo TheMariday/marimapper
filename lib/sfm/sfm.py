@@ -16,7 +16,13 @@ from lib import logging
 class SFM(Process):
 
     def __init__(
-        self, directory: Path, rescale=False, interpolate=False, event_on_update=None
+        self,
+        directory: Path,
+        rescale=False,
+        interpolate=False,
+        event_on_update=None,
+        led_map_2d_queue=None,
+        led_map_3d_queue=None,
     ):
         logging.debug("SFM initialising")
         super().__init__()
@@ -26,7 +32,15 @@ class SFM(Process):
         self.exit_event = Event()
         self.reload_event = Event()
         self.event_on_update = event_on_update
+        self.led_map_3d_queue = led_map_3d_queue
+        self.led_map_2d_queue = led_map_2d_queue
+
+        self.led_map_2d_queue.put(get_all_2d_led_maps(self.directory))
+
         logging.debug("SFM initialised")
+
+    def add_led_maps_2d(self, maps):
+        self.led_map_2d_queue.put(maps)
 
     def shutdown(self):
         logging.debug("SFM sending shutdown request")
@@ -48,10 +62,16 @@ class SFM(Process):
         logging.debug("SFM process reloading")
         maps_2d = get_all_2d_led_maps(self.directory)
         if len(maps_2d) < 2:
+            self.reload_event.clear()
             return None
+
+        logging.debug(f"SFM process running on {len(maps_2d)} maps")
+
         map_3d = self.process__(maps_2d, self.rescale, self.interpolate)
         if map_3d is None:
+            self.reload_event.clear()
             return None
+
         map_3d.write_to_file(self.directory / "led_map_3d.csv")
 
         self.event_on_update.set()
@@ -85,7 +105,9 @@ class SFM(Process):
                 )
 
             if not os.path.exists(os.path.join(temp_dir, "0", "points3D.bin")):
-                logging.debug("SFM process failed to run sfm process as reconstruction failed")
+                logging.debug(
+                    "SFM process failed to run sfm process as reconstruction failed"
+                )
                 return None
 
             map_3d, cams = get_map_and_cams(temp_dir)

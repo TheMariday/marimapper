@@ -2,24 +2,26 @@ import numpy as np
 import open3d
 from lib import logging
 from multiprocessing import Process, Event
-from lib.led_map_3d import LEDMap3D
 
 
 class Renderer3D(Process):
 
-    def __init__(self, filename):
+    def __init__(self, led_map_3d_queue):
         logging.debug("Renderer3D initialising")
         super().__init__()
-        self.filename = filename
         self._vis = None
         self.exit_event = Event()
         self.reload_event = Event()
+        self.led_map_3d_queue = led_map_3d_queue
         self.point_cloud = None
         logging.debug("Renderer3D initialised")
 
     def __del__(self):
         if self._vis is not None:
             self._vis.destroy_window()
+
+    def get_reload_event(self):
+        return self.reload_event
 
     def shutdown(self):
         self.exit_event.set()
@@ -31,17 +33,19 @@ class Renderer3D(Process):
     def run(self):
         logging.debug("Renderer3D process starting")
 
+        while not self.reload_event.wait(timeout=1):
+            if self.exit_event.is_set():
+                return
+
         self.initialise_visualiser__()
-
-        self.reload_geometry__(first=True)
-        self._vis.update_renderer()
-
-        logging.debug("Renderer3D process initialised and reloaded geometry for the first time")
+        self.reload_geometry__(True)
 
         while not self.exit_event.is_set():
             if self.reload_event.is_set():
-                logging.debug("Renderer3D process received reload event, reloading geometry")
                 self.reload_geometry__()
+                logging.debug(
+                    "Renderer3D process received reload event, reloading geometry"
+                )
 
             window_closed = not self._vis.poll_events()
 
@@ -56,7 +60,7 @@ class Renderer3D(Process):
 
         self._vis = open3d.visualization.Visualizer()
         self._vis.create_window(
-            window_name=f"MariMapper - {self.filename}",
+            window_name="MariMapper",
             width=640,
             height=640,
         )
@@ -80,7 +84,7 @@ class Renderer3D(Process):
     def reload_geometry__(self, first=False):
         logging.debug("Renderer3D process reloading geometry")
 
-        led_map = LEDMap3D(filename=self.filename)
+        led_map = self.led_map_3d_queue.get()
 
         xyz = []
         normals = []

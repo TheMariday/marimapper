@@ -1,7 +1,5 @@
-
-
 def debug(string):
-    print(string)
+    pass  # print(string)
 
 
 def error(string):
