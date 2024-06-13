@@ -5,7 +5,7 @@ import time
 sys.path.append("./")
 
 from lib import utils
-from lib.utils import cprint
+from lib import logging
 
 if __name__ == "__main__":
 
@@ -24,21 +24,21 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    cprint(f"Loading {args.backend} backend")
+    logging.info(f"Loading {args.backend} backend")
 
     led_count = args.reference_led + 1
 
     led_backend = utils.get_backend(args.backend, args.server)
 
-    cprint("Press ctrl-c to cancel")
+    logging.info("Press ctrl-c to cancel")
 
     while True:
         time.sleep(1)
 
-        cprint(f"Turning on LED {args.reference_led}")
+        logging.info(f"Turning on LED {args.reference_led}")
         led_backend.set_led(args.reference_led, True)
 
         time.sleep(1)
 
-        cprint(f"Turning off LED {args.reference_led}")
+        logging.info(f"Turning off LED {args.reference_led}")
         led_backend.set_led(args.reference_led, False)

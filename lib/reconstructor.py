@@ -5,7 +5,7 @@ from threading import Thread
 
 from lib.camera import Camera, CameraSettings
 from lib.led_identifier import LedFinder
-from lib.utils import cprint
+from lib import logging
 from lib.timeout_controller import TimeoutController
 
 
@@ -21,8 +21,6 @@ class Reconstructor:
         height=-1,
         camera=None,
     ):
-        cprint("Starting MariMapper...")
-
         self.settings_backup = None
         self.cam = Camera(device) if camera is None else camera
         self.settings_backup = CameraSettings(self.cam)
@@ -44,15 +42,14 @@ class Reconstructor:
         self.live_feed = None
         self.live_feed_running = False
 
-    def __del__(self):
-
+    def close(self):
         self.close_live_feed()
         cv2.destroyAllWindows()
 
         if self.settings_backup is not None:
-            cprint("Reverting camera changes...")
+            logging.debug("Reverting camera changes...")
             self.settings_backup.apply(self.cam)
-            cprint("Camera changes reverted")
+            logging.debug("Camera changes reverted")
 
     def light(self):
         self.cam.set_exposure_and_wait(self.light_exposure)

@@ -1,20 +1,6 @@
 import os
 import sys
-
-
-class Col:
-    PURPLE = "\033[95m"
-    BLUE = "\033[94m"
-    CYAN = "\033[96m"
-    GREEN = "\033[92m"
-    WARNING = "\033[93m"
-    FAIL = "\033[91m"
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
-
-
-def cprint(str, format=""):
-    print(f"{format}{str}\033[0m")
+from lib import logging
 
 
 def add_camera_args(parser):
@@ -62,10 +48,10 @@ def add_backend_args(parser):
     parser.add_argument("--server", type=str, help="Some backends require a server")
 
 
-def get_user_confirmation():
+def get_user_confirmation(prompt):
 
     try:
-        uin = input()
+        uin = input(logging.colorise(prompt, logging.Col.BLUE))
 
         while uin.lower() not in ("y", "n"):
             uin = input()
@@ -112,10 +98,9 @@ def get_backend(backend_name, server=""):
         raise RuntimeError("Invalid backend name")
 
     except NotImplementedError:
-        cprint(
+        logging.error(
             f"Failed to initialise backend {backend_name}, you need to implement it or use the "
-            f"--backend argument to select from the available backends",
-            Col.FAIL,
+            f"--backend argument to select from the available backends"
         )
         quit()
 

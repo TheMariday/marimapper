@@ -16,10 +16,6 @@ class Renderer3D(Process):
         self.point_cloud = None
         logging.debug("Renderer3D initialised")
 
-    def __del__(self):
-        if self._vis is not None:
-            self._vis.destroy_window()
-
     def get_reload_event(self):
         return self.reload_event
 
@@ -51,9 +47,11 @@ class Renderer3D(Process):
 
             if window_closed:
                 logging.debug("Renderer3D process window closed, stopping process")
-                break
+                self.exit_event.set()
 
             self._vis.update_renderer()
+
+        self._vis.destroy_window()
 
     def initialise_visualiser__(self):
         logging.debug("Renderer3D process initialising visualiser")
@@ -85,6 +83,8 @@ class Renderer3D(Process):
         logging.debug("Renderer3D process reloading geometry")
 
         led_map = self.led_map_3d_queue.get()
+
+        logging.debug(f"Fetched led map with size {len(led_map.keys())}")
 
         xyz = []
         normals = []

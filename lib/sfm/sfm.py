@@ -7,7 +7,7 @@ from multiprocessing import Process, Event
 
 from lib.sfm.database_populator import populate
 from lib.sfm.model import get_map_and_cams
-from lib.utils import cprint, Col, SupressLogging
+from lib.utils import SupressLogging
 from lib import map_cleaner
 from lib.led_map_2d import get_all_2d_led_maps
 from lib import logging
@@ -68,13 +68,14 @@ class SFM(Process):
         logging.debug(f"SFM process running on {len(maps_2d)} maps")
 
         map_3d = self.process__(maps_2d, self.rescale, self.interpolate)
-        if map_3d is None:
+        if map_3d is None or len(map_3d.keys()) == 0:
             self.reload_event.clear()
             return None
 
         map_3d.write_to_file(self.directory / "led_map_3d.csv")
 
         self.event_on_update.set()
+        self.led_map_3d_queue.put(map_3d)
         self.reload_event.clear()
         logging.debug("SFM process reloaded")
 
@@ -117,7 +118,7 @@ class SFM(Process):
 
             if interpolate:
                 leds_interpolated = map_cleaner.fill_gaps(map_3d)
-                cprint(f"Interpolated {leds_interpolated} leds", format=Col.BLUE)
+                logging.debug(f"Interpolated {leds_interpolated} leds")
 
         logging.debug("SFM process finished sfm process")
         return map_3d

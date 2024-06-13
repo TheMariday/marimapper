@@ -1,18 +1,20 @@
 import argparse
 import os
 import time
+import signal
 from tqdm import tqdm
 from pathlib import Path
-import logging
 
 from lib.reconstructor import Reconstructor
 from lib import utils
-from lib.utils import cprint, Col, get_user_confirmation
+from lib import logging
+from lib.utils import get_user_confirmation
 from lib.led_map_2d import LEDMap2D
 from lib.sfm.sfm import SFM
 from lib.visualize_model import Renderer3D
 from multiprocessing import Queue
 from lib.led_map_2d import get_all_2d_led_maps
+
 
 # PYCHARM DEVELOPER WARNING!
 # You MUST enable "Emulate terminal in output console" in the run configuration or
@@ -42,7 +44,7 @@ class MariMapper:
             Path(cli_args.output_dir),
             rescale=True,
             interpolate=True,
-            event_on_update=self.renderer3d.get_reload_event(),
+            event_on_update=self.renderer3d.reload_event,
             led_map_2d_queue=self.led_map_2d_queue,
             led_map_3d_queue=self.led_map_3d_queue,
         )
@@ -54,12 +56,16 @@ class MariMapper:
         self.sfm.start()
         self.renderer3d.start()
 
-    def __del__(self):
-
+    def close(self):
+        logging.debug("marimapper closing")
         self.sfm.shutdown()
         self.renderer3d.shutdown()
         self.sfm.join()
         self.renderer3d.join()
+        self.sfm.terminate()
+        self.renderer3d.terminate()
+        self.reconstructor.close()
+        logging.debug("marimapper closed")
 
     def mainloop(self):
 
@@ -67,14 +73,13 @@ class MariMapper:
 
             self.reconstructor.light()
             self.reconstructor.open_live_feed()
-            cprint("Start scan? [y/n]", Col.PURPLE)
 
-            start_scan = get_user_confirmation()
+            start_scan = get_user_confirmation("Start scan? [y/n]: ")
 
             self.reconstructor.close_live_feed()
 
             if not start_scan:
-                break
+                return
 
             self.reconstructor.dark()
 
@@ -123,16 +128,15 @@ class MariMapper:
                     last_camera_motion_check_time = time.time()
 
                     if camera_motion > 1.0:
-                        cprint(
-                            f"\nFailed to capture sequence as camera moved by {int(camera_motion)}%",
-                            format=Col.FAIL,
+                        logging.error(
+                            f"\nFailed to capture sequence as camera moved by {int(camera_motion)}%"
                         )
                         capture_success = False
                         break
 
             if capture_success:
                 led_map_2d.write_to_file(filepath)
-                cprint(f"{total_leds_found}/{led_count} leds found", Col.BLUE)
+                logging.info(f"{total_leds_found}/{led_count} leds found")
 
                 self.led_maps_2d.append(led_map_2d)
                 self.sfm.add_led_maps_2d(self.led_maps_2d)
@@ -140,8 +144,6 @@ class MariMapper:
 
 
 if __name__ == "__main__":
-
-    logging.basicConfig(level=logging.DEBUG)
 
     logging.info("Starting MariMapper")
 
@@ -161,3 +163,8 @@ if __name__ == "__main__":
     marimapper = MariMapper(cli_args=args)
 
     marimapper.mainloop()
+    marimapper.close()
+
+    # For some reason python refuses to actually exit here, so I'm brute forcing it
+    os.kill(os.getpid(), signal.SIGINT)
+    os.kill(os.getpid(), signal.CTRL_C_EVENT)

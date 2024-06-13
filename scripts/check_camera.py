@@ -4,7 +4,8 @@ import sys
 sys.path.append("./")
 
 from lib.reconstructor import Reconstructor
-from lib.utils import add_camera_args, cprint, Col
+from lib.utils import add_camera_args
+from lib import logging
 
 if __name__ == "__main__":
 
@@ -17,9 +18,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.width * args.height < 0:
-        cprint(
-            "Failed to start camera checker as both camera width and height need to be provided",
-            format=Col.FAIL,
+        logging.error(
+            "Failed to start camera checker as both camera width and height need to be provided"
         )
         quit()
 
@@ -32,8 +32,7 @@ if __name__ == "__main__":
         height=args.height,
     )
 
-    cprint(
-        "Camera connected! Hold an LED up to the camera to check LED identification",
-        format=Col.BLUE,
+    logging.info(
+        "Camera connected! Hold an LED up to the camera to check LED identification"
     )
     reconstructor.show_debug()

@@ -1,10 +1,7 @@
 from parse import parse
 import numpy as np
 import os
-import sys
-
-sys.path.append("./")
-from lib.utils import cprint, Col
+from lib import logging
 
 
 class LEDMap3D:
@@ -34,12 +31,10 @@ class LEDMap3D:
         return self.data.keys()
 
     def _load(self, filename):
-        # cprint(f"Reading 3D map {filename}...")
+        logging.debug(f"Reading 3D map {filename}...")
 
         if not os.path.exists(filename):
-            cprint(
-                f"Cannot read 2d map {filename} as file does not exist", format=Col.FAIL
-            )
+            logging.error(f"Cannot read 2d map {filename} as file does not exist")
             return False
 
         with open(filename, "r") as f:
@@ -47,10 +42,7 @@ class LEDMap3D:
             headings = lines[0].strip().split(",")
 
             if headings != ["index", "x", "y", "z", "xn", "yn", "zn", "error"]:
-                cprint(
-                    f"Cannot read 3d map {filename} as headings don't match",
-                    format=Col.FAIL,
-                )
+                logging.error(f"Cannot read 3d map {filename} as headings don't match")
                 return False
 
             for i in range(1, len(lines)):
@@ -74,20 +66,14 @@ class LEDMap3D:
                         "error": values.named["error"],
                     }
                 else:
-                    cprint(
-                        f"Failed to read line {i} of {filename}: {line}",
-                        format=Col.WARNING,
-                    )
+                    logging.error(f"Failed to read line {i} of {filename}: {line}")
                     continue
 
-        # cprint(f"Read {len(self.data)} lines from 3D map {filename}...")
+        logging.debug(f"Read {len(self.data)} lines from 3D map {filename}...")
         return True
 
     def write_to_file(self, filename):
-        cprint(
-            f"Writing 3D map with {len(self.data)} leds to {filename}...",
-            format=Col.BLUE,
-        )
+        logging.debug(f"Writing 3D map with {len(self.data)} leds to {filename}...")
 
         lines = ["index,x,y,z,xn,yn,zn,error"]
 

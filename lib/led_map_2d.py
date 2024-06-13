@@ -1,6 +1,6 @@
-from lib.utils import cprint, Col
 import os
 from parse import parse
+from lib import logging
 
 
 class LEDDetection:
@@ -45,9 +45,7 @@ class LEDMap2D:
                     LEDDetection(values.named["u"], values.named["v"]),
                 )
             else:
-                cprint(
-                    f"Failed to read line {i} of {filename}: {line}", format=Col.WARNING
-                )
+                logging.error(f"Failed to read line {i} of {filename}: {line}")
                 continue
 
         return True
