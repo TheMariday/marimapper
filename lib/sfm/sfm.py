@@ -1,51 +1,68 @@
 import os
+
 from tempfile import TemporaryDirectory
 from pathlib import Path
 import pycolmap
-import time
 from multiprocessing import Process, Event
 
 from lib.sfm.database_populator import populate
 from lib.sfm.model import get_map_and_cams
 from lib.utils import cprint, Col, SupressLogging
 from lib import map_cleaner
-from lib.file_monitor import DirectoryMonitor
 from lib.led_map_2d import get_all_2d_led_maps
+from lib import logging
 
 
 class SFM(Process):
 
-    def __init__(self, directory: Path, rescale=False, interpolate=False):
+    def __init__(
+        self, directory: Path, rescale=False, interpolate=False, event_on_update=None
+    ):
+        logging.debug("SFM initialising")
         super().__init__()
-        self.directory_monitor = DirectoryMonitor(directory)
+        self.directory = directory
         self.rescale = rescale
         self.interpolate = interpolate
-        self.exit = Event()
-
-    def run(self):
-        self.reload()
-        while not self.exit.is_set():
-            time.sleep(1)
-            if self.directory_monitor.has_changed():
-                self.reload()
+        self.exit_event = Event()
+        self.reload_event = Event()
+        self.event_on_update = event_on_update
+        logging.debug("SFM initialised")
 
     def shutdown(self):
-        self.exit.set()
+        logging.debug("SFM sending shutdown request")
+        self.exit_event.set()
 
     def reload(self):
-        maps_2d = get_all_2d_led_maps(self.directory_monitor.directory)
+        logging.debug("SFM sending reload request")
+        self.reload_event.set()
+
+    def run(self):
+        logging.debug("SFM process starting")
+        self.reload__()
+        while not self.exit_event.is_set():
+            reload = self.reload_event.wait(timeout=1)
+            if reload:
+                self.reload__()
+
+    def reload__(self):
+        logging.debug("SFM process reloading")
+        maps_2d = get_all_2d_led_maps(self.directory)
         if len(maps_2d) < 2:
             return None
-        map_3d = self.process(maps_2d, self.rescale, self.interpolate)
+        map_3d = self.process__(maps_2d, self.rescale, self.interpolate)
         if map_3d is None:
             return None
-        map_3d.write_to_file(self.directory_monitor.directory / "led_map_3d.csv")
-        return map_3d
+        map_3d.write_to_file(self.directory / "led_map_3d.csv")
+
+        self.event_on_update.set()
+        self.reload_event.clear()
+        logging.debug("SFM process reloaded")
 
     @staticmethod
-    def process(maps_2d, rescale=False, interpolate=False):
-
+    def process__(maps_2d, rescale=False, interpolate=False):
+        logging.debug("SFM process starting sfm process")
         if len(maps_2d) < 2:
+            logging.debug("SFM process failed to run sfm process as not enough maps")
             return None
 
         with TemporaryDirectory() as temp_dir:
@@ -68,6 +85,7 @@ class SFM(Process):
                 )
 
             if not os.path.exists(os.path.join(temp_dir, "0", "points3D.bin")):
+                logging.debug("SFM process failed to run sfm process as reconstruction failed")
                 return None
 
             map_3d, cams = get_map_and_cams(temp_dir)
@@ -79,4 +97,5 @@ class SFM(Process):
                 leds_interpolated = map_cleaner.fill_gaps(map_3d)
                 cprint(f"Interpolated {leds_interpolated} leds", format=Col.BLUE)
 
+        logging.debug("SFM process finished sfm process")
         return map_3d

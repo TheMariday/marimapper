@@ -145,6 +145,9 @@ class Reconstructor:
 
     def get_camera_motion(self, valid_leds, map_data_2d):
 
+        if len(valid_leds) == 0:
+            return 0
+
         for led_id in valid_leds:
             detection_new = self.enable_and_find_led(led_id, debug=True)
             if detection_new:

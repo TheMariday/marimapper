@@ -1,28 +1,62 @@
-import time
 import numpy as np
 import open3d
+from lib import logging
 from multiprocessing import Process, Event
 from lib.led_map_3d import LEDMap3D
-from lib.file_monitor import FileMonitor
 
 
 class Renderer3D(Process):
 
     def __init__(self, filename):
+        logging.debug("Renderer3D initialising")
         super().__init__()
-        self.file_monitor = FileMonitor(filename)
+        self.filename = filename
         self._vis = None
-        self.exit = Event()
+        self.exit_event = Event()
+        self.reload_event = Event()
+        self.point_cloud = None
+        logging.debug("Renderer3D initialised")
 
     def __del__(self):
         if self._vis is not None:
             self._vis.destroy_window()
 
-    def _initialise_visualiser(self):
+    def shutdown(self):
+        self.exit_event.set()
+
+    def reload(self):
+        logging.debug("Renderer3D reload request sent")
+        self.reload_event.set()
+
+    def run(self):
+        logging.debug("Renderer3D process starting")
+
+        self.initialise_visualiser__()
+
+        self.reload_geometry__(first=True)
+        self._vis.update_renderer()
+
+        logging.debug("Renderer3D process initialised and reloaded geometry for the first time")
+
+        while not self.exit_event.is_set():
+            if self.reload_event.is_set():
+                logging.debug("Renderer3D process received reload event, reloading geometry")
+                self.reload_geometry__()
+
+            window_closed = not self._vis.poll_events()
+
+            if window_closed:
+                logging.debug("Renderer3D process window closed, stopping process")
+                break
+
+            self._vis.update_renderer()
+
+    def initialise_visualiser__(self):
+        logging.debug("Renderer3D process initialising visualiser")
 
         self._vis = open3d.visualization.Visualizer()
         self._vis.create_window(
-            window_name=f"MariMapper - {self.file_monitor.filepath}",
+            window_name=f"MariMapper - {self.filename}",
             width=640,
             height=640,
         )
@@ -41,36 +75,12 @@ class Renderer3D(Process):
         )
         render_options.background_color = [0.2, 0.2, 0.2]
 
-    def shutdown(self):
-        self.exit.set()
+        logging.debug("Renderer3D process initialised visualiser")
 
-    def run(self):
+    def reload_geometry__(self, first=False):
+        logging.debug("Renderer3D process reloading geometry")
 
-        while not self.file_monitor.exists():
-            time.sleep(1)
-            if self.exit.is_set():
-                return
-
-        self._initialise_visualiser()
-
-        self.reload_geometry(first=True)
-        self._vis.update_renderer()
-
-        last_file_check = time.time()
-        while not self.exit.is_set():
-            if time.time() - last_file_check > 1:
-                last_file_check = time.time()
-                if self.file_monitor.file_changed():
-                    self.reload_geometry()
-
-            if not self._vis.poll_events():
-                break
-
-            self._vis.update_renderer()
-
-    def reload_geometry(self, first=False):
-
-        led_map = LEDMap3D(filename=self.file_monitor.filepath)
+        led_map = LEDMap3D(filename=self.filename)
 
         xyz = []
         normals = []
@@ -87,6 +97,9 @@ class Renderer3D(Process):
             self._vis.add_geometry(self.point_cloud, reset_bounding_box=True)
 
         self._vis.update_geometry(self.point_cloud)
+
+        self.reload_event.clear()
+        logging.debug("Renderer3D process reloaded geometry")
 
 
 def draw_camera(K, R, t, w, h):
