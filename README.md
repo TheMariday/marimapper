@@ -1,4 +1,4 @@
-# MariMapper
+![logo.png](docs%2Fimages%2Flogo.png)
 
 [![Supported Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue)]()
 [![Windows](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml)
@@ -6,12 +6,7 @@
 [![MacOS](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-![logo.png](docs%2Fimages%2Flogo.png)
-
-This is a selection of tools to map LEDs into 2D and 3D space using only your webcam!
-
-> [!TIP]
-> All scripts can be run with the `--help` argument to list optional parameters such as resolution and exposure.
+This is a tool to map LEDs into 2D and 3D space using only your webcam!
 
 ## Step 0: Install requirements
 
@@ -36,10 +31,10 @@ Test LED identification by turning down the lights and holding a torch or led up
 This should start with few warnings, no errors and produce a **very** dark image
 with a single crosshair on centered on your LED:
 
-> [!IMPORTANT]
-> This works best in a dim environment so please make sure your camera isn't pointing at any other light sources!
-
 ![alt text](docs/images/camera_check.png "Camera Check window")
+
+> [!TIP]
+> This works best in a dim environment so please make sure your camera isn't pointing at any other light sources!
 
 ## Step 2: Write your LED interface
 
@@ -87,8 +82,8 @@ argument.
 
 [It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
 
-run `python marimapper.py my_scan --backend fadecandy`
-Change `fadecandy` to whatever backend you're using and `my_scan` to whatever you want to call your scan
+Run `python marimapper.py my_scan --backend fadecandy`
+and change `fadecandy` to whatever backend you're using and `my_scan` to whatever you want to call your scan
 
 Set up your LEDs so most of them are in view and when you're ready, type `y` when prompted with `Start scan? [y/n]`
 
