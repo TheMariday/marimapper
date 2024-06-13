@@ -1,33 +1,9 @@
-import colorsys
 import time
-import cv2
 import numpy as np
 import open3d
 from multiprocessing import Process, Event
 from lib.led_map_3d import LEDMap3D
 from lib.file_monitor import FileMonitor
-
-
-def render_2d_model(led_map):
-    display = np.ones((640, 640, 3)) * 0.2
-
-    max_id = max(led_map.keys())
-
-    for led_id in led_map:
-        col = colorsys.hsv_to_rgb(led_id / max_id, 0.5, 1)
-        image_point = (led_map[led_id]["pos"] * 640).astype(int)
-        cv2.drawMarker(display, image_point, color=col)
-        cv2.putText(
-            display,
-            str(led_id),
-            image_point,
-            cv2.FONT_HERSHEY_SIMPLEX,
-            1,
-            color=col,
-        )
-
-    cv2.imshow("MariMapper", display)
-    cv2.waitKey(0)
 
 
 class Renderer3D(Process):
@@ -100,7 +76,9 @@ class Renderer3D(Process):
         normals = []
         for led_id in led_map.keys():
             xyz.append(led_map[led_id]["pos"])
-            normals.append(led_map[led_id]["normal"] / np.linalg.norm(led_map[led_id]["normal"]))
+            normals.append(
+                led_map[led_id]["normal"] / np.linalg.norm(led_map[led_id]["normal"])
+            )
 
         self.point_cloud.points = open3d.utility.Vector3dVector(xyz)
         self.point_cloud.normals = open3d.utility.Vector3dVector(normals)

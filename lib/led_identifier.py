@@ -1,5 +1,4 @@
 import cv2
-from lib.utils import cprint, Col
 from lib.led_map_2d import LEDDetection
 
 
@@ -21,10 +20,10 @@ class LedFinder:
             return None
         elif led_response_count > 1:
             pass
-            #cprint(
+            # cprint(
             #    f"Warning! More than 1 light source found, found {led_response_count} light sources",
             #    format=Col.WARNING,
-            #)
+            # )
 
         moments = cv2.moments(image_thresh)
 
