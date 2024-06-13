@@ -16,7 +16,9 @@ def render_2d_model(led_map):
 
     for led_id in led_map.get_detections():
         col = colorsys.hsv_to_rgb(led_id / max_id, 0.5, 1)
-        pos = np.array((led_map.get_detection(led_id).u, led_map.get_detection(led_id).v))
+        pos = np.array(
+            (led_map.get_detection(led_id).u, led_map.get_detection(led_id).v)
+        )
         image_point = (pos * 640).astype(int)
         cv2.drawMarker(display, image_point, color=col)
         cv2.putText(

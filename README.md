@@ -10,10 +10,6 @@
 
 This is a selection of tools to map LEDs into 2D and 3D space using only your webcam!
 
-> [!CAUTION]
-> This tool is currently undergoing a rework (10/06/2024) and therefore some features such as rendering strips and cameras may not be available
-
-
 > [!TIP]
 > All scripts can be run with the `--help` argument to list optional parameters such as resolution and exposure.
 
@@ -75,8 +71,8 @@ class Backend:
         pass
 
 ```
-
-You can test your backend with `python scripts/check_backend.py`
+> [!TIP]
+> You can test your backend with `python scripts/check_backend.py`
 
 MariMapper also support the following pre-made backends. This can be selected in the following steps using the `--backend`
 argument.
@@ -87,32 +83,29 @@ argument.
 - [ ] [LCM](https://lcm-proj.github.io/lcm/)
 
 
-## Step 3: Capture a 2D map
-
-Set up your LEDs in front of your camera and
-run `python scripts/capture_sequence.py my_scan --backend fadecandy`
-
-Change `--backend` to whatever backend you're using
-
-This will produce a timestamped CSV file in the `my_scan` folder with led index, u and v values.
-
-Run `python scripts/visualise.py <filename>` to visualise 2D or 3D map files.
-
-## Step 4: Construct a 3D map
+## Step 3: Start scanning!
 
 [It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
 
-To create a 3D map, run `capture_sequence` multiple times from different views of your LEDs,
-this can either be done by moving your webcam around your LEDs or rotating your LEDs.
+run `python marimapper.py my_scan --backend fadecandy`
+Change `fadecandy` to whatever backend you're using and `my_scan` to whatever you want to call your scan
+
+Set up your LEDs so most of them are in view and when you're ready, type `y` when prompted with `Start scan? [y/n]`
+
+This will turn each LED on and off in turn, do not move the camera or leds during capture!
+
+If you just want a 2D map, this is where you can stop! 
+Run `python scripts/view_2d_map.py my_scan/...` to visualise your map replacing `...` with the map name.
+
+To capture a 3D map, rotate your leds or move your webcam to a new position
 
 > [!TIP]
-> You can move your webcam to wherever you like as long as some of your leds are mostly in view
+> As long as some of your leds are mostly in view, you can move your webcam to wherever you like!
 > Try and get at least 3 views between 6° - 20° apart
 
-Once you have a selection of 2D maps captured with the `capture_sequence.py` script,
-run `python scripts/reconstruct.py my_scan`
+Once you have at least 2 2d maps, a new window will appear showing the reconstructed 3D positions of your LEDs.
 
-This may take a while, however once complete will generate `reconstruction.csv` in the `my_scan` folder.
+If it doesn't look quite right, add some more scans!
 
 Here is an example reconstruction of Highbeam's body LEDs
 
@@ -128,17 +121,6 @@ Here is an example reconstruction of Highbeam's body LEDs
 - Use the `+` / `-` keys to increase / decrease point sizes
 - Use `1`, `2` & `3` keys to change colour scheme
 </details>
-
-
-## Step 5: Construct a mesh (optional)
-
-If you have a high enough density 3d map, you can use the remesh tool to create a 3D mesh based on your leds!
-
-Run `python scripts/remesh.py reconstruction.csv my_mesh.ply`
-
-This will generate a ply file which you can open and look at with your eyes
-
-![alt text](docs/images/remesh_with_normals.png "Highbeam LED mesh reconstruction")
 
 # Feedback
 

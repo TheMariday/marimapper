@@ -41,12 +41,16 @@ def remesh(led_map, mesh_detail=8):
 
     pcd = open3d.geometry.PointCloud()
 
-    pcd.points = open3d.utility.Vector3dVector(
-        [led_map[led_id]["pos"] for led_id in led_map.data]
-    )
-    pcd.normals = open3d.utility.Vector3dVector(
-        [led_map[led_id]["normal"] for led_id in led_map.data]
-    )
+    xyz = []
+    normals = []
+    for led_id in led_map.keys():
+        xyz.append(led_map[led_id]["pos"])
+        normals.append(
+            led_map[led_id]["normal"] / np.linalg.norm(led_map[led_id]["normal"])
+        )
+
+    pcd.points = open3d.utility.Vector3dVector(xyz)
+    pcd.normals = open3d.utility.Vector3dVector(normals)
 
     with open3d.utility.VerbosityContextManager(
         open3d.utility.VerbosityLevel.Debug

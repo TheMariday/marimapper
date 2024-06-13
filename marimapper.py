@@ -1,11 +1,8 @@
 import argparse
 import os
-import sys
 import time
 from tqdm import tqdm
 from pathlib import Path
-
-sys.path.append("./")
 
 from lib.reconstructor import Reconstructor
 from lib import utils
