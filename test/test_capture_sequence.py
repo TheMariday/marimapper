@@ -33,7 +33,7 @@ def test_capture_sequence():
             if result:
                 led_map_2d.add_detection(led_id, result)
 
-        filepath = os.path.join(output_dir_full, f"capture_{view_index:04}.csv")
+        filepath = os.path.join(output_dir_full, f"led_map_2d_{view_index:04}.csv")
 
         led_map_2d.write_to_file(filepath)
 
@@ -42,7 +42,7 @@ def test_capture_sequence_correctness():
     for view_index in range(9):
         output_dir_full = os.path.join(os.getcwd(), "test", "scan")
 
-        filepath = os.path.join(output_dir_full, f"capture_{view_index:04}.csv")
+        filepath = os.path.join(output_dir_full, f"led_map_2d_{view_index:04}.csv")
 
         led_map_2d = LEDMap2D(filepath)
 

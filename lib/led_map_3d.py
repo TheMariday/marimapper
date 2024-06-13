@@ -34,7 +34,7 @@ class LEDMap3D:
         return self.data.keys()
 
     def _load(self, filename):
-        cprint(f"Reading 3D map {filename}...")
+        #cprint(f"Reading 3D map {filename}...")
 
         if not os.path.exists(filename):
             cprint(
@@ -80,7 +80,7 @@ class LEDMap3D:
                     )
                     continue
 
-        cprint(f"Read {len(self.data)} lines from 3D map {filename}...")
+        #cprint(f"Read {len(self.data)} lines from 3D map {filename}...")
         return True
 
     def write_to_file(self, filename):

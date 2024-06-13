@@ -2,7 +2,8 @@ import os
 from tempfile import TemporaryDirectory
 from pathlib import Path
 import pycolmap
-from multiprocessing import Process
+import time
+from multiprocessing import Process, Event
 
 from lib.sfm.database_populator import populate
 from lib.sfm.model import get_map_and_cams
@@ -19,12 +20,17 @@ class SFM(Process):
         self.directory_monitor = DirectoryMonitor(directory)
         self.rescale = rescale
         self.interpolate = interpolate
+        self.exit = Event()
 
     def run(self):
         self.reload()
-        while True:
-            self.directory_monitor.wait_for_change()
-            self.reload()
+        while not self.exit.is_set():
+            time.sleep(1)
+            if self.directory_monitor.has_changed():
+                self.reload()
+
+    def shutdown(self):
+        self.exit.set()
 
     def reload(self):
         maps_2d = get_all_2d_led_maps(self.directory_monitor.directory)
@@ -33,7 +39,7 @@ class SFM(Process):
         map_3d = self.process(maps_2d, self.rescale, self.interpolate)
         if map_3d is None:
             return None
-        map_3d.write_to_file(self.directory_monitor.directory / "reconstruction.csv")
+        map_3d.write_to_file(self.directory_monitor.directory / "led_map_3d.csv")
         return map_3d
 
     @staticmethod

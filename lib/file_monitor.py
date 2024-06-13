@@ -22,16 +22,8 @@ class FileMonitor:
         self.current_hash = self._get_hash()
         return self.current_hash != last_hash
 
-    def wait_for_existence(self):
-        while not os.path.isfile(self.filepath):
-            time.sleep(1)
-
-    def wait_for_change(self):
-        while True:
-            if self.file_changed():
-                return
-
-            time.sleep(1)
+    def exists(self):
+        return os.path.isfile(self.filepath)
 
 
 class DirectoryMonitor:
@@ -44,17 +36,10 @@ class DirectoryMonitor:
         return [
             self.directory / filename
             for filename in os.listdir(self.directory)
-            if filename.endswith(".csv")
+            if filename.startswith("led_map_2d")
         ]
 
     def has_changed(self):
         last_files = self.current_files
         self.current_files = self._get_filenames()
         return self.current_files != last_files
-
-    def wait_for_change(self):
-        while True:
-            if self.has_changed():
-                return
-
-            time.sleep(1)

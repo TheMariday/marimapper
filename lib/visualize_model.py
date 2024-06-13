@@ -3,7 +3,7 @@ import time
 import cv2
 import numpy as np
 import open3d
-from multiprocessing import Process
+from multiprocessing import Process, Event
 from lib.led_map_3d import LEDMap3D
 from lib.file_monitor import FileMonitor
 
@@ -36,6 +36,7 @@ class Renderer3D(Process):
         super().__init__()
         self.file_monitor = FileMonitor(filename)
         self._vis = None
+        self.exit = Event()
 
     def __del__(self):
         if self._vis is not None:
@@ -64,15 +65,23 @@ class Renderer3D(Process):
         )
         render_options.background_color = [0.2, 0.2, 0.2]
 
+    def shutdown(self):
+        self.exit.set()
+
     def run(self):
 
-        self.file_monitor.wait_for_existence()
+        while not self.file_monitor.exists():
+            time.sleep(1)
+            if self.exit.is_set():
+                return
 
         self._initialise_visualiser()
 
         self.reload_geometry(first=True)
+        self._vis.update_renderer()
+
         last_file_check = time.time()
-        while True:
+        while not self.exit.is_set():
             if time.time() - last_file_check > 1:
                 last_file_check = time.time()
                 if self.file_monitor.file_changed():
@@ -87,8 +96,11 @@ class Renderer3D(Process):
 
         led_map = LEDMap3D(filename=self.file_monitor.filepath)
 
-        xyz = [led_map[led_id]["pos"] for led_id in led_map.keys()]
-        normals = [led_map[led_id]["normal"] for led_id in led_map.keys()]
+        xyz = []
+        normals = []
+        for led_id in led_map.keys():
+            xyz.append(led_map[led_id]["pos"])
+            normals.append(led_map[led_id]["normal"] / np.linalg.norm(led_map[led_id]["normal"]))
 
         self.point_cloud.points = open3d.utility.Vector3dVector(xyz)
         self.point_cloud.normals = open3d.utility.Vector3dVector(normals)

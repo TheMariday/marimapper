@@ -10,8 +10,6 @@ class Backend:
 
     def __del__(self):
         black = [(0, 0, 0) for _ in range(self.get_led_count())]
-        self.client.put_pixels(black)
-        self.client.put_pixels(black)
 
     def get_led_count(self):
         # return the number of LEDs in your system here

@@ -46,7 +46,7 @@ if __name__ == "__main__":
     sfm = SFM(Path(args.output_dir), rescale=True, interpolate=True)
     sfm.start()
 
-    renderer3d = Renderer3D(Path(args.output_dir) / "reconstruction.csv")
+    renderer3d = Renderer3D(Path(args.output_dir) / "led_map_3d.csv")
     renderer3d.start()
 
     while True:
@@ -67,7 +67,7 @@ if __name__ == "__main__":
         # The filename is made out of the date, then the resolution of the camera
         string_time = time.strftime("%Y%m%d-%H%M%S")
 
-        filepath = os.path.join(args.output_dir, f"capture_{string_time}.csv")
+        filepath = os.path.join(args.output_dir, f"led_map_2d_{string_time}.csv")
 
         led_map_2d = LEDMap2D()
 
@@ -119,3 +119,8 @@ if __name__ == "__main__":
         if capture_success:
             led_map_2d.write_to_file(filepath)
             cprint(f"{total_leds_found}/{led_count} leds found", Col.BLUE)
+
+    sfm.shutdown()
+    renderer3d.shutdown()
+    sfm.join()
+    renderer3d.join()
