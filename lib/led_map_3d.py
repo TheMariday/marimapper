@@ -34,7 +34,6 @@ class LEDMap3D:
         inter_led_distance = self.get_inter_led_distance()
 
         led_ids = self.keys()
-        print(led_ids)
 
         for led_index in range(len(led_ids)):
             current_id = led_ids[led_index]
@@ -46,7 +45,6 @@ class LEDMap3D:
                         *(self[current_id]["pos"] - self[next_id]["pos"])
                     )
                     if distance < inter_led_distance * max_ratio:
-                        print((led_index, led_index + 1))
                         connections.append((led_index, led_index + 1))
 
         return connections
