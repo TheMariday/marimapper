@@ -10,6 +10,7 @@ class LEDMap3D:
 
         self.valid = True
         self.data = {}
+        self.cameras = None
         if data is not None:
             self.data = data
         if filename is not None:

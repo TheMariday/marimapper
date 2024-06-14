@@ -14,6 +14,7 @@ class Renderer3D(Process):
         self.reload_event = Event()
         self.led_map_3d_queue = led_map_3d_queue
         self.point_cloud = None
+        self.line_set = None
         logging.debug("Renderer3D initialised")
 
     def get_reload_event(self):
@@ -64,6 +65,7 @@ class Renderer3D(Process):
         )
 
         self.point_cloud = open3d.geometry.PointCloud()
+        self.line_set = open3d.geometry.LineSet()
 
         view_ctl = self._vis.get_view_control()
         view_ctl.set_up((0, 1, 0))
@@ -80,11 +82,18 @@ class Renderer3D(Process):
         logging.debug("Renderer3D process initialised visualiser")
 
     def reload_geometry__(self, first=False):
+
         logging.debug("Renderer3D process reloading geometry")
 
         led_map = self.led_map_3d_queue.get()
 
         logging.debug(f"Fetched led map with size {len(led_map.keys())}")
+
+        p, l, c = camera_to_points_lines_colors(led_map.cameras)
+
+        self.line_set.points = open3d.utility.Vector3dVector(p)
+        self.line_set.lines = open3d.utility.Vector2iVector(l)
+        self.line_set.colors = open3d.utility.Vector3dVector(c)
 
         xyz = []
         normals = []
@@ -98,65 +107,52 @@ class Renderer3D(Process):
         self.point_cloud.normals = open3d.utility.Vector3dVector(normals)
 
         if first:
+            self._vis.add_geometry(self.line_set)
             self._vis.add_geometry(self.point_cloud, reset_bounding_box=True)
 
         self._vis.update_geometry(self.point_cloud)
+        self._vis.update_geometry(self.line_set)
 
         self.reload_event.clear()
         logging.debug("Renderer3D process reloaded geometry")
 
 
-def draw_camera(K, R, t, w, h):
-    """Create axis, plane and pyramed geometries in Open3D format.
-    :param K: calibration matrix (camera intrinsics)
-    :param R: rotation matrix
-    :param t: translation
-    :param w: image width
-    :param h: image height
-    :return: camera model geometries (axis, plane and pyramid)
-    """
+def camera_to_points_lines_colors(cameras):  # returns points and lines
 
-    # scale = 1
-    color = [0.8, 0.8, 0.8]
+    all_points = []
+    all_lines = []
 
-    # intrinsics
-    K = K.copy()
-    Kinv = np.linalg.inv(K)
+    for cam_id, camera in enumerate(cameras):
 
-    # 4x4 transformation
-    T = np.column_stack((R, t))
-    T = np.vstack((T, (0, 0, 0, 1)))
+        R, t = camera
 
-    # axis
-    # axis = open3d.geometry.TriangleMesh.create_coordinate_frame(size=0.5 * scale)
-    # axis.transform(T)
+        Kinv = np.array([[0.0005, 0, -0.5], [0, 0.0005, -0.5], [0, 0, 1]])
 
-    # points in pixel
-    points_pixel = [
-        [0, 0, 0],
-        [0, 0, 1],
-        [w, 0, 1],
-        [0, h, 1],
-        [w, h, 1],
-    ]
+        # points in pixel
+        points_pixel = [
+            [0, 0, 0],
+            [0, 0, 1],
+            [2000, 0, 1],
+            [0, 2000, 1],
+            [2000, 2000, 1],
+        ]
 
-    # pixel to camera coordinate system
-    points = [Kinv @ p for p in points_pixel]
+        # pixel to camera coordinate system
+        points = [Kinv @ p for p in points_pixel]
 
-    # pyramid
-    points_in_world = [(R @ p + t) for p in points]
-    lines = [
-        [0, 1],
-        [0, 2],
-        [0, 3],
-        [0, 4],
-    ]
-    colors = [color for _ in range(len(lines))]
-    line_set = open3d.geometry.LineSet(
-        points=open3d.utility.Vector3dVector(points_in_world),
-        lines=open3d.utility.Vector2iVector(lines),
-    )
-    line_set.colors = open3d.utility.Vector3dVector(colors)
+        # pyramid
+        points_in_world = [(R @ p + t) for p in points]
+        offset = cam_id * 5
+        lines = [
+            [offset, offset + 1],
+            [offset, offset + 2],
+            [offset, offset + 3],
+            [offset, offset + 4],
+        ]
 
-    # return as list in Open3D format
-    return [line_set]
+        all_points.extend(points_in_world)
+        all_lines.extend(lines)
+
+    all_colors = [[0.8, 0.8, 0.8] for _ in range(len(all_lines))]
+
+    return all_points, all_lines, all_colors

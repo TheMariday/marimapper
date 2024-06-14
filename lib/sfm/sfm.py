@@ -6,7 +6,7 @@ import pycolmap
 from multiprocessing import Process, Event
 
 from lib.sfm.database_populator import populate
-from lib.sfm.model import get_map_and_cams
+from lib.sfm.model import binary_to_led_map_3d
 from lib.utils import SupressLogging
 from lib import map_cleaner
 from lib.led_map_2d import get_all_2d_led_maps
@@ -111,10 +111,10 @@ class SFM(Process):
                 )
                 return None
 
-            map_3d, cams = get_map_and_cams(temp_dir)
+            map_3d = binary_to_led_map_3d(temp_dir)
 
             if rescale:
-                map_cleaner.rescale(map_3d, cams)
+                map_cleaner.rescale(map_3d)
 
             if interpolate:
                 leds_interpolated = map_cleaner.fill_gaps(map_3d)

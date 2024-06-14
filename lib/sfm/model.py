@@ -4,7 +4,6 @@ import numpy as np
 
 from lib.sfm.read_write_model import (
     qvec2rotmat,
-    read_cameras_binary,
     read_images_binary,
     read_points3D_binary,
 )
@@ -12,7 +11,7 @@ from lib.remesher import fix_normals
 from lib.led_map_3d import LEDMap3D
 
 
-def get_map_and_cams(path):
+def binary_to_led_map_3d(path):
     led_map = {}
 
     points_bin = read_points3D_binary(os.path.join(path, "0", "points3D.bin"))
@@ -38,56 +37,28 @@ def get_map_and_cams(path):
     for led_id in led_map:
         led_map[led_id]["pos"] -= center
 
-    cams = []
+    cameras = []
 
-    cameras_bin = read_cameras_binary(os.path.join(path, "0", "cameras.bin"))
     images_bin = read_images_binary(os.path.join(path, "0", "images.bin"))
 
     camera_positions = {}
 
     for img in images_bin.values():
         # rotation
-        R = qvec2rotmat(img.qvec)
+        rotation = qvec2rotmat(img.qvec)
 
         # translation
-        t = img.tvec
+        transformation = img.tvec
 
         # invert
-        t = -R.T @ t
-        R = R.T
+        transformation = -rotation.T @ transformation
+        rotation = rotation.T
 
-        t -= center
+        transformation -= center
 
-        camera_positions[img.id] = t
+        camera_positions[img.id] = transformation
 
-        # intrinsics
-        cam = cameras_bin[img.camera_id]
-
-        if cam.model in ("SIMPLE_PINHOLE", "SIMPLE_RADIAL", "RADIAL"):
-            fx = fy = cam.params[0]
-            cx = cam.params[1]
-            cy = cam.params[2]
-        elif cam.model in (
-            "PINHOLE",
-            "OPENCV",
-            "OPENCV_FISHEYE",
-            "FULL_OPENCV",
-        ):
-            fx = cam.params[0]
-            fy = cam.params[1]
-            cx = cam.params[2]
-            cy = cam.params[3]
-        else:
-            raise Exception("Camera model not supported")
-
-        # intrinsics
-        K = np.identity(3)
-        K[0, 0] = fx
-        K[1, 1] = fy
-        K[0, 2] = cx
-        K[1, 2] = cy
-
-        cams.append([K, R, t, cam.width, cam.height])
+        cameras.append([rotation, transformation])
 
     for led_id in led_map:
         all_views = np.array(
@@ -97,6 +68,7 @@ def get_map_and_cams(path):
             np.average(all_views, axis=0) - led_map[led_id]["pos"]
         )
 
-    led_map = fix_normals(led_map)
+    led_map_3d = LEDMap3D(fix_normals(led_map))
+    led_map_3d.cameras = cameras
 
-    return LEDMap3D(led_map), cams
+    return led_map_3d
