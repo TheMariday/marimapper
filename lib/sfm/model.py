@@ -32,7 +32,9 @@ def binary_to_led_map_3d(path):
         led_map[led_id]["error"] = np.average(led_map[led_id]["error"], axis=0)
         led_map[led_id]["views"] = list(set(led_map[led_id]["views"]))
 
-    translation_offset = np.average([led_map[led_id]["pos"] for led_id in led_map], axis=0)
+    translation_offset = np.average(
+        [led_map[led_id]["pos"] for led_id in led_map], axis=0
+    )
 
     for led_id in led_map:
         led_map[led_id]["pos"] -= translation_offset
@@ -62,6 +64,8 @@ def binary_to_led_map_3d(path):
         led_map[led_id]["normal"] = (
             np.average(all_views, axis=0) - led_map[led_id]["pos"]
         )
+
+        led_map[led_id]["normal"] /= np.linalg.norm(led_map[led_id]["normal"])
 
     led_map_3d = LEDMap3D(fix_normals(led_map))
     led_map_3d.cameras = cameras

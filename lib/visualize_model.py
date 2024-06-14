@@ -96,7 +96,9 @@ class Renderer3D(Process):
         self.line_set.colors = open3d.utility.Vector3dVector(c)
 
         self.point_cloud.points = open3d.utility.Vector3dVector(led_map.get_xyz_list())
-        self.point_cloud.normals = open3d.utility.Vector3dVector(led_map.get_normal_list())
+        self.point_cloud.normals = open3d.utility.Vector3dVector(
+            led_map.get_normal_list() * 0.2
+        )
 
         if first:
             self._vis.add_geometry(self.point_cloud)
