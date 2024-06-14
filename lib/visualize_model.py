@@ -15,6 +15,7 @@ class Renderer3D(Process):
         self.led_map_3d_queue = led_map_3d_queue
         self.point_cloud = None
         self.line_set = None
+        self.strip_set = None
         logging.debug("Renderer3D initialised")
 
     def get_reload_event(self):
@@ -66,6 +67,7 @@ class Renderer3D(Process):
 
         self.point_cloud = open3d.geometry.PointCloud()
         self.line_set = open3d.geometry.LineSet()
+        self.strip_set = open3d.geometry.LineSet()
 
         view_ctl = self._vis.get_view_control()
         view_ctl.set_up((0, 1, 0))
@@ -100,12 +102,22 @@ class Renderer3D(Process):
             led_map.get_normal_list() * 0.2
         )
 
+        self.strip_set.points = self.point_cloud.points
+        self.strip_set.lines = open3d.utility.Vector2iVector(
+            led_map.get_connected_leds()
+        )
+        self.strip_set.colors = open3d.utility.Vector3dVector(
+            [[0.8, 0.8, 0.8] for _ in range(len(self.strip_set.lines))]
+        )
+
         if first:
             self._vis.add_geometry(self.point_cloud)
             self._vis.add_geometry(self.line_set)
+            self._vis.add_geometry(self.strip_set)
         else:
             self._vis.update_geometry(self.point_cloud)
             self._vis.update_geometry(self.line_set)
+            self._vis.update_geometry(self.strip_set)
 
         self.reload_event.clear()
         logging.debug("Renderer3D process reloaded geometry")

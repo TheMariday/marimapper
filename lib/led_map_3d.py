@@ -1,20 +1,17 @@
-from parse import parse
 import numpy as np
-import os
+import math
 from lib import logging
 
 
 class LEDMap3D:
 
-    def __init__(self, data=None, filename=None):
+    def __init__(self, data=None):
 
         self.valid = True
         self.data = {}
         self.cameras = None
         if data is not None:
             self.data = data
-        if filename is not None:
-            self.valid = self._load(filename)
 
     def __setitem__(self, led_index, led_data):
         self.data[led_index] = led_data
@@ -29,7 +26,45 @@ class LEDMap3D:
         return len(self.data)
 
     def keys(self):
-        return self.data.keys()
+        return sorted(list(self.data.keys()))
+
+    def get_connected_leds(self, max_ratio=1.5):
+        connections = []
+
+        inter_led_distance = self.get_inter_led_distance()
+
+        led_ids = self.keys()
+        print(led_ids)
+
+        for led_index in range(len(led_ids)):
+            current_id = led_ids[led_index]
+            next_id = led_ids[led_index] + 1
+            if next_id in led_ids:
+                if led_ids[led_index + 1] == next_id:
+
+                    distance = math.hypot(
+                        *(self[current_id]["pos"] - self[next_id]["pos"])
+                    )
+                    if distance < inter_led_distance * max_ratio:
+                        print((led_index, led_index + 1))
+                        connections.append((led_index, led_index + 1))
+
+        return connections
+
+    def rescale(self, target_inter_distance=1.0):
+
+        scale = (1.0 / self.get_inter_led_distance()) * target_inter_distance
+
+        for led_id in self.data:
+            self[led_id]["pos"] *= scale
+            self[led_id]["normal"] = self[led_id]["normal"] / np.linalg.norm(
+                self[led_id]["normal"]
+            )
+            self[led_id]["normal"] *= target_inter_distance
+            self[led_id]["error"] *= scale
+
+        for cam in self.cameras:
+            cam[1] *= scale
 
     def get_xyz_list(self):
         return np.array([self[led_id]["pos"] for led_id in self.keys()])
@@ -40,47 +75,17 @@ class LEDMap3D:
     def get_normal_list(self):
         return np.array([self[led_id]["normal"] for led_id in self.keys()])
 
-    def _load(self, filename):
-        logging.debug(f"Reading 3D map {filename}...")
+    def get_inter_led_distance(self):
+        max_led_id = max(self.keys())
 
-        if not os.path.exists(filename):
-            logging.error(f"Cannot read 2d map {filename} as file does not exist")
-            return False
+        distances = []
 
-        with open(filename, "r") as f:
-            lines = f.readlines()
-            headings = lines[0].strip().split(",")
+        for led_id in range(max_led_id):
+            if led_id in self.keys() and led_id + 1 in self.keys():
+                dist = math.hypot(*(self[led_id]["pos"] - self[led_id + 1]["pos"]))
+                distances.append(dist)
 
-            if headings != ["index", "x", "y", "z", "xn", "yn", "zn", "error"]:
-                logging.error(f"Cannot read 3d map {filename} as headings don't match")
-                return False
-
-            for i in range(1, len(lines)):
-
-                line = lines[i].strip()
-
-                values = parse(
-                    "{index:^d},{x:^f},{y:^f},{z:^f},{xn:^f},{yn:^f},{zn:^f},{error:^f}",
-                    line,
-                )
-                if values is not None:
-                    pos = np.array(
-                        [values.named["x"], values.named["y"], values.named["z"]]
-                    )
-                    normal = np.array(
-                        [values.named["xn"], values.named["yn"], values.named["zn"]]
-                    )
-                    self.data[values.named["index"]] = {
-                        "pos": pos,
-                        "normal": normal,
-                        "error": values.named["error"],
-                    }
-                else:
-                    logging.error(f"Failed to read line {i} of {filename}: {line}")
-                    continue
-
-        logging.debug(f"Read {len(self.data)} lines from 3D map {filename}...")
-        return True
+        return np.median(distances)
 
     def write_to_file(self, filename):
         logging.debug(f"Writing 3D map with {len(self.data)} leds to {filename}...")

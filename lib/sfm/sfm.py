@@ -114,7 +114,7 @@ class SFM(Process):
             map_3d = binary_to_led_map_3d(temp_dir)
 
             if rescale:
-                map_cleaner.rescale(map_3d)
+                map_3d.rescale()
 
             if interpolate:
                 leds_interpolated = map_cleaner.fill_gaps(map_3d)

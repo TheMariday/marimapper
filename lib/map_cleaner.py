@@ -37,19 +37,6 @@ def find_inter_led_distance(led_map):
     return np.median(distances)
 
 
-def rescale(led_map, led_to_led_dist=1.0):
-
-    scale = (1.0 / find_inter_led_distance(led_map)) * led_to_led_dist
-
-    for led_id in led_map.data:
-        led_map[led_id]["pos"] *= scale
-        led_map[led_id]["normal"] *= led_to_led_dist
-        led_map[led_id]["error"] *= scale
-
-    for cam in led_map.cameras:
-        cam[1] *= scale
-
-
 def fill_gaps(led_map, max_dist_err=0.2, max_missing=5):
 
     total_leds_filled = 0
