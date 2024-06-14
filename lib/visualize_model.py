@@ -95,23 +95,15 @@ class Renderer3D(Process):
         self.line_set.lines = open3d.utility.Vector2iVector(l)
         self.line_set.colors = open3d.utility.Vector3dVector(c)
 
-        xyz = []
-        normals = []
-        for led_id in led_map.keys():
-            xyz.append(led_map[led_id]["pos"])
-            normals.append(
-                led_map[led_id]["normal"] / np.linalg.norm(led_map[led_id]["normal"])
-            )
-
-        self.point_cloud.points = open3d.utility.Vector3dVector(xyz)
-        self.point_cloud.normals = open3d.utility.Vector3dVector(normals)
+        self.point_cloud.points = open3d.utility.Vector3dVector(led_map.get_xyz_list())
+        self.point_cloud.normals = open3d.utility.Vector3dVector(led_map.get_normal_list())
 
         if first:
+            self._vis.add_geometry(self.point_cloud)
             self._vis.add_geometry(self.line_set)
-            self._vis.add_geometry(self.point_cloud, reset_bounding_box=True)
-
-        self._vis.update_geometry(self.point_cloud)
-        self._vis.update_geometry(self.line_set)
+        else:
+            self._vis.update_geometry(self.point_cloud)
+            self._vis.update_geometry(self.line_set)
 
         self.reload_event.clear()
         logging.debug("Renderer3D process reloaded geometry")
@@ -122,36 +114,28 @@ def camera_to_points_lines_colors(cameras):  # returns points and lines
     all_points = []
     all_lines = []
 
+    camera_scale = 2.0
+
+    camera_cone_points = np.array(
+        [[0, 0, 0], [-1, -1, 2], [1, -1, 2], [1, 1, 2], [-1, 1, 2], [0, -1.5, 2]]
+    )
+
+    camera_cone_points *= camera_scale
+
+    camera_cone_lines = np.array(
+        [[0, 1], [0, 2], [0, 3], [0, 4], [1, 2], [2, 3], [3, 4], [4, 1], [1, 5], [2, 5]]
+    )
+
     for cam_id, camera in enumerate(cameras):
 
-        R, t = camera
+        rotation, translation = camera
 
-        Kinv = np.array([[0.0005, 0, -0.5], [0, 0.0005, -0.5], [0, 0, 1]])
+        points_in_world = [(rotation @ p + translation) for p in camera_cone_points]
 
-        # points in pixel
-        points_pixel = [
-            [0, 0, 0],
-            [0, 0, 1],
-            [2000, 0, 1],
-            [0, 2000, 1],
-            [2000, 2000, 1],
-        ]
-
-        # pixel to camera coordinate system
-        points = [Kinv @ p for p in points_pixel]
-
-        # pyramid
-        points_in_world = [(R @ p + t) for p in points]
-        offset = cam_id * 5
-        lines = [
-            [offset, offset + 1],
-            [offset, offset + 2],
-            [offset, offset + 3],
-            [offset, offset + 4],
-        ]
+        offset = cam_id * len(camera_cone_points)
 
         all_points.extend(points_in_world)
-        all_lines.extend(lines)
+        all_lines.extend(camera_cone_lines + offset)
 
     all_colors = [[0.8, 0.8, 0.8] for _ in range(len(all_lines))]
 

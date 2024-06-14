@@ -31,6 +31,15 @@ class LEDMap3D:
     def keys(self):
         return self.data.keys()
 
+    def get_xyz_list(self):
+        return np.array([self[led_id]["pos"] for led_id in self.keys()])
+
+    def get_center(self):
+        return np.average(self.get_xyz_list(), axis=0)
+
+    def get_normal_list(self):
+        return [self[led_id]["normal"] for led_id in self.keys()]
+
     def _load(self, filename):
         logging.debug(f"Reading 3D map {filename}...")
 

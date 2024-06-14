@@ -32,10 +32,10 @@ def binary_to_led_map_3d(path):
         led_map[led_id]["error"] = np.average(led_map[led_id]["error"], axis=0)
         led_map[led_id]["views"] = list(set(led_map[led_id]["views"]))
 
-    center = np.average([led_map[led_id]["pos"] for led_id in led_map], axis=0)
+    translation_offset = np.average([led_map[led_id]["pos"] for led_id in led_map], axis=0)
 
     for led_id in led_map:
-        led_map[led_id]["pos"] -= center
+        led_map[led_id]["pos"] -= translation_offset
 
     cameras = []
 
@@ -44,21 +44,16 @@ def binary_to_led_map_3d(path):
     camera_positions = {}
 
     for img in images_bin.values():
-        # rotation
         rotation = qvec2rotmat(img.qvec)
 
-        # translation
-        transformation = img.tvec
-
-        # invert
-        transformation = -rotation.T @ transformation
+        translation = -rotation.T @ img.tvec
         rotation = rotation.T
 
-        transformation -= center
+        translation -= translation_offset
 
-        camera_positions[img.id] = transformation
+        camera_positions[img.id] = translation
 
-        cameras.append([rotation, transformation])
+        cameras.append([rotation, translation])
 
     for led_id in led_map:
         all_views = np.array(
