@@ -6,7 +6,13 @@
 [![MacOS](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-This is a tool to map LEDs into 2D and 3D space using only your webcam!
+This is a tool to map addressable LEDs into 2D and 3D space using only your webcam!
+
+The basic algorithms behind this is what I used to map [Highbeam](https://www.youtube.com/shorts/isdhMqDIR8k)
+(Map pictured below)
+
+![](docs/images/reconstruct_with_normals_and_strips.png)
+
 
 ## Step 0: Install requirements
 
@@ -24,22 +30,35 @@ Run `python scripts/check_camera.py` to ensure your camera is compatible with Ma
 - Logitech C920
 - Dell Lattitude 5521 built-in
 - HP Envy x360 built-in 
+- If your camera works, please drop me a line so I can add it to the list!
 
 </details>
 
 Test LED identification by turning down the lights and holding a torch or led up to the camera
 This should start with few warnings, no errors and produce a **very** dark image
-with a single crosshair on centered on your LED:
+with a single crosshair on centered on your LED.
+
+As long as your webcam has exposure control, this should even work in a relatively well lit room!
 
 ![alt text](docs/images/camera_check.png "Camera Check window")
 
+
 > [!TIP]
-> This works best in a dim environment so please make sure your camera isn't pointing at any other light sources!
+> If your camera doesn't support exposure adjustment, or the image is still too bright, try dimming the lights and playing around with the --exposure and --threshold arguments
 
-## Step 2: Write your LED interface
+## Step 2: Choose / Write your LED backend
 
-Your LEDs are as unique as you are,
-so the fastest way to connect MariMapper to your system is to fill in the blanks
+MariMapper needs to be able to communicate with your LEDs and it does this via a `--backend`
+
+MariMapper support the following pre-made backends:
+
+- `fadecandy`
+- [`wled`](https://kno.wled.ge/)
+- [`fcmega`](https://github.com/TheMariday/FC-Mega)
+- `custom`
+
+However, your LEDs are as unique as you are,
+so it's super simple to implemenet your own `custom` backend by filling in the blanks
 in [backends/custom/custom_backend.py](backends/custom/custom_backend.py):
 
 ```python
@@ -48,12 +67,10 @@ in [backends/custom/custom_backend.py](backends/custom/custom_backend.py):
 class Backend:
 
     def __init__(self):
-        # Remove the following line after you have implemented the set_led function!
-        raise NotImplementedError("Could not load backend as it has not been implemented, go implement it!")
+        # connect to some device here!
 
     def get_led_count(self):
-        # return the number of LEDs in your system here
-        return 0
+        # return the number of leds your system can control here
 
     def set_led(self, led_index: int, on: bool):
         # Write your code for controlling your LEDs here
@@ -63,33 +80,23 @@ class Backend:
         #     some_led_library.set_led(led_index, (255, 255, 255))
         # else:
         #     some_led_library.set_led(led_index, (0, 0, 0))
-        pass
-
 ```
 > [!TIP]
 > You can test your backend with `python scripts/check_backend.py`
 
-MariMapper also support the following pre-made backends. This can be selected in the following steps using the `--backend`
-argument.
+## Step 3: [It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
 
-- [x] Fadecandy / OPC
-- [x] [WLED](https://kno.wled.ge/)
-- [x] [FC Mega](https://github.com/TheMariday/FC-Mega)
-- [ ] [LCM](https://lcm-proj.github.io/lcm/)
+Run `python marimapper.py my_scan --backend fadecandy` 
 
-
-## Step 3: Start scanning!
-
-[It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
-
-Run `python marimapper.py my_scan --backend fadecandy`
-and change `fadecandy` to whatever backend you're using and `my_scan` to whatever you want to call your scan
+change `fadecandy` to whatever backend you're using 
+and `my_scan` to the directory you want to save your scan
 
 Set up your LEDs so most of them are in view and when you're ready, type `y` when prompted with `Start scan? [y/n]`
 
 This will turn each LED on and off in turn, do not move the camera or leds during capture!
 
 If you just want a 2D map, this is where you can stop! 
+
 Run `python scripts/view_2d_map.py my_scan/...` to visualise your map replacing `...` with the map name.
 
 To capture a 3D map, rotate your leds or move your webcam to a new position
@@ -102,9 +109,9 @@ Once you have at least 2 2d maps, a new window will appear showing the reconstru
 
 If it doesn't look quite right, add some more scans!
 
-Here is an example reconstruction of Highbeam's body LEDs
+Here is an example reconstruction of a test tube of LEDs I have
 
-![alt text](docs/images/reconstruct_with_normals_and_strips.png "Highbeam LED reconstruction")
+![](docs/images/live_example.png)
 
 <details>
 <summary>How to move the model around</summary>
@@ -122,7 +129,16 @@ Here is an example reconstruction of Highbeam's body LEDs
 I would really love to hear what you think and if you have any bugs or improvements, please raise them here or drop me a
 line on [Telegram](https://t.me/themariday).
 
-If you implement a backend that you think others might use, please raise a pull request or just drop me a message on
-Telegram!
+You can also raise issues [on this repo's issues page](https://github.com/TheMariday/marimapper/issues)
 
-If you want a super speed PR, run flake8, flake8-bugbear and black before submitting changes!
+If you implement a backend that you think others might use, 
+please raise a [pull request](https://github.com/TheMariday/marimapper/pulls) 
+or just drop me a message on [Telegram](https://t.me/themariday)!
+
+# Licensing
+
+The licensing on this is [GPLv3](LICENSE).
+
+The TLDR is you can do anything you like as long as you let users know that this repo exists.
+
+I basically want to avoid someone packaging this up, selling it and telling people that it's the only way to do this.

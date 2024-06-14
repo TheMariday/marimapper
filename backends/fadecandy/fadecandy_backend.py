@@ -9,7 +9,6 @@ class Backend:
         self.client.put_pixels(self.buffer)
 
     def get_led_count(self):
-        # return the number of LEDs in your system here
         return 64
 
     def set_led(self, led_index: int, on: bool):

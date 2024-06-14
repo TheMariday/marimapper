@@ -41,7 +41,7 @@ def add_backend_args(parser):
         "--backend",
         type=str,
         help="The backend used for led communication",
-        choices=["custom", "fadecandy", "wled", "lcm", "fcmega"],
+        choices=["custom", "fadecandy", "wled", "fcmega"],
         required=True,
     )
 
@@ -84,11 +84,6 @@ def get_backend(backend_name, server=""):
                 return wled_backend.Backend(server)
             else:
                 return wled_backend.Backend()
-
-        if backend_name == "lcm":
-            from backends.lcm import lcm_backend
-
-            return lcm_backend.Backend()
 
         if backend_name == "fcmega":
             from backends.fcmega import fcmega_backend
