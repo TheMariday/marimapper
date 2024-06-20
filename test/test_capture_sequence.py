@@ -2,7 +2,6 @@ import os
 
 from lib.reconstructor import Reconstructor
 from lib.led_map_2d import LEDMap2D
-from mock_camera import MockCamera
 
 
 def test_capture_sequence():
@@ -12,16 +11,11 @@ def test_capture_sequence():
 
     for view_index in range(9):
 
-        mock_camera = MockCamera(device_id=view_index)
-
         reconstructor = Reconstructor(
-            device=view_index,
+            device=f"test/MariMapper-Test-Data/9_point_box/cam_{view_index}/capture_%04d.png",
             dark_exposure=-10,
             threshold=128,
             led_backend=None,
-            width=mock_camera.get_width(),
-            height=mock_camera.get_height(),
-            camera=mock_camera,
         )
 
         led_map_2d = LEDMap2D()

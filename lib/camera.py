@@ -37,7 +37,6 @@ class Camera:
 
         if not self.device.isOpened():
             logging.error(f"Failed to connect to camera {device_id}")
-            quit()
 
         self.set_resolution(self.get_width(), self.get_height())  # Don't ask
 
@@ -76,8 +75,6 @@ class Camera:
             logging.error(
                 f"Failed to set camera {self.device_id} resolution to {width} x {height}",
             )
-
-        self.device.read()  # do not remove! do not ask why, just accept it
 
         logging.debug(f"Camera resolution set to {new_width} x {new_height}")
 
