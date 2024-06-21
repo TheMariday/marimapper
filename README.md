@@ -57,6 +57,9 @@ MariMapper support the following pre-made backends:
 - [`fcmega`](https://github.com/TheMariday/FC-Mega)
 - `custom`
 
+If you choose a pre-built backend, remember to install its dependencies using 
+`pip install -r backends/fadecandy/requirements.txt`
+
 However, your LEDs are as unique as you are,
 so it's super simple to implemenet your own `custom` backend by filling in the blanks
 in [backends/custom/custom_backend.py](backends/custom/custom_backend.py):

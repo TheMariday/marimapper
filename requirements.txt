@@ -2,8 +2,6 @@
 numpy<1.25.0,>=1.17.3
 opencv-python
 tqdm
-requests
 open3d
 pycolmap
 parse
-pyserial
