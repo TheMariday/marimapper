@@ -142,6 +142,4 @@ or just drop me a message on [Telegram](https://t.me/themariday)!
 
 The licensing on this is [GPLv3](LICENSE).
 
-The TLDR is you can do anything you like as long as you let users know that this repo exists.
-
-I basically want to avoid someone packaging this up, selling it and telling people that it's the only way to do this.
+The TLDR is you can do anything you like with this as long as it's open source
