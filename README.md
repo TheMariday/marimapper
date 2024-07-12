@@ -6,6 +6,9 @@
 [![MacOS](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
+> [!CAUTION]
+> [This tool does not currently support Python 3.12](https://github.com/TheMariday/marimapper/issues/27)
+
 This is a tool to map addressable LEDs into 2D and 3D space using only your webcam!
 
 The basic algorithms behind this is what I used to map [Highbeam](https://www.youtube.com/shorts/isdhMqDIR8k)
