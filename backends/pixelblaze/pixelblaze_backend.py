@@ -20,9 +20,7 @@ class Backend:
     def set_map_coordinates(self, pixelmap: list):
         result = self.pb.setMapCoordinates(pixelmap)
         if result is False:
-            raise RuntimeError(
-                "Pixelblaze Backend failed to upload map coordinates."
-            )
+            raise RuntimeError("Pixelblaze Backend failed to upload map coordinates.")
         self.pb.wsSendJson({"mapperFit": 0})
 
     def set_current_map(self, pixelmap_name: str):
