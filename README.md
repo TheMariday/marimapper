@@ -55,10 +55,15 @@ MariMapper support the following pre-made backends:
 - `fadecandy`
 - [`wled`](https://kno.wled.ge/)
 - [`fcmega`](https://github.com/TheMariday/FC-Mega)
+- [`pixelblaze`](https://electromage.com/docs)
 - `custom`
 
 If you choose a pre-built backend, remember to install its dependencies using 
 `pip install -r backends/fadecandy/requirements.txt`
+
+When using Fadecandy, WLED, or Pixelblaze backends, pass the server IP or URI with the `--server` flag.
+
+Using Pixelblaze as a backend requires you to upload the [`marimapper.epe`](backends/pixelblaze/marimapper.epe) pattern to your pixelblaze before running Marimapper.
 
 However, your LEDs are as unique as you are,
 so it's super simple to implemenet your own `custom` backend by filling in the blanks
