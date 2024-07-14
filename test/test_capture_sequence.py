@@ -1,7 +1,7 @@
 import os
 
-from lib.reconstructor import Reconstructor
-from lib.led_map_2d import LEDMap2D
+from marimapper.reconstructor import Reconstructor
+from marimapper.led_map_2d import LEDMap2D
 
 
 def test_capture_sequence():

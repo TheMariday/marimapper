@@ -1,12 +1,8 @@
 import argparse
-import sys
-
-sys.path.append("./")
-
 import numpy as np
 import cv2
 import colorsys
-from lib.led_map_2d import LEDMap2D
+from marimapper.led_map_2d import LEDMap2D
 
 
 def render_2d_model(led_map):
@@ -34,14 +30,11 @@ def render_2d_model(led_map):
     cv2.waitKey(0)
 
 
-if __name__ == "__main__":
-
+def main():
     parser = argparse.ArgumentParser(description="Visualises 2D maps")
 
     parser.add_argument(
-        "filename",
-        type=str,
-        help="The 2d_map file to visualise",
+        "--filename", type=str, help="The 2d_map file to visualise", required=True
     )
 
     args = parser.parse_args()
@@ -49,3 +42,7 @@ if __name__ == "__main__":
     map_data = LEDMap2D(filepath=args.filename)
 
     render_2d_model(map_data)
+
+
+if __name__ == "__main__":
+    main()

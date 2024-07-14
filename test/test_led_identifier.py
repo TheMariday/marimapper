@@ -1,5 +1,5 @@
-from lib.led_identifier import LedFinder
-from lib.camera import Camera
+from marimapper.led_identifier import LedFinder
+from marimapper.camera import Camera
 
 
 def close(x, y):

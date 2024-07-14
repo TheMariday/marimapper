@@ -1,7 +1,0 @@
-﻿setuptools
-numpy<1.25.0,>=1.17.3
-opencv-python
-tqdm
-open3d
-pycolmap
-parse

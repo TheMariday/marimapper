@@ -1,10 +1,7 @@
 import argparse
-import sys
 import csv
 
-sys.path.append("./")
-
-from lib import utils
+from marimapper import utils
 
 
 def read_coordinates_from_csv(csv_file_name):

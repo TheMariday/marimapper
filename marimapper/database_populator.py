@@ -3,7 +3,7 @@ from math import radians, tan
 
 import numpy as np
 
-from lib.sfm.database import COLMAPDatabase
+from marimapper.database import COLMAPDatabase
 
 
 def populate(db_path, led_maps_2d):

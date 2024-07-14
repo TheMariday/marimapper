@@ -17,13 +17,32 @@ The basic algorithms behind this is what I used to map [Highbeam](https://www.yo
 ![](docs/images/reconstruct_with_normals_and_strips.png)
 
 
-## Step 0: Install requirements
+## Step 0: Install
 
-After downloading this repository and installing Python, run `pip install -r requirements.txt`
+Marimapper supports the following pre-built backends:
+
+- `fadecandy`
+- [`wled`](https://kno.wled.ge/)
+- [`fcmega`](https://github.com/TheMariday/FC-Mega)
+- [`pixelblaze`](https://electromage.com/docs)
+
+To install Marimapper with a 
+`pixelblaze`
+backend, download this repository and run 
+`pip install .[pixelblaze]`
+
+<details>
+<summary>Using pixelblaze?</summary>
+Using Pixelblaze as a backend requires you to upload the [`marimapper.epe`](marimapper/backends/pixelblaze/marimapper.epe) pattern to your pixelblaze before running Marimapper.
+</details>
+
+If you would like to write your own LED backend, just run `pip install .` 
+
 
 ## Step 1: Run the camera checker (recommended)
 
-Run `python scripts/check_camera.py` to ensure your camera is compatible with MariMapper, or check the list below:
+
+Run `marimapper_check_camera` to ensure your camera is compatible with MariMapper, or check the list below:
 
 <details>
 
@@ -37,11 +56,18 @@ Run `python scripts/check_camera.py` to ensure your camera is compatible with Ma
 
 </details>
 
+> [IMPORTANT]
+> Scripts on windows need to be appended with `.exe`
+
+
 Test LED identification by turning down the lights and holding a torch or led up to the camera
 This should start with few warnings, no errors and produce a **very** dark image
 with a single crosshair on centered on your LED.
 
 As long as your webcam has exposure control, this should even work in a relatively well lit room!
+
+> [!TIP]
+> You can append `--help` to any command to show you all argument options
 
 ![alt text](docs/images/camera_check.png "Camera Check window")
 
@@ -49,41 +75,26 @@ As long as your webcam has exposure control, this should even work in a relative
 > [!TIP]
 > If your camera doesn't support exposure adjustment, or the image is still too bright, try dimming the lights and playing around with the --exposure and --threshold arguments
 
-## Step 2: Choose / Write your LED backend
 
-MariMapper needs to be able to communicate with your LEDs and it does this via a `--backend`
+## Step 2: Write your LED backend if needed
 
-MariMapper support the following pre-made backends:
+If your LED backend isn't supported, you need to write your own!
+This is luckily very simple!
 
-- `fadecandy`
-- [`wled`](https://kno.wled.ge/)
-- [`fcmega`](https://github.com/TheMariday/FC-Mega)
-- [`pixelblaze`](https://electromage.com/docs)
-- `custom`
+Open a new python file called `my_backend.py` and copy the below stub into it.
 
-If you choose a pre-built backend, remember to install its dependencies using 
-`pip install -r backends/fadecandy/requirements.txt`
-
-When using Fadecandy, WLED, or Pixelblaze backends, pass the server IP or URI with the `--server` flag.
-
-Using Pixelblaze as a backend requires you to upload the [`marimapper.epe`](backends/pixelblaze/marimapper.epe) pattern to your pixelblaze before running Marimapper.
-
-However, your LEDs are as unique as you are,
-so it's super simple to implemenet your own `custom` backend by filling in the blanks
-in [backends/custom/custom_backend.py](backends/custom/custom_backend.py):
+Fill out the blanks and check it by running `marimapper_check_backend --backend my_backend.py`
 
 ```python
-# import some_led_library
-
 class Backend:
 
     def __init__(self):
         # connect to some device here!
 
-    def get_led_count(self):
+    def get_led_count(self) -> int:
         # return the number of leds your system can control here
 
-    def set_led(self, led_index: int, on: bool):
+    def set_led(self, led_index: int, on: bool) -> None:
         # Write your code for controlling your LEDs here
         # It should turn on or off the led at the led_index depending on the "on" variable
         # For example:
@@ -92,14 +103,12 @@ class Backend:
         # else:
         #     some_led_library.set_led(led_index, (0, 0, 0))
 ```
-> [!TIP]
-> You can test your backend with `python scripts/check_backend.py`
 
 ## Step 3: [It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
 
-Run `python marimapper.py my_scan --backend fadecandy` 
+Run `marimapper my_scan --backend fadecandy` 
 
-change `fadecandy` to whatever backend you're using 
+Change `fadecandy` to whatever backend you're using 
 and `my_scan` to the directory you want to save your scan
 
 Set up your LEDs so most of them are in view and when you're ready, type `y` when prompted with `Start scan? [y/n]`

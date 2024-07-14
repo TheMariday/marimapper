@@ -1,13 +1,11 @@
 import argparse
-import sys
 import time
 
-sys.path.append("./")
+from marimapper import utils
+from marimapper import logging
 
-from lib import utils
-from lib import logging
 
-if __name__ == "__main__":
+def main():
 
     parser = argparse.ArgumentParser(
         description="Tests a particular backend by making a reference led blink"
@@ -26,8 +24,6 @@ if __name__ == "__main__":
 
     logging.info(f"Loading {args.backend} backend")
 
-    led_count = args.reference_led + 1
-
     led_backend = utils.get_backend(args.backend, args.server)
 
     logging.info("Press ctrl-c to cancel")
@@ -42,3 +38,7 @@ if __name__ == "__main__":
 
         logging.info(f"Turning off LED {args.reference_led}")
         led_backend.set_led(args.reference_led, False)
+
+
+if __name__ == "__main__":
+    main()

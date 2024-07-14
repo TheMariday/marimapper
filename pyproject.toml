@@ -1,0 +1,62 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+[project]
+name = "marimapper"
+version = "V1.0"
+
+dependencies = [
+    "setuptools",
+    "numpy<1.25.0,>=1.17.3",
+    "opencv-python",
+    "tqdm",
+    "open3d",
+    "pycolmap",
+    "parse"
+]
+
+classifiers = [
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+requires-python = ">=3.9"
+
+maintainers = [
+  {name = "TheMariday"},
+]
+description = "This is a tool to map addressable LEDs into 2D and 3D space using only your webcam!"
+readme = "README.md"
+license = {file = "LICENSE"}
+
+
+
+[project.optional-dependencies]
+develop = [
+    "pytest",
+    "black",
+    "flake8",
+    "flake8-bugbear"
+    ]
+
+# This is where we add the backend dependencies:
+
+fadecandy = []
+fcmega = ["pyserial"]
+pixelblaze = ["pixelblaze-client"]
+wled = ["requests"]
+
+[project.urls]
+Homepage = "https://github.com/themariday/marimapper"
+Documentation = "https://github.com/themariday/marimapper"
+Repository = "https://github.com/themariday/marimapper.git"
+
+[project.scripts]
+marimapper = "marimapper.scripts.scanner_cli:main"
+marimapper_check_camera = "marimapper.scripts.check_camera:main"
+marimapper_check_backend ="marimapper.scripts.check_backend:main"
+

@@ -1,6 +1,6 @@
 import cv2
-from lib.led_map_2d import LEDDetection
-from lib import logging
+from marimapper.led_map_2d import LEDDetection
+from marimapper import logging
 
 
 class LedFinder:

@@ -1,6 +1,6 @@
 import numpy as np
 import open3d
-from lib import logging
+from marimapper import logging
 from multiprocessing import Process, Event
 
 

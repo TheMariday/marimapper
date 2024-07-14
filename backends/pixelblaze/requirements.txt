@@ -1,3 +1,0 @@
-# This file defines the requirements for the Pixelblaze backend
-
-pixelblaze-client

@@ -1,5 +1,5 @@
 import cv2
-from lib import logging
+from marimapper import logging
 
 
 class CameraSettings:

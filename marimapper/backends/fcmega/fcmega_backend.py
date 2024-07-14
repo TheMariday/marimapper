@@ -1,7 +1,7 @@
 import time
 import threading
 
-from backends.fcmega.fcmega import FCMega
+from marimapper.backends.fcmega.fcmega import FCMega
 
 
 class Backend:

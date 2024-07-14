@@ -1,6 +1,10 @@
 import os
 import sys
-from lib import logging
+
+import importlib.util
+from inspect import signature
+
+from marimapper import logging
 
 
 def add_camera_args(parser):
@@ -40,8 +44,7 @@ def add_backend_args(parser):
     parser.add_argument(
         "--backend",
         type=str,
-        help="The backend used for led communication",
-        choices=["custom", "fadecandy", "wled", "fcmega", "pixelblaze"],
+        help="The backend used for led communication, i.e. fadecandy, wled or my_backend.py",
         required=True,
     )
 
@@ -62,47 +65,67 @@ def get_user_confirmation(prompt):
     return uin == "y"
 
 
-def get_backend(backend_name, server=""):
-    try:
-        if backend_name == "custom":
-            from backends.custom import custom_backend
+def load_custom_backend(backend_file, server):
 
-            return custom_backend.Backend()
+    custom_backend_specs = importlib.util.spec_from_file_location(
+        "custom_backend", backend_file
+    )
+    custom_backend = importlib.util.module_from_spec(custom_backend_specs)
 
-        if backend_name == "fadecandy":
-            from backends.fadecandy import fadecandy_backend
+    custom_backend_specs.loader.exec_module(custom_backend)
 
-            if server:
-                return fadecandy_backend.Backend(server)
-            else:
-                return fadecandy_backend.Backend()
+    backend = custom_backend.Backend(server) if server else custom_backend.Backend()
 
-        if backend_name == "wled":
-            from backends.wled import wled_backend
+    if "get_led_count" not in dir(backend):
+        raise RuntimeError("Your backend does not have a get_led_count function")
 
-            if server:
-                return wled_backend.Backend(server)
-            else:
-                return wled_backend.Backend()
+    if "set_led" not in dir(backend):
+        raise RuntimeError("Your backend does not have a set_led function")
 
-        if backend_name == "fcmega":
-            from backends.fcmega import fcmega_backend
-
-            return fcmega_backend.Backend()
-
-        if backend_name == "pixelblaze":
-            from backends.pixelblaze import pixelblaze_backend
-
-            return pixelblaze_backend.Backend(server)
-
-        raise RuntimeError("Invalid backend name")
-
-    except NotImplementedError:
-        logging.error(
-            f"Failed to initialise backend {backend_name}, you need to implement it or use the "
-            f"--backend argument to select from the available backends"
+    if len(signature(backend.get_led_count).parameters) != 0:
+        raise RuntimeError(
+            "Your backend get_led_count function should not take any arguments"
         )
-        quit()
+
+    if len(signature(backend.set_led).parameters) != 2:
+        raise RuntimeError(
+            "Your backend set_led function should only take two arguments"
+        )
+
+    return backend
+
+
+def get_backend(backend_name, server=""):
+    if backend_name == "fadecandy":
+        from marimapper.backends.fadecandy import fadecandy_backend
+
+        if server:
+            return fadecandy_backend.Backend(server)
+        else:
+            return fadecandy_backend.Backend()
+
+    if backend_name == "wled":
+        from marimapper.backends.wled import wled_backend
+
+        if server:
+            return wled_backend.Backend(server)
+        else:
+            return wled_backend.Backend()
+
+    if backend_name == "fcmega":
+        from marimapper.backends.fcmega import fcmega_backend
+
+        return fcmega_backend.Backend()
+
+    if backend_name == "pixelblaze":
+        from marimapper.backends.pixelblaze import pixelblaze_backend
+
+        return pixelblaze_backend.Backend(server)
+
+    if os.path.isfile(backend_name) and backend_name.endswith(".py"):
+        return load_custom_backend(backend_name, server)
+
+    raise RuntimeError("Invalid backend name")
 
 
 class SupressLogging(object):

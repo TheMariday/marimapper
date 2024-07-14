@@ -1,4 +1,4 @@
-from backends.fadecandy import opc
+from marimapper.backends.fadecandy import opc
 
 
 class Backend:

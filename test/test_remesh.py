@@ -1,6 +1,6 @@
-from lib.led_map_2d import get_all_2d_led_maps
-from lib.sfm.sfm import SFM
-from lib.remesher import remesh
+from marimapper.led_map_2d import get_all_2d_led_maps
+from marimapper.sfm import SFM
+from marimapper.remesher import remesh
 
 
 def test_remesh_higbeam():

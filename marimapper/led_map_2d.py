@@ -1,6 +1,6 @@
 import os
 from parse import parse
-from lib import logging
+from marimapper import logging
 
 
 class LEDDetection:

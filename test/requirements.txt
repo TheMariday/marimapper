@@ -1,6 +1,0 @@
-# A quick helper file to install all test requirements if you want to run the test suites / linting tools
-
-pytest
-black
-flake8
-flake8-bugbear

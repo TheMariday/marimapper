@@ -2,13 +2,13 @@ import os
 
 import numpy as np
 
-from lib.sfm.read_write_model import (
+from marimapper.read_write_model import (
     qvec2rotmat,
     read_images_binary,
     read_points3D_binary,
 )
-from lib.remesher import fix_normals
-from lib.led_map_3d import LEDMap3D
+from marimapper.remesher import fix_normals
+from marimapper.led_map_3d import LEDMap3D
 
 
 def binary_to_led_map_3d(path):

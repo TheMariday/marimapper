@@ -3,10 +3,10 @@ import time
 import math
 from threading import Thread
 
-from lib.camera import Camera, CameraSettings
-from lib.led_identifier import LedFinder
-from lib import logging
-from lib.timeout_controller import TimeoutController
+from marimapper.camera import Camera, CameraSettings
+from marimapper.led_identifier import LedFinder
+from marimapper import logging
+from marimapper.timeout_controller import TimeoutController
 
 
 class Reconstructor:

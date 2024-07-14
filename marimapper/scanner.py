@@ -1,31 +1,25 @@
-import argparse
 import os
 import time
-import signal
 from tqdm import tqdm
 from pathlib import Path
 
-from lib.reconstructor import Reconstructor
-from lib import utils
-from lib import logging
-from lib.utils import get_user_confirmation
-from lib.led_map_2d import LEDMap2D
-from lib.sfm.sfm import SFM
-from lib.visualize_model import Renderer3D
+from marimapper.reconstructor import Reconstructor
+from marimapper import utils
+from marimapper import logging
+from marimapper.utils import get_user_confirmation
+from marimapper.led_map_2d import LEDMap2D
+from marimapper.sfm import SFM
+from marimapper.visualize_model import Renderer3D
 from multiprocessing import Queue
-from lib.led_map_2d import get_all_2d_led_maps
+from marimapper.led_map_2d import get_all_2d_led_maps
 
 
-# PYCHARM DEVELOPER WARNING!
-# You MUST enable "Emulate terminal in output console" in the run configuration or
-# really weird  stuff happens with multiprocessing!
-
-
-class MariMapper:
+class Scanner:
 
     def __init__(self, cli_args):
+        self.output_dir = cli_args.output_dir
         self.led_backend = utils.get_backend(cli_args.backend, cli_args.server)
-        os.makedirs(args.output_dir, exist_ok=True)
+        os.makedirs(cli_args.output_dir, exist_ok=True)
 
         self.led_map_2d_queue = Queue()
         self.led_map_3d_queue = Queue()
@@ -86,7 +80,7 @@ class MariMapper:
             # The filename is made out of the date, then the resolution of the camera
             string_time = time.strftime("%Y%m%d-%H%M%S")
 
-            filepath = os.path.join(args.output_dir, f"led_map_2d_{string_time}.csv")
+            filepath = os.path.join(self.output_dir, f"led_map_2d_{string_time}.csv")
 
             led_map_2d = LEDMap2D()
 
@@ -141,30 +135,3 @@ class MariMapper:
                 self.led_maps_2d.append(led_map_2d)
                 self.sfm.add_led_maps_2d(self.led_maps_2d)
                 self.sfm.reload()
-
-
-if __name__ == "__main__":
-
-    logging.info("Starting MariMapper")
-
-    parser = argparse.ArgumentParser(description="Captures LED flashes to file")
-
-    utils.add_camera_args(parser)
-    utils.add_backend_args(parser)
-
-    parser.add_argument(
-        "output_dir",
-        type=str,
-        help="The output folder for your capture",
-    )
-
-    args = parser.parse_args()
-
-    marimapper = MariMapper(cli_args=args)
-
-    marimapper.mainloop()
-    marimapper.close()
-
-    # For some reason python refuses to actually exit here, so I'm brute forcing it
-    os.kill(os.getpid(), signal.SIGINT)
-    os.kill(os.getpid(), signal.CTRL_C_EVENT)

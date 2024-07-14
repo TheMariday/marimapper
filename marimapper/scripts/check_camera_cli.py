@@ -1,13 +1,11 @@
 import argparse
-import sys
 
-sys.path.append("./")
+from marimapper.reconstructor import Reconstructor
+from marimapper.utils import add_camera_args
+from marimapper import logging
 
-from lib.reconstructor import Reconstructor
-from lib.utils import add_camera_args
-from lib import logging
 
-if __name__ == "__main__":
+def main():
 
     parser = argparse.ArgumentParser(
         description="Tests your webcam and LED detection algorithms"
@@ -36,3 +34,7 @@ if __name__ == "__main__":
         "Camera connected! Hold an LED up to the camera to check LED identification"
     )
     reconstructor.show_debug()
+
+
+if __name__ == "__main__":
+    main()

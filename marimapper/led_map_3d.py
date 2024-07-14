@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from lib import logging
+from marimapper import logging
 
 
 class LEDMap3D:

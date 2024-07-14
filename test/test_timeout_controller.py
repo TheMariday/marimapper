@@ -1,4 +1,4 @@
-from lib.timeout_controller import TimeoutController
+from marimapper.timeout_controller import TimeoutController
 
 
 def test_timeout_controller_with_not_enough_samples():

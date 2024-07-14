@@ -1,6 +1,6 @@
 [flake8]
 ignore = E402
-exclude = backends/fadecandy/opc.py, venv, lib/sfm/database.py, lib/sfm/read_write_model.py
+exclude = marimapper/backends/fadecandy/opc.py, venv, marimapper/database.py, marimapper/read_write_model.py
 max-line-length=127
 max-complexity = 10
 extend-ignore = W503, E203

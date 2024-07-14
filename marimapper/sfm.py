@@ -5,12 +5,12 @@ from pathlib import Path
 import pycolmap
 from multiprocessing import Process, Event
 
-from lib.sfm.database_populator import populate
-from lib.sfm.model import binary_to_led_map_3d
-from lib.utils import SupressLogging
-from lib import map_cleaner
-from lib.led_map_2d import get_all_2d_led_maps
-from lib import logging
+from marimapper.database_populator import populate
+from marimapper.model import binary_to_led_map_3d
+from marimapper.utils import SupressLogging
+from marimapper import map_cleaner
+from marimapper.led_map_2d import get_all_2d_led_maps
+from marimapper import logging
 
 
 class SFM(Process):

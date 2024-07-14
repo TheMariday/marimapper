@@ -1,7 +1,7 @@
 import numpy as np
 
-from lib.sfm.sfm import SFM
-from lib.led_map_2d import get_all_2d_led_maps
+from marimapper.sfm import SFM
+from marimapper.led_map_2d import get_all_2d_led_maps
 
 
 def check_dimensions(map_3d, max_error):
