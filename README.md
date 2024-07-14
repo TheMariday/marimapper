@@ -19,7 +19,11 @@ The basic algorithms behind this is what I used to map [Highbeam](https://www.yo
 
 ## Step 0: Install
 
-Marimapper supports the following pre-built backends:
+You can install Marimapper with just Python and Pip! No clone required!
+
+For the Marimapper to communicate with your leds, it requires a backend.
+
+Luckily, the following backends are pre-built:
 
 - `fadecandy`
 - [`wled`](https://kno.wled.ge/)
@@ -28,15 +32,18 @@ Marimapper supports the following pre-built backends:
 
 To install Marimapper with a 
 `pixelblaze`
-backend, download this repository and run 
-`pip install .[pixelblaze]`
+backend, run the following command:
+
+`pip install "marimapper[pixelblaze] @ git+http://github.com/themariday/marimapper"`
 
 <details>
 <summary>Using pixelblaze?</summary>
 Using Pixelblaze as a backend requires you to upload the [`marimapper.epe`](marimapper/backends/pixelblaze/marimapper.epe) pattern to your pixelblaze before running Marimapper.
 </details>
 
-If you would like to write your own LED backend, just run `pip install .` 
+If you would like to write your own LED backend, run the following command: 
+
+`pip install "marimapper @ git+http://github.com/themariday/marimapper"`
 
 
 ## Step 1: Run the camera checker (recommended)
