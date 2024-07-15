@@ -1,6 +1,7 @@
 import serial
 import struct
 import serial.tools.list_ports
+from marimapper import logging
 
 
 class FCMega:
@@ -12,13 +13,13 @@ class FCMega:
         if port is None:
             port = self._get_port()
             if port is None:
-                print("Cannot find port")
+                logging.error("Cannot find port")
                 return
 
         self.serial = serial.Serial(port)
 
         if not self.update():
-            print("failed to communicate with FC MEga")
+            logging.error("failed to communicate with FC MEga")
             return
 
     def __del__(self):
@@ -27,7 +28,7 @@ class FCMega:
     def _get_port(self):
         for device in serial.tools.list_ports.comports():
             if device.serial_number.startswith("FCM"):
-                print(f"found port {device.name}")
+                logging.info(f"found port {device.name}")
                 return device.name
 
         return None

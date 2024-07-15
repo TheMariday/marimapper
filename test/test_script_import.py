@@ -30,4 +30,11 @@ def test_view_2d_map_cli():
         main()  # This should fail gracefully without any arguments
 
 
+def test_upload_to_pixelblaze_cli():
+    from marimapper.scripts.upload_map_to_pixelblaze_cli import main
+
+    with pytest.raises(SystemExit):
+        main()  # This should fail gracefully without any arguments
+
+
 # Do not test scanner_cli due to it calling system level sig-kill commands!

@@ -57,6 +57,7 @@ Repository = "https://github.com/themariday/marimapper.git"
 
 [project.scripts]
 marimapper = "marimapper.scripts.scanner_cli:main"
-marimapper_check_camera = "marimapper.scripts.check_camera:main"
-marimapper_check_backend ="marimapper.scripts.check_backend:main"
-
+marimapper_check_camera = "marimapper.scripts.check_camera_cli:main"
+marimapper_check_backend ="marimapper.scripts.check_backend_cli:main"
+marimapper_upload_to_pixelblaze = "marimapper.scripts.upload_map_to_pixelblaze_cli:main"
+marimapper_view_2d_map = "marimapper.scripts.view_2d_map_cli:main"

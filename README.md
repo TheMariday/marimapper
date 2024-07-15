@@ -19,35 +19,11 @@ The basic algorithms behind this is what I used to map [Highbeam](https://www.yo
 
 ## Step 0: Install
 
-You can install Marimapper with just Python and Pip! No clone required!
-
-For the Marimapper to communicate with your leds, it requires a backend.
-
-Luckily, the following backends are pre-built:
-
-- `fadecandy`
-- [`wled`](https://kno.wled.ge/)
-- [`fcmega`](https://github.com/TheMariday/FC-Mega)
-- [`pixelblaze`](https://electromage.com/docs)
-
-To install Marimapper with a 
-`pixelblaze`
-backend, run the following command:
-
-`pip install "marimapper[pixelblaze] @ git+http://github.com/themariday/marimapper"`
-
-<details>
-<summary>Using pixelblaze?</summary>
-Using Pixelblaze as a backend requires you to upload the [`marimapper.epe`](marimapper/backends/pixelblaze/marimapper.epe) pattern to your pixelblaze before running Marimapper.
-</details>
-
-If you would like to write your own LED backend, run the following command: 
+Install MariMapper with:
 
 `pip install "marimapper @ git+http://github.com/themariday/marimapper"`
 
-
-## Step 1: Run the camera checker (recommended)
-
+## Step 1: Test your camera
 
 Run `marimapper_check_camera` to ensure your camera is compatible with MariMapper, or check the list below:
 
@@ -82,15 +58,49 @@ As long as your webcam has exposure control, this should even work in a relative
 > [!TIP]
 > If your camera doesn't support exposure adjustment, or the image is still too bright, try dimming the lights and playing around with the --exposure and --threshold arguments
 
+## Step 2: Choose your backend
 
-## Step 2: Write your LED backend if needed
+For the Marimapper to communicate with your leds, it requires a backend.
 
-If your LED backend isn't supported, you need to write your own!
-This is luckily very simple!
+The following backends are built-in:
 
+<details>
+<summary>Fadecandy</summary>
+
+To use the fadecandy backend, please ensure that you are running the fadecandy server
+A fork of the fadecandy repo can be found [here](https://github.com/TheMariday/fadecandy)
+
+</details>
+
+<details>
+<summary>WLED</summary>
+
+More info can be found [here](https://kno.wled.ge/)
+
+</details>
+
+<details>
+<summary>FCMega</summary>
+
+This is a custom driver I've written for the Teensy 4.1 to drive up to 9600 leds.
+Source code can be found [here](https://github.com/TheMariday/fcmega)
+
+</details>
+
+<details>
+<summary>PixelBlaze</summary>
+
+Using Pixelblaze as a backend requires you to upload the 
+[marimapper.epe](https://github.com/TheMariday/marimapper/backends/pixelblaze/marimapper.epe) pattern to your pixelblaze before running Marimapper.
+
+</details>
+
+To install any of the above backends, run:
+
+`pip install "marimapper[backend_name] @ git+http://github.com/themariday/marimapper"`
+
+If your LED backend isn't supported, you need to write your own.
 Open a new python file called `my_backend.py` and copy the below stub into it.
-
-Fill out the blanks and check it by running `marimapper_check_backend --backend my_backend.py`
 
 ```python
 class Backend:
@@ -111,22 +121,30 @@ class Backend:
         #     some_led_library.set_led(led_index, (0, 0, 0))
 ```
 
+Fill out the blanks and check it by running `marimapper_check_backend --backend my_backend.py`
+
+
 ## Step 3: [It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
 
-Run `marimapper my_scan --backend fadecandy` 
+Run `marimapper my_scan --backend fadecandy`
 
-Change `fadecandy` to whatever backend you're using 
-and `my_scan` to the directory you want to save your scan
+Change `my_scan` to the directory you want to save your scan
+and `fadecandy` to whatever backend you're using
 
 Set up your LEDs so most of them are in view and when you're ready, type `y` when prompted with `Start scan? [y/n]`
 
 This will turn each LED on and off in turn, do not move the camera or leds during capture!
 
-If you just want a 2D map, this is where you can stop! 
+<details>
+<summary>Just want a 2D map?</summary>
 
-Run `python scripts/view_2d_map.py my_scan/...` to visualise your map replacing `...` with the map name.
+If you just want a 2D map, this is where you can stop!
 
-To capture a 3D map, rotate your leds or move your webcam to a new position
+Run `marimapper_view_2d_scan led_map_2d_0.csv` to visualise your map replacing `led_map_2d_0.csv` with the map name.
+
+</details>
+
+Rotate your leds or move your webcam to a new position
 
 > [!TIP]
 > As long as some of your leds are mostly in view, you can move your webcam to wherever you like!

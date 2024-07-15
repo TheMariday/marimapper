@@ -1,11 +1,11 @@
-import argparse
 import csv
 
 from marimapper import utils
+from marimapper import logging
 
 
 def read_coordinates_from_csv(csv_file_name):
-    print(f"Loading coordinates from {csv_file_name}")
+    logging.info(f"Loading coordinates from {csv_file_name}")
     with open(csv_file_name, newline="") as csvfile:
         csv_reader = csv.DictReader(csvfile)
         list_of_leds = []
@@ -31,9 +31,9 @@ def read_coordinates_from_csv(csv_file_name):
         return final_coordinate_list
 
 
-def main_function(cli_args):
+def upload_map_to_pixelblaze(cli_args):
     final_coordinate_list = read_coordinates_from_csv(cli_args.csv_file)
-    print(final_coordinate_list)
+    logging.info(final_coordinate_list)
 
     upload_coordinates = utils.get_user_confirmation(
         "Upload coordinates to Pixelblaze? [y/n]: "
@@ -41,21 +41,9 @@ def main_function(cli_args):
     if not upload_coordinates:
         return
 
-    print(f"Uploading coordinates to pixelblaze {cli_args.server}")
+    logging.info(
+        f"Uploading coordinates to pixelblaze {cli_args.server if cli_args.server is not None else ''}"
+    )
     led_backend = utils.get_backend("pixelblaze", cli_args.server)
     led_backend.set_map_coordinates(final_coordinate_list)
-    print("Finished")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Upload led_map_3d.csv to pixelblaze")
-    parser.add_argument("--server", type=str, help="pixelblaze server ip")
-    parser.add_argument(
-        "--csv_file",
-        type=str,
-        help="The csv file to convert",
-        default="my_scan/led_map_3d.csv",
-    )
-    args = parser.parse_args()
-
-    main_function(args)
+    logging.info("Finished")
