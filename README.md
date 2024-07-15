@@ -1,4 +1,4 @@
-![logo.png](docs%2Fimages%2Flogo.png)
+![logo.png](docs/images/logo.png)
 
 [![Supported Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue)]()
 [![Windows](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml)
@@ -9,19 +9,21 @@
 > [!CAUTION]
 > [This tool does not currently support Python 3.12](https://github.com/TheMariday/marimapper/issues/27)
 
-This is a tool to map addressable LEDs into 2D and 3D space using only your webcam!
 
-The basic algorithms behind this is what I used to map [Highbeam](https://www.youtube.com/shorts/isdhMqDIR8k)
-(Map pictured below)
+### Marimapper uses your webcam to map addressable LEDs to 3D space!
 
 ![](docs/images/reconstruct_with_normals_and_strips.png)
 
 
 ## Step 0: Install
 
-Install MariMapper with:
-
 `pip install "marimapper @ git+http://github.com/themariday/marimapper"`
+
+This will install the Marimapper library along with all the scripts needed below.
+
+You can run the scripts anywhere by just typing them into a console, on windows append `.exe` to the script name.
+
+You can append `--help` to any command to show you all argument options.
 
 ## Step 1: Test your camera
 
@@ -35,28 +37,22 @@ Run `marimapper_check_camera` to ensure your camera is compatible with MariMappe
 - Logitech C920
 - Dell Lattitude 5521 built-in
 - HP Envy x360 built-in 
-- If your camera works, please drop me a line so I can add it to the list!
+- If your camera works, please drop me a line, so I can add it to the list!
 
 </details>
 
-> [IMPORTANT]
-> Scripts on windows need to be appended with `.exe`
 
+Test LED identification by turning down the lights and holding a torch or led up to the camera.
 
-Test LED identification by turning down the lights and holding a torch or led up to the camera
 This should start with few warnings, no errors and produce a **very** dark image
 with a single crosshair on centered on your LED.
 
-As long as your webcam has exposure control, this should even work in a relatively well lit room!
-
-> [!TIP]
-> You can append `--help` to any command to show you all argument options
 
 ![alt text](docs/images/camera_check.png "Camera Check window")
 
 
 > [!TIP]
-> If your camera doesn't support exposure adjustment, or the image is still too bright, try dimming the lights and playing around with the --exposure and --threshold arguments
+> If your camera doesn't support exposure adjustment, or the image is still too bright, try dimming the lights and playing around with the `--exposure` and `--threshold` arguments
 
 ## Step 2: Choose your backend
 
@@ -135,14 +131,7 @@ Set up your LEDs so most of them are in view and when you're ready, type `y` whe
 
 This will turn each LED on and off in turn, do not move the camera or leds during capture!
 
-<details>
-<summary>Just want a 2D map?</summary>
-
 If you just want a 2D map, this is where you can stop!
-
-Run `marimapper_view_2d_scan led_map_2d_0.csv` to visualise your map replacing `led_map_2d_0.csv` with the map name.
-
-</details>
 
 Rotate your leds or move your webcam to a new position
 
@@ -168,6 +157,20 @@ Here is an example reconstruction of a test tube of LEDs I have
 - Use the `+` / `-` keys to increase / decrease point sizes
 - Use `1`, `2` & `3` keys to change colour scheme
 </details>
+
+# Random other stuff that doesn't really fit anywhere
+
+There's also a tool to turn your 3D scan into a 3D model, run it with `marimapper_remesh my_3d_map.csv`
+
+You can visualise 2D scans with `marimapper_view_2d_scan led_map_2d_0.csv`
+
+If you want to develop with MariMapper, you can use 
+`pip install "marimapper[develop] @ git+http://github.com/themariday/marimapper"`
+to grab all the tools you need. Flake8, Black, etc.
+
+When installing Marimapper, it will adjust your Python packages to the correct versions. 
+If you don't want this, then run it inside a venv.
+If you're worried about library pollution then I assume you know how to use a venv.
 
 # Feedback
 
