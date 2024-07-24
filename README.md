@@ -35,7 +35,7 @@ Run `marimapper_check_camera` to ensure your camera is compatible with MariMappe
 
 - HP 4310 (settings may not revert)
 - Logitech C920
-- Dell Lattitude 5521 built-in
+- Dell Latitude 5521 built-in
 - HP Envy x360 built-in 
 - If your camera works, please drop me a line, so I can add it to the list!
 
@@ -63,8 +63,8 @@ The following backends are built-in:
 <details>
 <summary>Fadecandy</summary>
 
-To use the fadecandy backend, please ensure that you are running the fadecandy server
-A fork of the fadecandy repo can be found [here](https://github.com/TheMariday/fadecandy)
+To use the Fadecandy backend, please ensure that you are running the Fadecandy server
+A fork of the Fadecandy repo can be found [here](https://github.com/TheMariday/fadecandy)
 
 </details>
 
@@ -87,7 +87,10 @@ Source code can be found [here](https://github.com/TheMariday/fcmega)
 <summary>PixelBlaze</summary>
 
 Using Pixelblaze as a backend requires you to upload the 
-[marimapper.epe](https://github.com/TheMariday/marimapper/backends/pixelblaze/marimapper.epe) pattern to your pixelblaze before running Marimapper.
+[marimapper.epe](marimapper/backends/pixelblaze/marimapper.epe) 
+pattern to your pixelblaze using 
+`marimapper_upload_to_pixelblaze` 
+before running Marimapper.
 
 </details>
 
@@ -109,7 +112,7 @@ class Backend:
 
     def set_led(self, led_index: int, on: bool) -> None:
         # Write your code for controlling your LEDs here
-        # It should turn on or off the led at the led_index depending on the "on" variable
+        # It should turn on or off the LED at the led_index depending on the "on" variable
         # For example:
         # if on:
         #     some_led_library.set_led(led_index, (255, 255, 255))
