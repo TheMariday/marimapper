@@ -1,5 +1,4 @@
 import os
-from parse import parse
 from marimapper import logging
 
 
@@ -36,17 +35,18 @@ class LEDMap2D:
 
         for i in range(1, len(lines)):
 
-            line = lines[i].strip()
+            line = lines[i].strip().split(",")
 
-            values = parse("{index:^d},{u:^f},{v:^f}", line)
-            if values is not None:
-                self.add_detection(
-                    values.named["index"],
-                    LEDDetection(values.named["u"], values.named["v"]),
-                )
-            else:
+            try:
+                index = int(line[0])
+                u = float(line[1])
+                v = float(line[2])
+            except (IndexError, ValueError) as e:
                 logging.error(f"Failed to read line {i} of {filename}: {line}")
                 continue
+
+            self.add_detection(index, LEDDetection(u, v))
+
 
         return True
 
