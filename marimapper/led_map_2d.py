@@ -41,12 +41,11 @@ class LEDMap2D:
                 index = int(line[0])
                 u = float(line[1])
                 v = float(line[2])
-            except (IndexError, ValueError) as e:
+            except (IndexError, ValueError):
                 logging.error(f"Failed to read line {i} of {filename}: {line}")
                 continue
 
             self.add_detection(index, LEDDetection(u, v))
-
 
         return True
 
