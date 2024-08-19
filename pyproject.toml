@@ -5,15 +5,14 @@ build-backend = "hatchling.build"
 
 [project]
 name = "marimapper"
-version = "V1.1"
+version = "V1.2"
 
 dependencies = [
-    "setuptools",
     "numpy<1.25.0,>=1.17.3",
     "opencv-python",
     "tqdm",
     "open3d",
-    "pycolmap",
+    "pycolmap==0.6.1",
 ]
 
 classifiers = [
