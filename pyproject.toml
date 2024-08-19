@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "marimapper"
-version = "V1.0"
+version = "V1.1"
 
 dependencies = [
     "setuptools",
