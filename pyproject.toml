@@ -13,6 +13,9 @@ dependencies = [
     "tqdm",
     "open3d",
     "pycolmap==0.6.1",
+    "pyserial",          # required by fcmega
+    "pixelblaze-client", # required by pixelblaze
+    "requests"           # required by fcmega
 ]
 
 classifiers = [
@@ -40,13 +43,6 @@ develop = [
     "flake8",
     "flake8-bugbear"
     ]
-
-# This is where we add the backend dependencies:
-
-fadecandy = []
-fcmega = ["pyserial"]
-pixelblaze = ["pixelblaze-client"]
-wled = ["requests"]
 
 [project.urls]
 Homepage = "https://github.com/themariday/marimapper"

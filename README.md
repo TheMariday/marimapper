@@ -17,7 +17,11 @@
 
 ## Step 0: Install
 
-`pip install "marimapper @ git+http://github.com/themariday/marimapper"`
+```shell
+pip install pipx
+pipx ensurepath
+pipx install "git+https://github.com/themariday/marimapper"
+```
 
 This will install the Marimapper library along with all the scripts needed below.
 
@@ -94,10 +98,6 @@ before running Marimapper.
 
 </details>
 
-To install any of the above backends, run:
-
-`pip install "marimapper[backend_name] @ git+http://github.com/themariday/marimapper"`
-
 If your LED backend isn't supported, you need to write your own.
 Open a new python file called `my_backend.py` and copy the below stub into it.
 
@@ -119,6 +119,8 @@ class Backend:
         # else:
         #     some_led_library.set_led(led_index, (0, 0, 0))
 ```
+
+If your backend needs any external libraries for example, `requests`, add them to marimapper with `pipx inject marimapper requests` 
 
 Fill out the blanks and check it by running `marimapper_check_backend --backend my_backend.py`
 
