@@ -45,7 +45,17 @@ def add_backend_args(parser):
         "--backend",
         type=str,
         help="The backend used for led communication, i.e. fadecandy, wled or my_backend.py",
-        required=True,
+        default="None",
+    )
+
+    parser.add_argument(
+        "--start", type=int, help="Index of the first led you want to scan", default=0
+    )
+    parser.add_argument(
+        "--end",
+        type=int,
+        help="Index of the last led you want to scan up to the backends limit",
+        default=10000,
     )
 
     parser.add_argument("--server", type=str, help="Some backends require a server")
@@ -124,6 +134,9 @@ def get_backend(backend_name, server=""):
 
     if os.path.isfile(backend_name) and backend_name.endswith(".py"):
         return load_custom_backend(backend_name, server)
+
+    if backend_name == "None":
+        return None
 
     raise RuntimeError("Invalid backend name")
 

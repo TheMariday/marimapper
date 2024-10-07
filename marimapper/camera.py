@@ -109,19 +109,9 @@ class Camera:
         if not self.device.set(cv2.CAP_PROP_EXPOSURE, exposure):
             logging.error(f"Failed to set exposure to {exposure}")
 
-    def set_exposure_and_wait(
-        self, exposure, max_frames_to_wait=20, min_brightness_change=2.0
-    ):
-
-        initial_mean = cv2.mean(self.read())[0]
-
-        self.set_exposure(exposure)
-
-        for _ in range(max_frames_to_wait):
-            mean = cv2.mean(self.read())[0]
-            ratio = mean / initial_mean
-            if ratio > min_brightness_change or 1 / ratio > min_brightness_change:
-                return
+    def eat(self, count=30):
+        for _ in range(count):
+            self.read()
 
     def read(self, color=False):
         ret_val, image = self.device.read()

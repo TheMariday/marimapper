@@ -17,10 +17,13 @@ from marimapper.led_map_2d import get_all_2d_led_maps
 class Scanner:
 
     def __init__(self, cli_args):
-        self.output_dir = cli_args.output_dir
+        self.output_dir = cli_args.dir
         self.led_backend = utils.get_backend(cli_args.backend, cli_args.server)
-        os.makedirs(cli_args.output_dir, exist_ok=True)
-
+        if self.led_backend is not None:
+            self.led_id_range = range(
+                cli_args.start, min(cli_args.end, self.led_backend.get_led_count())
+            )
+        os.makedirs(self.output_dir, exist_ok=True)
         self.led_map_2d_queue = Queue()
         self.led_map_3d_queue = Queue()
 
@@ -35,7 +38,7 @@ class Scanner:
 
         self.renderer3d = Renderer3D(led_map_3d_queue=self.led_map_3d_queue)
         self.sfm = SFM(
-            Path(cli_args.output_dir),
+            Path(self.output_dir),
             rescale=True,
             interpolate=True,
             event_on_update=self.renderer3d.reload_event,
@@ -43,7 +46,7 @@ class Scanner:
             led_map_3d_queue=self.led_map_3d_queue,
         )
 
-        self.led_maps_2d = get_all_2d_led_maps(Path(cli_args.output_dir))
+        self.led_maps_2d = get_all_2d_led_maps(Path(self.output_dir))
 
         self.sfm.add_led_maps_2d(self.led_maps_2d)
 
@@ -75,7 +78,20 @@ class Scanner:
             if not start_scan:
                 return
 
+            if self.led_backend is None:
+                logging.warn(
+                    "Cannot start backend as no backend has been defined. Re-run marimapper with --backend <backend name>"
+                )
+                return
+
             self.reconstructor.dark()
+
+            result = self.reconstructor.find_led(debug=True)
+            if result is not None:
+                logging.error(
+                    f"All LEDs should be off, but the detector found one at {result.pos()}"
+                )
+                continue
 
             # The filename is made out of the date, then the resolution of the camera
             string_time = time.strftime("%Y%m%d-%H%M%S")
@@ -88,18 +104,16 @@ class Scanner:
 
             visible_leds = []
 
-            led_count = self.led_backend.get_led_count()
-
             last_camera_motion_check_time = time.time()
             camera_motion_interval_sec = 5
 
             capture_success = True
 
             for led_id in tqdm(
-                range(led_count),
+                self.led_id_range,
                 unit="LEDs",
                 desc=f"Capturing sequence to {filepath}",
-                total=led_count,
+                total=self.led_id_range.stop,
                 smoothing=0,
             ):
 
@@ -110,7 +124,7 @@ class Scanner:
                     led_map_2d.add_detection(led_id, result)
                     total_leds_found += 1
 
-                is_last = led_id == led_count - 1
+                is_last = led_id == self.led_id_range.stop - 1
                 camera_motion_check_overdue = (
                     time.time() - last_camera_motion_check_time
                 ) > camera_motion_interval_sec
@@ -122,16 +136,17 @@ class Scanner:
                     last_camera_motion_check_time = time.time()
 
                     if camera_motion > 1.0:
-                        logging.error(
-                            f"\nFailed to capture sequence as camera moved by {int(camera_motion)}%"
-                        )
-                        capture_success = False
-                        break
+                        logging.warn(f"\nCamera moved by {int(camera_motion)}%")
+                        if not get_user_confirmation("Continue? [y/n]: "):
+                            capture_success = False
+                            break
 
             if capture_success:
                 led_map_2d.write_to_file(filepath)
-                logging.info(f"{total_leds_found}/{led_count} leds found")
+                logging.info(f"{total_leds_found}/{self.led_id_range.stop} leds found")
 
                 self.led_maps_2d.append(led_map_2d)
                 self.sfm.add_led_maps_2d(self.led_maps_2d)
                 self.sfm.reload()
+            else:
+                logging.error("Capture failed")

@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "marimapper"
-version = "V1.2"
+version = "V1.3"
 
 dependencies = [
     "numpy<1.25.0,>=1.17.3",

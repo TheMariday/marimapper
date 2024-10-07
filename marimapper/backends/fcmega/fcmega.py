@@ -10,20 +10,16 @@ class FCMega:
 
     def __init__(self, port=None):
 
+        self.serial = None
+
         if port is None:
             port = self._get_port()
             if port is None:
-                logging.error("Cannot find port")
-                return
+                raise RuntimeError("Cannot find FC Mega")
 
         self.serial = serial.Serial(port)
-
-        if not self.update():
-            logging.error("failed to communicate with FC MEga")
-            return
-
-    def __del__(self):
-        self.serial.close()
+        if not self.serial.is_open:
+            raise RuntimeError("Cannot open port")
 
     def _get_port(self):
         for device in serial.tools.list_ports.comports():

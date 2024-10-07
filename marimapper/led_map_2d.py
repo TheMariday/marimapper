@@ -80,6 +80,10 @@ def get_all_2d_led_maps(directory):
     led_maps_2d = []
 
     for filename in sorted(os.listdir(directory)):
+
+        if not filename.endswith(".csv"):
+            continue
+
         full_path = os.path.join(directory, filename)
 
         if not os.path.isfile(full_path):

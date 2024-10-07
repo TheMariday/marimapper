@@ -5,7 +5,6 @@ from threading import Thread
 
 from marimapper.camera import Camera, CameraSettings
 from marimapper.led_identifier import LedFinder
-from marimapper import logging
 from marimapper.timeout_controller import TimeoutController
 
 
@@ -21,9 +20,8 @@ class Reconstructor:
         height=-1,
         camera=None,
     ):
-        self.settings_backup = None
         self.cam = Camera(device) if camera is None else camera
-        self.settings_backup = CameraSettings(self.cam)
+        self.settings_light = CameraSettings(self.cam)
         self.led_backend = led_backend
 
         self.dark_exposure = dark_exposure
@@ -39,23 +37,29 @@ class Reconstructor:
         self.cam.set_exposure_mode(0)
         self.cam.set_gain(0)
 
+        self.settings_dark = CameraSettings(self.cam)
+
         self.live_feed = None
         self.live_feed_running = False
+
+        self.cam.eat()
+
+    def __del__(self):
+        self.close()
 
     def close(self):
         self.close_live_feed()
         cv2.destroyAllWindows()
 
-        if self.settings_backup is not None:
-            logging.debug("Reverting camera changes...")
-            self.settings_backup.apply(self.cam)
-            logging.debug("Camera changes reverted")
+        self.light()
 
     def light(self):
-        self.cam.set_exposure_and_wait(self.light_exposure)
+        self.settings_light.apply(self.cam)
+        self.cam.eat()
 
     def dark(self):
-        self.cam.set_exposure_and_wait(self.dark_exposure)
+        self.settings_dark.apply(self.cam)
+        self.cam.eat()
 
     def open_live_feed(self):
         cv2.destroyAllWindows()
@@ -110,6 +114,9 @@ class Reconstructor:
         return results
 
     def enable_and_find_led(self, led_id, debug=False):
+
+        if self.led_backend is None:
+            return None
 
         # First wait for no leds to be visible
         while self.find_led(debug) is not None:

@@ -19,9 +19,7 @@ def main():
     add_backend_args(parser)
 
     parser.add_argument(
-        "output_dir",
-        type=str,
-        help="The output folder for your capture",
+        "--dir", type=str, help="The output folder for your capture", default="."
     )
 
     args = parser.parse_args()

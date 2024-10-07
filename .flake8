@@ -3,4 +3,4 @@ ignore = E402
 exclude = marimapper/backends/fadecandy/opc.py, venv, marimapper/database.py, marimapper/read_write_model.py
 max-line-length=127
 max-complexity = 10
-extend-ignore = W503, E203
+extend-ignore = W503, E203, C901

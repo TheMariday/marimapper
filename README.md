@@ -18,12 +18,15 @@
 ## Step 0: Install
 
 ```shell
+pip --version # Ensure that it is //not// python 3.12, see above
 pip install pipx
 pipx ensurepath
 pipx install "git+https://github.com/themariday/marimapper"
 ```
 
-This will install the Marimapper library along with all the scripts needed below.
+If you have Python 3.12 installed, install 3.11 and add `--python /path/to/python3.11` to the above `pipx install` command 
+
+pipx not working? You can also download this repo and run `pip install .` from inside it
 
 You can run the scripts anywhere by just typing them into a console, on windows append `.exe` to the script name.
 
