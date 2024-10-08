@@ -42,7 +42,6 @@ class Reconstructor:
         self.live_feed = None
         self.live_feed_running = False
 
-
     def __del__(self):
         self.close()
 
