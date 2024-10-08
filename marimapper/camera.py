@@ -117,6 +117,7 @@ class Camera:
         ret_val, image = self.device.read()
         if not ret_val:
             logging.error("Failed to grab frame")
+            return None
 
         if not color:
             return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
