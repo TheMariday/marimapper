@@ -31,6 +31,7 @@ def test_none_found():
             led_results = led_finder.find_led(frame)
             assert led_results is None
 
+
 def test_draw_results():
 
     led_finder = LedFinder()

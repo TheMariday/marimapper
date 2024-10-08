@@ -12,6 +12,7 @@ from marimapper.led_map_3d import LEDMap3D
 import open3d
 import math
 
+
 def fix_normals(led_map):
 
     pcd = open3d.geometry.PointCloud()

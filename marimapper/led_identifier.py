@@ -1,6 +1,5 @@
 import cv2
 from marimapper.led_map_2d import LEDDetection
-from marimapper import logging
 
 
 class LedFinder:
@@ -25,8 +24,8 @@ class LedFinder:
         img_height = image.shape[0]
         img_width = image.shape[1]
 
-        center_u = moments["m10"] / max(moments["m00"],0.00001)
-        center_v = moments["m01"] / max(moments["m00"],0.00001)
+        center_u = moments["m10"] / max(moments["m00"], 0.00001)
+        center_v = moments["m01"] / max(moments["m00"], 0.00001)
 
         center_u = center_u / img_width
         v_offset = (img_width - img_height) / 2.0
