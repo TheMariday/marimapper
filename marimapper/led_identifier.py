@@ -19,21 +19,14 @@ class LedFinder:
         led_response_count = len(contours)
         if led_response_count == 0:
             return None
-        elif led_response_count > 1:
-            logging.debug(
-                f"Warning! More than 1 light source found, found {led_response_count} light sources"
-            )
 
         moments = cv2.moments(image_thresh)
-
-        if moments["m00"] == 0:
-            return None
 
         img_height = image.shape[0]
         img_width = image.shape[1]
 
-        center_u = moments["m10"] / moments["m00"]
-        center_v = moments["m01"] / moments["m00"]
+        center_u = moments["m10"] / max(moments["m00"],0.00001)
+        center_v = moments["m01"] / max(moments["m00"],0.00001)
 
         center_u = center_u / img_width
         v_offset = (img_width - img_height) / 2.0

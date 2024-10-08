@@ -7,8 +7,43 @@ from marimapper.read_write_model import (
     read_images_binary,
     read_points3D_binary,
 )
-from marimapper.remesher import fix_normals
+
 from marimapper.led_map_3d import LEDMap3D
+import open3d
+import math
+
+def fix_normals(led_map):
+
+    pcd = open3d.geometry.PointCloud()
+
+    led_ids = list(led_map.keys())
+
+    xyz = [led_map[led_id]["pos"] for led_id in led_ids]
+    normals_from_camera = [led_map[led_id]["normal"] for led_id in led_ids]
+
+    pcd.points = open3d.utility.Vector3dVector(xyz)
+
+    pcd.normals = open3d.utility.Vector3dVector(np.zeros((len(pcd.normals), 3)))
+
+    pcd.estimate_normals()  # This needs to be written back to the led map somehow
+
+    assert len(pcd.normals) == len(normals_from_camera)
+
+    for i in range(len(normals_from_camera)):
+        normal_from_camera = normals_from_camera[i] / np.linalg.norm(
+            normals_from_camera[i]
+        )
+        normal_from_estimator = pcd.normals[i] / np.linalg.norm(pcd.normals[i])
+
+        angle = np.arccos(
+            np.clip(np.dot(normal_from_camera, normal_from_estimator), -1.0, 1.0)
+        )
+
+        led_map[led_ids[i]]["normal"] = pcd.normals[i] * (
+            -1 if angle > math.pi / 2.0 else 1
+        )
+
+    return led_map
 
 
 def binary_to_led_map_3d(path):

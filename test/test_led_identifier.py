@@ -30,3 +30,11 @@ def test_none_found():
         if frame_id in [7, 15, 23]:
             led_results = led_finder.find_led(frame)
             assert led_results is None
+
+def test_draw_results():
+
+    led_finder = LedFinder()
+    mock_camera = Camera("test/MariMapper-Test-Data/9_point_box/cam_0/capture_%04d.png")
+    frame = mock_camera.read()
+    led_results = led_finder.find_led(frame)
+    led_finder.draw_results(frame, led_results)

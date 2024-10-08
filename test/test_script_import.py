@@ -15,14 +15,6 @@ def test_check_camera_cli():
     with pytest.raises(SystemExit):
         main()  # this should fail if no cameras are available
 
-
-def test_remesh_cli():
-    from marimapper.scripts.remesh_cli import main
-
-    with pytest.raises(SystemExit):
-        main()  # This should fail gracefully without any arguments
-
-
 def test_view_2d_map_cli():
     from marimapper.scripts.view_2d_map_cli import main
 

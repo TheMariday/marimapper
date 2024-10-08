@@ -14,6 +14,7 @@
 
 ![](docs/images/reconstruct_with_normals_and_strips.png)
 
+Above example data folder can be found under [docs/highbeam_example/](docs/highbeam_example)
 
 ## Step 0: Install
 

@@ -7,10 +7,6 @@ from marimapper.database import COLMAPDatabase
 
 
 def populate(db_path, led_maps_2d):
-    if not led_maps_2d:
-        raise Exception(
-            "Failed to populate reconstruction database due to no maps being provided"
-        )
 
     map_features = np.zeros((len(led_maps_2d), 1, 2))
 
