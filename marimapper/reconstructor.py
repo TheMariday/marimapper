@@ -18,9 +18,8 @@ class Reconstructor:
         led_backend,
         width=-1,
         height=-1,
-        camera=None,
     ):
-        self.cam = Camera(device) if camera is None else camera
+        self.cam = Camera(device)
         self.settings_light = CameraSettings(self.cam)
         self.led_backend = led_backend
 

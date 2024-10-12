@@ -75,7 +75,7 @@ def get_user_confirmation(prompt):
     return uin == "y"
 
 
-def load_custom_backend(backend_file, server):
+def load_custom_backend(backend_file, server=None):
 
     custom_backend_specs = importlib.util.spec_from_file_location(
         "custom_backend", backend_file
