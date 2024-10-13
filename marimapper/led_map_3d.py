@@ -64,12 +64,6 @@ class LEDMap3D:
         for cam in self.cameras:
             cam[1] *= scale
 
-    def get_xyz_list(self):
-        return np.array([self[led_id]["pos"] for led_id in self.keys()])
-
-    def get_center(self):
-        return np.average(self.get_xyz_list(), axis=0)
-
     def get_normal_list(self):
         return np.array([self[led_id]["normal"] for led_id in self.keys()])
 

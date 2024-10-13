@@ -25,6 +25,9 @@ class LEDMap2D:
         if not os.path.exists(filename):
             return False
 
+        if not filename.endswith(".csv"):
+            return False
+
         with open(filename, "r") as f:
             lines = f.readlines()
 
@@ -42,7 +45,7 @@ class LEDMap2D:
                 u = float(line[1])
                 v = float(line[2])
             except (IndexError, ValueError):
-                logging.error(f"Failed to read line {i} of {filename}: {line}")
+                logging.warn(f"Failed to read line {i} of {filename}: {line}")
                 continue
 
             self.add_detection(index, LEDDetection(u, v))
@@ -81,13 +84,7 @@ def get_all_2d_led_maps(directory):
 
     for filename in sorted(os.listdir(directory)):
 
-        if not filename.endswith(".csv"):
-            continue
-
         full_path = os.path.join(directory, filename)
-
-        if not os.path.isfile(full_path):
-            continue
 
         led_map_2d = LEDMap2D(full_path)
         if led_map_2d.valid:

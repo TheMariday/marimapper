@@ -4,7 +4,7 @@ import math
 from threading import Thread
 
 from marimapper.camera import Camera, CameraSettings
-from marimapper.led_identifier import LedFinder
+from marimapper.led_identifier import find_led_in_image, draw_led_detections
 from marimapper.timeout_controller import TimeoutController
 
 
@@ -26,7 +26,7 @@ class Reconstructor:
         self.dark_exposure = dark_exposure
         self.light_exposure = self.cam.get_exposure()
 
-        self.led_finder = LedFinder(threshold)
+        self.threshold = threshold
         self.timeout_controller = TimeoutController()
 
         if width != -1 and height != -1:
@@ -101,10 +101,10 @@ class Reconstructor:
     def find_led(self, debug=False):
 
         image = self.cam.read()
-        results = self.led_finder.find_led(image)
+        results = find_led_in_image(image, self.threshold)
 
         if debug:
-            rendered_image = self.led_finder.draw_results(image, results)
+            rendered_image = draw_led_detections(image, results)
             cv2.imshow("MariMapper", rendered_image)
             cv2.waitKey(1)
 

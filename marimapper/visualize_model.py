@@ -97,7 +97,9 @@ class Renderer3D(Process):
         self.line_set.lines = open3d.utility.Vector2iVector(l)
         self.line_set.colors = open3d.utility.Vector3dVector(c)
 
-        self.point_cloud.points = open3d.utility.Vector3dVector(led_map.get_xyz_list())
+        self.point_cloud.points = open3d.utility.Vector3dVector(
+            np.array([led_map.data[led_id]["pos"] for led_id in led_map.keys()])
+        )
         self.point_cloud.normals = open3d.utility.Vector3dVector(
             led_map.get_normal_list() * 0.2
         )
