@@ -137,26 +137,25 @@ def test_fcmega(monkeypatch):
     get_backend("fcmega")
 
 
+# py_mini_racer uses import pkg_resources which is depreciated
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_pixelblaze(monkeypatch):
 
-    # mini_racer uses import pkg_resources which is depreciated
-    with pytest.warns(DeprecationWarning):
+    import pixelblaze
 
-        import pixelblaze
+    class PixelblazePatch:
+        def __init__(self, _):
+            pass
 
-        class PixelblazePatch:
-            def __init__(self, _):
-                pass
+        def setActivePatternByName(self, _):
+            pass
 
-            def setActivePatternByName(self, _):
-                pass
+        def getPixelCount(self):
+            return 1
 
-            def getPixelCount(self):
-                return 1
+    monkeypatch.setattr(pixelblaze, "Pixelblaze", PixelblazePatch)
 
-        monkeypatch.setattr(pixelblaze, "Pixelblaze", PixelblazePatch)
-
-        get_backend("pixelblaze", "1.2.3.4")
+    get_backend("pixelblaze", "1.2.3.4")
 
 
 def test_invalid_or_none_backend():
