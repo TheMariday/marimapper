@@ -4,7 +4,7 @@ from marimapper.camera import Camera
 
 def test_valid_device():
 
-    cam = Camera("test/MariMapper-Test-Data/9_point_box/cam_0/capture_0000.png")
+    cam = Camera("test/MariMapper-Test-Data/9_point_box/cam_0/capture_%04d.png")
 
     image = cam.read()
 
