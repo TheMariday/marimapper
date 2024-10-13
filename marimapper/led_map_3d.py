@@ -13,13 +13,13 @@ class LEDMap3D:
         if data is not None:
             self.data = data
 
-    def __setitem__(self, led_index, led_data):
+    def __setitem__(self, led_index, led_data):  # pragma: no cover
         self.data[led_index] = led_data
 
-    def __getitem__(self, led_index):
+    def __getitem__(self, led_index):  # pragma: no cover
         return self.data[led_index]
 
-    def __contains__(self, led_index):
+    def __contains__(self, led_index):  # pragma: no cover
         return led_index in self.data
 
     def __len__(self):
@@ -63,9 +63,6 @@ class LEDMap3D:
 
         for cam in self.cameras:
             cam[1] *= scale
-
-    def get_normal_list(self):
-        return np.array([self[led_id]["normal"] for led_id in self.keys()])
 
     def get_inter_led_distance(self):
         max_led_id = max(self.keys())

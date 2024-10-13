@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from marimapper.sfm import SFM
 from marimapper.led_map_2d import get_all_2d_led_maps
@@ -87,3 +88,34 @@ def test_reconstruct_higbeam():
     map_3d = SFM.process__(highbeam_map)
 
     assert map_3d is not None
+
+
+# this test does a re-scale, but should keep the dimensions about the same
+def test_rescale():
+    maps = get_all_2d_led_maps("test/scan")
+
+    map_3d = SFM.process__(maps, rescale=True)
+
+    assert map_3d.get_inter_led_distance() == pytest.approx(1.0)
+
+
+def test_connected():
+
+    maps = get_all_2d_led_maps("test/scan")
+
+    map_3d = SFM.process__(maps)
+
+    assert len(map_3d) == 21
+
+    connected = map_3d.get_connected_leds()
+    assert (6, 7) not in connected
+    assert (13, 14) not in connected
+
+
+def test_interpolate():
+
+    maps = get_all_2d_led_maps("test/scan")
+
+    map_3d = SFM.process__(maps, interpolate=True)
+
+    assert len(map_3d) == 23

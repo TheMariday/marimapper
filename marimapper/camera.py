@@ -36,7 +36,7 @@ class Camera:
                 break
 
         if not self.device.isOpened():
-            logging.error(f"Failed to connect to camera {device_id}")
+            raise RuntimeError(f"Failed to connect to camera {device_id}")
 
         self.set_resolution(self.get_width(), self.get_height())  # Don't ask
 
@@ -71,7 +71,8 @@ class Camera:
         new_width = self.get_width()
         new_height = self.get_height()
 
-        if width != new_width or height != new_height:
+        # this is cov ignored as it's a strange position to be in but ultimately fine
+        if width != new_width or height != new_height:  # pragma: no cover
             logging.error(
                 f"Failed to set camera {self.device_id} resolution to {width} x {height}",
             )

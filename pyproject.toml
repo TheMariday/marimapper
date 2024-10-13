@@ -35,10 +35,11 @@ readme = "README.md"
 license = {file = "LICENSE"}
 
 
-
 [project.optional-dependencies]
 develop = [
     "pytest",
+    "pytest-cov",
+    "pytest-mock",
     "black",
     "flake8",
     "flake8-bugbear"
@@ -62,5 +63,14 @@ omit = [
     "*/__main__.py",
     "marimapper/backends/*",
     "marimapper/scripts/*",
-    "marimapper/read_write_model.py"
+    "marimapper/pycolmap_tools/*"
     ]
+
+[tool.black]
+exclude = '''
+(/(
+    | venv
+    | marimapper/backends
+    | marimapper/pycolmap_tools
+)/)
+'''

@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-from marimapper.read_write_model import (
+from marimapper.pycolmap_tools.read_write_model import (
     qvec2rotmat,
     read_images_binary,
     read_points3D_binary,

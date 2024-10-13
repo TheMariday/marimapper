@@ -101,7 +101,7 @@ class Renderer3D(Process):
             np.array([led_map.data[led_id]["pos"] for led_id in led_map.keys()])
         )
         self.point_cloud.normals = open3d.utility.Vector3dVector(
-            led_map.get_normal_list() * 0.2
+            np.array([led_map[led_id]["normal"] for led_id in led_map.keys()]) * 0.2
         )
 
         self.strip_set.points = self.point_cloud.points

@@ -1,4 +1,3 @@
-# fmt: off
 # Copyright (c) 2023, ETH Zurich and UNC Chapel Hill.
 # All rights reserved.
 #
@@ -429,5 +428,3 @@ def example_usage():
 
 if __name__ == "__main__":
     example_usage()
-
-# fmt: on

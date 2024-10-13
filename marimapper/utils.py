@@ -61,7 +61,7 @@ def add_backend_args(parser):
     parser.add_argument("--server", type=str, help="Some backends require a server")
 
 
-def get_user_confirmation(prompt):
+def get_user_confirmation(prompt):  # pragma: no coverage
 
     try:
         uin = input(logging.colorise(prompt, logging.Col.BLUE))
@@ -86,13 +86,21 @@ def load_custom_backend(backend_file, server=None):
 
     backend = custom_backend.Backend(server) if server else custom_backend.Backend()
 
-    if "get_led_count" not in dir(backend):
-        raise RuntimeError("Your backend does not have a get_led_count function")
+    check_backend(backend)
 
-    if "set_led" not in dir(backend):
-        raise RuntimeError("Your backend does not have a set_led function")
+    return backend
 
-    if len(signature(backend.get_led_count).parameters) != 0:
+
+def check_backend(backend):
+
+    missing_funcs = {"get_led_count", "set_led"}.difference(set(dir(backend)))
+
+    if missing_funcs:
+        raise RuntimeError(
+            f"Your backend does not have the following functions: {missing_funcs}"
+        )
+
+    if len(signature(backend.get_led_count).parameters) != 0:  # pragma: no coverage
         raise RuntimeError(
             "Your backend get_led_count function should not take any arguments"
         )
@@ -101,8 +109,6 @@ def load_custom_backend(backend_file, server=None):
         raise RuntimeError(
             "Your backend set_led function should only take two arguments"
         )
-
-    return backend
 
 
 def get_backend(backend_name, server=""):
