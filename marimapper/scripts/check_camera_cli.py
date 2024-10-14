@@ -1,6 +1,6 @@
 import argparse
 
-from marimapper.reconstructor import Reconstructor
+from marimapper.detector import Detector
 from marimapper.utils import add_camera_args
 from marimapper import logging
 
@@ -21,19 +21,12 @@ def main():
         )
         quit()
 
-    reconstructor = Reconstructor(
-        args.device,
-        args.exposure,
-        args.threshold,
-        None,
-        width=args.width,
-        height=args.height,
-    )
+    detector = Detector(args.device, args.exposure, args.threshold, None)
 
     logging.info(
         "Camera connected! Hold an LED up to the camera to check LED identification"
     )
-    reconstructor.show_debug()
+    detector.show_debug()  # this no longer works!
 
 
 if __name__ == "__main__":

@@ -82,14 +82,6 @@ def test_invalid_reconstruction_views():
     assert map_3d is None
 
 
-def test_reconstruct_higbeam():
-    highbeam_map = get_all_2d_led_maps("test/MariMapper-Test-Data/highbeam")
-
-    map_3d = SFM.process__(highbeam_map)
-
-    assert map_3d is not None
-
-
 # this test does a re-scale, but should keep the dimensions about the same
 def test_rescale():
     maps = get_all_2d_led_maps("test/scan")

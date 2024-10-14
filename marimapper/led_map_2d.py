@@ -4,10 +4,12 @@ from marimapper import logging
 
 class LEDDetection:
 
-    def __init__(self, u, v, contours=()):
+    def __init__(self, led_id=-1, u=0.0, v=0.0, contours=(), valid=True):
+        self.led_id = led_id
         self.u = u
         self.v = v
         self.contours = contours
+        self.valid = valid
 
     def pos(self):
         return self.u, self.v
@@ -48,7 +50,7 @@ class LEDMap2D:
                 logging.warn(f"Failed to read line {i} of {filename}: {line}")
                 continue
 
-            self.add_detection(index, LEDDetection(u, v))
+            self.add_detection(LEDDetection(index, u, v))
 
         return True
 
@@ -64,8 +66,9 @@ class LEDMap2D:
     def get_detection(self, led_id):
         return self._detections[led_id]
 
-    def add_detection(self, led_id: int, detection: LEDDetection):
-        self._detections[led_id] = detection
+    def add_detection(self, detection: LEDDetection):
+        if detection.valid:
+            self._detections[detection.led_id] = detection
 
     def write_to_file(self, filename):
 

@@ -1,6 +1,6 @@
 import os
 
-from marimapper.reconstructor import Reconstructor
+from marimapper.detector import Detector
 from marimapper.led_map_2d import LEDMap2D
 
 
@@ -11,21 +11,22 @@ def test_capture_sequence():
 
     for view_index in range(9):
 
-        reconstructor = Reconstructor(
+        detector = Detector(
             device=f"test/MariMapper-Test-Data/9_point_box/cam_{view_index}/capture_%04d.png",
             dark_exposure=-10,
             threshold=128,
             led_backend=None,
+            display=False,
         )
 
         led_map_2d = LEDMap2D()
 
         for led_id in range(24):
 
-            result = reconstructor.find_led(False)
+            result = detector.find_led(led_id)
 
             if result:
-                led_map_2d.add_detection(led_id, result)
+                led_map_2d.add_detection(result)
 
         filepath = os.path.join(output_dir_full, f"led_map_2d_{view_index:04}.csv")
 

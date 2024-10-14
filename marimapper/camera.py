@@ -40,6 +40,11 @@ class Camera:
 
         self.set_resolution(self.get_width(), self.get_height())  # Don't ask
 
+        self.default_settings = CameraSettings(self)
+
+    def reset(self):
+        self.default_settings.apply(self)
+
     def get_width(self):
         return int(self.device.get(cv2.CAP_PROP_FRAME_WIDTH))
 
@@ -120,7 +125,4 @@ class Camera:
             logging.error("Failed to grab frame")
             return None
 
-        if not color:
-            return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        else:
-            return image
+        return image

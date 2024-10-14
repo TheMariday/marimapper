@@ -8,13 +8,9 @@ def test_valid_device():
 
     image = cam.read()
 
-    assert image.shape == (480, 640)  # Grey
-
-    image_colour = cam.read(color=True)
-
-    assert (
-        image_colour.shape[2] >= 3
-    )  # sometimes there are 3 channels, sometimes 4 depending on platform?
+    assert image.shape[0] == 480
+    assert image.shape[1] == 640
+    assert image.shape[2] >= 3
 
 
 def test_invalid_device():

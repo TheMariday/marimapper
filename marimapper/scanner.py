@@ -3,7 +3,7 @@ import time
 from tqdm import tqdm
 from pathlib import Path
 
-from marimapper.reconstructor import Reconstructor
+from marimapper.detector import Detector
 from marimapper import utils
 from marimapper import logging
 from marimapper.utils import get_user_confirmation
@@ -27,13 +27,8 @@ class Scanner:
         self.led_map_2d_queue = Queue()
         self.led_map_3d_queue = Queue()
 
-        self.reconstructor = Reconstructor(
-            cli_args.device,
-            cli_args.exposure,
-            cli_args.threshold,
-            self.led_backend,
-            width=cli_args.width,
-            height=cli_args.height,
+        self.detector = Detector(
+            cli_args.device, cli_args.exposure, cli_args.threshold, self.led_backend
         )
 
         self.renderer3d = Renderer3D(led_map_3d_queue=self.led_map_3d_queue)
@@ -52,28 +47,28 @@ class Scanner:
 
         self.sfm.start()
         self.renderer3d.start()
+        self.detector.start()
 
     def close(self):
         logging.debug("marimapper closing")
         self.sfm.shutdown()
         self.renderer3d.shutdown()
+        self.detector.shutdown()
+
         self.sfm.join()
         self.renderer3d.join()
+        self.detector.join()
+
         self.sfm.terminate()
         self.renderer3d.terminate()
-        self.reconstructor.close()
+        self.detector.terminate()
         logging.debug("marimapper closed")
 
     def mainloop(self):
 
         while True:
 
-            self.reconstructor.light()
-            self.reconstructor.open_live_feed()
-
             start_scan = get_user_confirmation("Start scan? [y/n]: ")
-
-            self.reconstructor.close_live_feed()
 
             if not start_scan:
                 return
@@ -84,10 +79,9 @@ class Scanner:
                 )
                 return
 
-            self.reconstructor.dark()
-
-            result = self.reconstructor.find_led(debug=True)
-            if result is not None:
+            self.detector.detection_request.put(-1)
+            result = self.detector.detection_result.get()
+            if result.valid():
                 logging.error(
                     f"All LEDs should be off, but the detector found one at {result.pos()}"
                 )
@@ -100,53 +94,23 @@ class Scanner:
 
             led_map_2d = LEDMap2D()
 
-            total_leds_found = 0
+            for led_id in self.led_id_range:
+                self.detector.detection_request.put(led_id)
 
-            visible_leds = []
-
-            last_camera_motion_check_time = time.time()
-            camera_motion_interval_sec = 5
-
-            capture_success = True
-
-            for led_id in tqdm(
+            for _ in tqdm(
                 self.led_id_range,
                 unit="LEDs",
                 desc=f"Capturing sequence to {filepath}",
                 total=self.led_id_range.stop,
                 smoothing=0,
             ):
+                result = self.detector.detection_result.get(timeout=10)
+                print(f"found {result}")
 
-                result = self.reconstructor.enable_and_find_led(led_id, debug=True)
+                led_map_2d.add_detection(result)
 
-                if result:
-                    visible_leds.append(led_id)
-                    led_map_2d.add_detection(led_id, result)
-                    total_leds_found += 1
+            led_map_2d.write_to_file(filepath)
 
-                is_last = led_id == self.led_id_range.stop - 1
-                camera_motion_check_overdue = (
-                    time.time() - last_camera_motion_check_time
-                ) > camera_motion_interval_sec
-
-                if camera_motion_check_overdue or is_last:
-                    camera_motion = self.reconstructor.get_camera_motion(
-                        visible_leds, led_map_2d
-                    )
-                    last_camera_motion_check_time = time.time()
-
-                    if camera_motion > 1.0:
-                        logging.warn(f"\nCamera moved by {int(camera_motion)}%")
-                        if not get_user_confirmation("Continue? [y/n]: "):
-                            capture_success = False
-                            break
-
-            if capture_success:
-                led_map_2d.write_to_file(filepath)
-                logging.info(f"{total_leds_found}/{self.led_id_range.stop} leds found")
-
-                self.led_maps_2d.append(led_map_2d)
-                self.sfm.add_led_maps_2d(self.led_maps_2d)
-                self.sfm.reload()
-            else:
-                logging.error("Capture failed")
+            self.led_maps_2d.append(led_map_2d)
+            self.sfm.add_led_maps_2d(self.led_maps_2d)
+            self.sfm.reload()

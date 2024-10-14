@@ -14,18 +14,7 @@ def add_camera_args(parser):
         help="Camera device index, set to 1 if using a laptop with a USB webcam",
         default=0,
     )
-    parser.add_argument(
-        "--width",
-        type=int,
-        help="Camera width, usually uses 640 by default",
-        default=-1,
-    )
-    parser.add_argument(
-        "--height",
-        type=int,
-        help="Camera height, usually uses 480 by default",
-        default=-1,
-    )
+
     parser.add_argument(
         "--exposure",
         type=int,
