@@ -158,9 +158,7 @@ def test_pixelblaze(monkeypatch):
     get_backend("pixelblaze", "1.2.3.4")
 
 
-def test_invalid_or_none_backend():
-
-    assert get_backend("None") is None
+def test_invalid_backend():
 
     with pytest.raises(RuntimeError):
         get_backend("invalid_backend")

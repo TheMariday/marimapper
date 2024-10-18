@@ -1,14 +1,15 @@
 import cv2
 import time
-import math
-from multiprocessing import Process, Event, Queue
+import typing
 
 from marimapper.camera import Camera
 from marimapper.timeout_controller import TimeoutController
-from marimapper.led_map_2d import LEDDetection
+from marimapper.led import Point2D, LED2D
+
+DETECTOR_WINDOW_NAME = "MariMapper - Detector"
 
 
-def find_led_in_image(image, led_id=-1, threshold=128):
+def find_led_in_image(image: cv2.Mat, threshold: int = 128) -> typing.Optional[Point2D]:
 
     if len(image.shape) > 2:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -18,8 +19,9 @@ def find_led_in_image(image, led_id=-1, threshold=128):
     contours, _ = cv2.findContours(image_thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     led_response_count = len(contours)
+
     if led_response_count == 0:
-        return LEDDetection(valid=False)
+        return None
 
     moments = cv2.moments(image_thresh)
 
@@ -33,10 +35,12 @@ def find_led_in_image(image, led_id=-1, threshold=128):
     v_offset = (img_width - img_height) / 2.0
     center_v = (center_v + v_offset) / img_width
 
-    return LEDDetection(led_id, center_u, center_v, contours)
+    brightness = 1.0
+
+    return Point2D(center_u, center_v, contours, brightness)  # todo, normalise contours
 
 
-def draw_led_detections(image, results):
+def draw_led_detections(image: cv2.Mat, led_detection: Point2D) -> cv2.Mat:
 
     render_image = (
         image if len(image.shape) == 3 else cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
@@ -45,157 +49,99 @@ def draw_led_detections(image, results):
     img_height = render_image.shape[0]
     img_width = render_image.shape[1]
 
-    if results.valid:
-        cv2.drawContours(render_image, results.contours, -1, (255, 0, 0), 1)
+    cv2.drawContours(
+        render_image, led_detection.contours, -1, (255, 0, 0), 1
+    )  # TODO, de-normalise contours once normalised
 
-        u_abs = int(results.u * img_width)
+    u_abs = int(led_detection.u() * img_width)
 
-        v_offset = (img_width - img_height) / 2.0
+    v_offset = (img_width - img_height) / 2.0
 
-        v_abs = int(results.v * img_width - v_offset)
+    v_abs = int(led_detection.v() * img_width - v_offset)
 
-        cv2.drawMarker(
-            render_image,
-            (u_abs, v_abs),
-            (0, 255, 0),
-            markerSize=100,
-        )
+    cv2.drawMarker(
+        render_image,
+        (u_abs, v_abs),
+        (0, 255, 0),
+        markerSize=100,
+    )
 
     return render_image
 
 
-class Detector(Process):
+def show_image(image: cv2.Mat) -> None:
+    cv2.imshow(DETECTOR_WINDOW_NAME, image)
+    key = cv2.waitKey(1)
 
-    def __init__(self, device, dark_exposure, threshold, led_backend, display=True):
-        super().__init__()
+    if key == 27: # esc
+        raise KeyboardInterrupt
 
-        self.exit_event = Event()
-        self.detection_request = Queue()
-        self.detection_result = Queue()
 
-        self.device = device
+def set_cam_default(cam: Camera) -> None:
+    if cam.state != "default":
+        cam.reset()
+        cam.eat()
+        cam.state = "default"
 
-        self.led_backend = led_backend
-        self.display = display
 
-        self.dark_exposure = dark_exposure
+def set_cam_dark(cam: Camera, exposure: int) -> None:
+    if cam.state != "dark":
+        cam.set_autofocus(0, 0)
+        cam.set_exposure_mode(0)
+        cam.set_gain(0)
+        cam.set_exposure(exposure)
+        cam.eat()
+        cam.state = "dark"
 
-        self.threshold = threshold
-        self.timeout_controller = TimeoutController()
 
-        self.cam_state = "default"
+def find_led(cam: Camera, threshold: int = 128, display: bool = True) -> typing.Optional[Point2D]:
 
-    def __del__(self):
-        self.close()
+    image = cam.read()
+    results = find_led_in_image(image, threshold)
 
-    @staticmethod
-    def show_image(image):
-        cv2.imshow("MariMapper", image)
-        cv2.waitKey(1)
+    if display:
+        rendered_image = draw_led_detections(image, results)
+        show_image(rendered_image)
 
-    def run(self):
+    return results
 
-        cam = Camera(self.device)
 
-        while not self.exit_event.is_set():
+def enable_and_find_led(
+    cam: Camera,
+    led_backend,
+    led_id: int,
+    view_id: int,
+    timeout_controller: TimeoutController,
+    threshold: int,
+) -> typing.Optional[LED2D]:
 
-            if not self.detection_request.empty():
-                self.set_cam_dark(cam)
-                led_id = self.detection_request.get()
-                result = self.enable_and_find_led(led_id)
-                if result is not None:
-                    self.detection_result.put(result)
-            else:
-                self.set_cam_default(cam)
-                image = cam.read()
-                self.show_image(image)
+    if led_backend is None:
+        return None
 
-            # if we close the window
-            if cv2.getWindowProperty("MariMapper", cv2.WND_PROP_VISIBLE) <= 0:
-                self.exit_event.set()
-                continue
+    # First wait for no leds to be visible
+    while find_led(cam, threshold) is not None:
+        pass
 
-        cv2.destroyAllWindows()
-        self.set_cam_default(cam)
+    # Set the led to on and start the clock
+    response_time_start = time.time()
 
-    def shutdown(self):
-        self.exit_event.set()
+    led_backend.set_led(led_id, True)
 
-    def set_cam_default(self, cam):
-        if self.cam_state != "default":
-            cam.reset()
-            cam.eat()
-            self.cam_state = "default"
+    # Wait until either we have a result or we run out of time
+    point = None
+    while (
+        point is None and time.time() < response_time_start + timeout_controller.timeout
+    ):
+        point = find_led(cam, threshold)
 
-    def set_cam_dark(self, cam):
-        if self.cam_state != "dark":
-            cam.set_autofocus(0, 0)
-            cam.set_exposure_mode(0)
-            cam.set_gain(0)
-            cam.set_exposure(self.dark_exposure)
-            cam.eat()
-            self.cam_state = "dark"
+    led_backend.set_led(led_id, False)
 
-    def find_led(self, cam, led_id=-1):
+    if point is None:
+        return None
 
-        image = cam.read()
-        results = find_led_in_image(image, led_id, self.threshold)
+    timeout_controller.add_response_time(time.time() - response_time_start)
 
-        if self.display:
-            rendered_image = draw_led_detections(image, results)
-            self.show_image(rendered_image)
+    while find_led(cam, threshold) is not None:
+        pass
 
-        return results
-
-    def enable_and_find_led(self, cam, led_id):
-
-        if self.led_backend is None:
-            return None
-
-        # First wait for no leds to be visible
-        while self.find_led(cam) is not None:
-            pass
-
-        # Set the led to on and start the clock
-        response_time_start = time.time()
-
-        if led_id != -1:
-            self.led_backend.set_led(led_id, True)
-
-        # Wait until either we have a result or we run out of time
-        result = None
-        while (
-            result is None
-            and time.time() < response_time_start + self.timeout_controller.timeout
-        ):
-            result = self.find_led(cam)
-
-        self.led_backend.set_led(led_id, False)
-
-        if result is None:
-            return None
-
-        self.timeout_controller.add_response_time(time.time() - response_time_start)
-
-        while self.find_led(cam) is not None:
-            pass
-
-        return result
-
-    def get_camera_motion(self, valid_leds, map_data_2d):
-
-        if len(valid_leds) == 0:
-            return 0
-
-        for led_id in valid_leds:
-            detection_new = self.enable_and_find_led(cam, led_id)
-            if detection_new:
-                detection_orig = map_data_2d.get_detection(led_id)
-
-                distance_between_first_and_last = math.hypot(
-                    detection_orig.u - detection_new.u,
-                    detection_orig.v - detection_new.v,
-                )
-                return distance_between_first_and_last * 100
-
-        return 100
+    return LED2D(led_id, view_id, point)

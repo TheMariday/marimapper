@@ -42,6 +42,8 @@ class Camera:
 
         self.default_settings = CameraSettings(self)
 
+        self.state = "default"
+
     def reset(self):
         self.default_settings.apply(self)
 

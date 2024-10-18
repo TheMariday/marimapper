@@ -1,9 +1,9 @@
 import argparse
 
-from marimapper.detector import Detector
+from marimapper.detector import find_led, set_cam_dark
 from marimapper.utils import add_camera_args
 from marimapper import logging
-
+from marimapper.camera import Camera
 
 def main():
 
@@ -15,19 +15,18 @@ def main():
 
     args = parser.parse_args()
 
-    if args.width * args.height < 0:
-        logging.error(
-            "Failed to start camera checker as both camera width and height need to be provided"
-        )
-        quit()
 
-    detector = Detector(args.device, args.exposure, args.threshold, None)
+    cam = Camera(args.device)
+
+    set_cam_dark(cam, args.exposure)
+
 
     logging.info(
         "Camera connected! Hold an LED up to the camera to check LED identification"
     )
-    detector.show_debug()  # this no longer works!
 
+    while True:
+        find_led(cam, args.threshold)
 
 if __name__ == "__main__":
     main()
