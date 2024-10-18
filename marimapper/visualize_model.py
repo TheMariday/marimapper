@@ -31,10 +31,6 @@ class Renderer3D(Process):
             if not self.led_map_3d_queue.empty():
                 self.reload_geometry__()
 
-            logging.debug(
-                "Renderer3D process received reload event, reloading geometry"
-            )
-
             window_closed = not self._vis.poll_events()
 
             if window_closed:
@@ -81,26 +77,26 @@ class Renderer3D(Process):
 
         logging.debug(f"Fetched led map with size {len(leds)}")
 
-        #p, l, c = camera_to_points_lines_colors(led_map.cameras)
+        # p, l, c = camera_to_points_lines_colors(led_map.cameras)
 
-        #self.line_set.points = open3d.utility.Vector3dVector(p)
-        #self.line_set.lines = open3d.utility.Vector2iVector(l)
-        #self.line_set.colors = open3d.utility.Vector3dVector(c)
+        # self.line_set.points = open3d.utility.Vector3dVector(p)
+        # self.line_set.lines = open3d.utility.Vector2iVector(l)
+        # self.line_set.colors = open3d.utility.Vector3dVector(c)
 
         self.point_cloud.points = open3d.utility.Vector3dVector(
             np.array([led.point.position for led in leds])
         )
         self.point_cloud.normals = open3d.utility.Vector3dVector(
-            np.array([led.point.normal for led in leds])
+            np.array([led.point.normal for led in leds]) * 0.2
         )
 
-        #self.strip_set.points = self.point_cloud.points
-        #self.strip_set.lines = open3d.utility.Vector2iVector(
+        # self.strip_set.points = self.point_cloud.points
+        # self.strip_set.lines = open3d.utility.Vector2iVector(
         #    led_map.get_connected_leds()
-        #)
-        #self.strip_set.colors = open3d.utility.Vector3dVector(
+        # )
+        # self.strip_set.colors = open3d.utility.Vector3dVector(
         #    [[0.8, 0.8, 0.8] for _ in range(len(self.strip_set.lines))]
-        #)
+        # )
 
         if first:
             self._vis.add_geometry(self.point_cloud)

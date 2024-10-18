@@ -20,7 +20,7 @@ def colorise(string, string_format):
 
 
 def debug(string):
-    pass  # print(colorise(string, Col.BOLD))
+    print(colorise(string, Col.BOLD))
 
 
 def error(string):

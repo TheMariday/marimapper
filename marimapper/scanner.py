@@ -13,6 +13,7 @@ from marimapper.utils import get_user_confirmation
 from marimapper.visualize_model import Renderer3D
 from multiprocessing import Queue
 
+
 class Scanner:
 
     def __init__(self, cli_args):
@@ -33,11 +34,11 @@ class Scanner:
         )
 
         self.renderer3d = Renderer3D(led_map_3d_queue=self.led_map_3d_queue)
-        self.sfm = SFM(self.led_map_2d_queue,self.led_map_3d_queue)
+        self.sfm = SFM(self.led_map_2d_queue, self.led_map_3d_queue)
 
         self.leds_2d = get_all_2d_led_maps(Path(self.output_dir))
 
-        for led in self.leds_2d:
+        for led in self.leds_2d[0:2000]:
             self.led_map_2d_queue.put(led)
 
         self.sfm.start()
@@ -68,6 +69,10 @@ class Scanner:
             if not start_scan:
                 return
 
+            for led in self.leds_2d[2000:]:
+                self.led_map_2d_queue.put(led)
+                time.sleep(0.01)
+
             self.detector.detection_request.put(-1)
             result = self.detector.detection_result.get()
             if result.valid():
@@ -86,7 +91,7 @@ class Scanner:
             view_id = 0  # change
 
             for led_id in self.led_id_range:
-                self.detector.detection_request.put((view_id, led_id))
+                self.detector.detect(led_id, view_id)
 
             for _ in tqdm(
                 self.led_id_range,

@@ -3,6 +3,9 @@ from marimapper.detector_process import DetectorProcess
 import pytest
 from mock_camera import MockCamera
 
+
+# This is tricky because the capture sequence needs to include black scenes
+# hmmmm
 @pytest.mark.skip(reason="in progress")
 def test_detector_process_basic(monkeypatch):
 

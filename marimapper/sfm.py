@@ -31,7 +31,7 @@ def sfm(leds) -> list[LED3D]:
             )
 
         if not os.path.exists(os.path.join(temp_dir, "0", "points3D.bin")):
-            print("failed to build")
+            # print("failed to build")
             return []
 
         return binary_to_led_map_3d(temp_dir)
