@@ -112,8 +112,10 @@ def get_view_ids(leds: list[LED2D]) -> set[int]:
 def get_leds_with_view(leds: list[LED2D], view_id: int) -> list[LED2D]:
     return [led for led in leds if led.view_id == view_id]
 
-def last_view(leds:list[LED2D]):
+
+def last_view(leds: list[LED2D]):
     return max([led.view_id for led in leds])
+
 
 def find_inter_led_distance(leds: list[LED2D | LED3D]):
 
@@ -203,8 +205,6 @@ def remove_duplicates(leds: list[LED3D]) -> list[LED3D]:
 
     return new_leds
 
-def get_leds_with_view(leds:list[LED2D], view_id) -> list[LED2D]:
-    return [led for led in leds if led.view_id == view_id]
 
-def get_leds_with_views(leds:list[LED2D], view_ids) -> list[LED2D]:
+def get_leds_with_views(leds: list[LED2D], view_ids) -> list[LED2D]:
     return [led for led in leds if led.view_id in view_ids]

@@ -73,7 +73,7 @@ def show_image(image: cv2.Mat) -> None:
     cv2.imshow(DETECTOR_WINDOW_NAME, image)
     key = cv2.waitKey(1)
 
-    if key == 27: # esc
+    if key == 27:  # esc
         raise KeyboardInterrupt
 
 
@@ -94,12 +94,14 @@ def set_cam_dark(cam: Camera, exposure: int) -> None:
         cam.state = "dark"
 
 
-def find_led(cam: Camera, threshold: int = 128, display: bool = True) -> typing.Optional[Point2D]:
+def find_led(
+    cam: Camera, threshold: int = 128, display: bool = True
+) -> typing.Optional[Point2D]:
 
     image = cam.read()
     results = find_led_in_image(image, threshold)
 
-    if display:
+    if display and results:
         rendered_image = draw_led_detections(image, results)
         show_image(rendered_image)
 
@@ -113,13 +115,14 @@ def enable_and_find_led(
     view_id: int,
     timeout_controller: TimeoutController,
     threshold: int,
+    display: bool = False,
 ) -> typing.Optional[LED2D]:
 
     if led_backend is None:
         return None
 
     # First wait for no leds to be visible
-    while find_led(cam, threshold) is not None:
+    while find_led(cam, threshold, display) is not None:
         pass
 
     # Set the led to on and start the clock
@@ -132,7 +135,7 @@ def enable_and_find_led(
     while (
         point is None and time.time() < response_time_start + timeout_controller.timeout
     ):
-        point = find_led(cam, threshold)
+        point = find_led(cam, threshold, display)
 
     led_backend.set_led(led_id, False)
 
@@ -141,7 +144,7 @@ def enable_and_find_led(
 
     timeout_controller.add_response_time(time.time() - response_time_start)
 
-    while find_led(cam, threshold) is not None:
+    while find_led(cam, threshold, display) is not None:
         pass
 
     return LED2D(led_id, view_id, point)

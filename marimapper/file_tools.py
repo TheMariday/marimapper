@@ -1,6 +1,5 @@
 import os
 from marimapper.led import Point2D, LED3D, LED2D
-from marimapper import logging
 import typing
 
 
@@ -31,7 +30,6 @@ def load_detections(filename: os.path, view_id) -> typing.Optional[list[LED2D]]:
             u = float(line[1])
             v = float(line[2])
         except (IndexError, ValueError):
-            logging.warn(f"Failed to read line {i} of {filename}: {line}")
             continue
 
         leds.append(LED2D(index, view_id, Point2D(u, v)))
@@ -45,7 +43,7 @@ def get_all_2d_led_maps(directory: os.path) -> list[LED2D]:
     for view_id, filename in enumerate(sorted(os.listdir(directory))):
         full_path = os.path.join(directory, filename)
 
-        detections = load_detections(full_path, view_id) # this is wrong
+        detections = load_detections(full_path, view_id)  # this is wrong
 
         if detections is not None:
             points.extend(detections)
@@ -54,7 +52,6 @@ def get_all_2d_led_maps(directory: os.path) -> list[LED2D]:
 
 
 def write_3d_leds_to_file(leds: list[LED3D], filename: str):
-    logging.debug(f"Writing 3D map with {len(leds)} leds to {filename}...")
 
     lines = ["index,x,y,z,xn,yn,zn,error"]
 

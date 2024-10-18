@@ -4,7 +4,7 @@ from tqdm import tqdm
 from pathlib import Path
 
 from marimapper.detector_process import DetectorProcess
-from marimapper import logging
+from marimapper import multiprocessing_logging as logging
 from marimapper.file_tools import get_all_2d_led_maps, write_2d_leds_to_file
 from marimapper.utils import get_user_confirmation
 from marimapper.visualize_model import Renderer3D

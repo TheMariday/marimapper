@@ -4,21 +4,17 @@ from tempfile import TemporaryDirectory
 import pycolmap
 
 from marimapper.database_populator import populate_database
+from marimapper.led import LED3D
 from marimapper.model import binary_to_led_map_3d
 from marimapper.utils import SupressLogging
-from marimapper import logging
 
 
-def sfm(maps_2d):
-    logging.debug("SFM process starting sfm process")
-    if len(maps_2d) < 2:
-        logging.debug("SFM process failed to run sfm process as not enough maps")
-        return None
+def sfm(leds) -> list[LED3D]:
 
     with TemporaryDirectory() as temp_dir:
         database_path = os.path.join(temp_dir, "database.db")
 
-        populate_database(database_path, maps_2d)
+        populate_database(database_path, leds)
 
         options = pycolmap.IncrementalPipelineOptions()
         options.triangulation.ignore_two_view_tracks = False  # used to be true
@@ -35,10 +31,7 @@ def sfm(maps_2d):
             )
 
         if not os.path.exists(os.path.join(temp_dir, "0", "points3D.bin")):
-            logging.debug(
-                "SFM process failed to run sfm process as reconstruction failed"
-            )
-            return None
+            print("failed to build")
+            return []
 
-        logging.debug("SFM process finished sfm process")
         return binary_to_led_map_3d(temp_dir)

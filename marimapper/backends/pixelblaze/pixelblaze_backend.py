@@ -1,4 +1,4 @@
-from marimapper import logging
+from marimapper import multiprocessing_logging as logging
 import pixelblaze
 
 

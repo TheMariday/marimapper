@@ -8,6 +8,7 @@ from marimapper.detector import (
     enable_and_find_led,
     DETECTOR_WINDOW_NAME,
 )
+from marimapper.led import LED2D
 from marimapper.utils import get_backend
 import cv2
 
@@ -39,6 +40,12 @@ class DetectorProcess(Process):
     def __del__(self):
         self.close()
 
+    def detect(self, led_id: int, view_id: int):
+        self.detection_request.put((led_id, view_id))
+
+    def get_results(self) -> LED2D:
+        return self.detection_result.get()
+
     def run(self):
 
         led_backend = get_backend(self._led_backend_name, self._led_backend_server)
@@ -59,20 +66,28 @@ class DetectorProcess(Process):
                     view_id,
                     timeout_controller,
                     self._threshold,
+                    self._display,
                 )
-                if result is not None:
-                    self.detection_result.put(result)
+
+                self.detection_result.put(result)
             else:
                 set_cam_default(cam)
-                image = cam.read()
-                show_image(image)
+                if self._display:
+                    image = cam.read()
+                    show_image(image)
 
-            # if we close the window
-            if cv2.getWindowProperty(DETECTOR_WINDOW_NAME, cv2.WND_PROP_VISIBLE) <= 0:
-                self.exit_event.set()
-                continue
+            if self._display:
+                # if we close the window
+                if (
+                    cv2.getWindowProperty(DETECTOR_WINDOW_NAME, cv2.WND_PROP_VISIBLE)
+                    <= 0
+                ):
+                    self.exit_event.set()
+                    continue
 
-        cv2.destroyAllWindows()
+        if self._display:
+            cv2.destroyAllWindows()
+
         set_cam_default(cam)
 
     def shutdown(self):

@@ -13,7 +13,7 @@ ARBITRARY_SCALE = 2000
 def populate_database(db_path: os.path, leds: list[LED2D]):
 
     views = get_view_ids(leds)
-    map_features = np.zeros((max(views)+1, 1, 2))
+    map_features = np.zeros((max(views) + 1, 1, 2))
 
     for view in views:
 
@@ -48,7 +48,7 @@ def populate_database(db_path: os.path, leds: list[LED2D]):
 
     # Create dummy images_all_the_same.
 
-    image_ids = [db.add_image(str(view), camera_id) for view in range(max(views)+1)]
+    image_ids = [db.add_image(str(view), camera_id) for view in range(max(views) + 1)]
 
     # Create some keypoints
     for i, keypoints in enumerate(map_features):

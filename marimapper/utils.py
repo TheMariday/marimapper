@@ -4,7 +4,7 @@ import sys
 import importlib.util
 from inspect import signature
 
-from marimapper import logging
+from marimapper import multiprocessing_logging as logging
 
 
 def add_camera_args(parser):

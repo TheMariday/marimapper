@@ -57,8 +57,6 @@ def test_sparse_reconstruction():
 
     map_3d = sfm(maps_sparse)
 
-    assert map_3d is not None
-
     assert len(map_3d) == 21
 
     check_dimensions(
@@ -72,8 +70,6 @@ def test_2_track_reconstruction():
 
     map_3d = sfm(leds_2_track)
 
-    assert map_3d is not None
-
     assert len(map_3d) == 15
 
 
@@ -84,4 +80,4 @@ def test_invalid_reconstruction_views():
 
     map_3d = sfm(leds_invalid)
 
-    assert map_3d is None
+    assert map_3d == []

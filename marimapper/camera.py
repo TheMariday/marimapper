@@ -1,12 +1,10 @@
 import cv2
-from marimapper import logging
+from marimapper import multiprocessing_logging as logging
 
 
 class CameraSettings:
 
     def __init__(self, camera):
-        self.width = camera.get_width()
-        self.height = camera.get_height()
         self.af_mode = camera.get_af_mode()
         self.focus = camera.get_focus()
         self.exposure_mode = camera.get_exposure_mode()
@@ -14,7 +12,6 @@ class CameraSettings:
         self.gain = camera.get_gain()
 
     def apply(self, camera):
-        camera.set_resolution(self.width, self.height)
         camera.set_autofocus(self.af_mode, self.focus)
         camera.set_exposure_mode(self.exposure_mode)
         camera.set_gain(self.gain)
@@ -37,8 +34,6 @@ class Camera:
 
         if not self.device.isOpened():
             raise RuntimeError(f"Failed to connect to camera {device_id}")
-
-        self.set_resolution(self.get_width(), self.get_height())  # Don't ask
 
         self.default_settings = CameraSettings(self)
 

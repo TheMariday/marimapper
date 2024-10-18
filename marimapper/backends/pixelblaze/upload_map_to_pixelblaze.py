@@ -1,7 +1,7 @@
 import csv
 
 from marimapper import utils
-from marimapper import logging
+from marimapper import multiprocessing_logging as logging
 
 
 def read_coordinates_from_csv(csv_file_name):

@@ -1,8 +1,5 @@
-from pathlib import Path
 from multiprocessing import Process, Event
-
-
-from marimapper import logging
+from marimapper.led import LED2D
 from marimapper.sfm import sfm
 
 
@@ -10,40 +7,33 @@ class SFM(Process):
 
     def __init__(
         self,
-        directory: Path,
-        rescale=False,
-        interpolate=False,
-        event_on_update=None,
         led_map_2d_queue=None,
         led_map_3d_queue=None,
     ):
-        logging.debug("SFM initialising")
         super().__init__()
-        self.directory = directory
-        self.rescale = rescale
-        self.interpolate = interpolate
         self.exit_event = Event()
-        self.event_on_update = event_on_update
         self.led_map_3d_queue = led_map_3d_queue
         self.led_map_2d_queue = led_map_2d_queue
-        self.leds = []
-
-        logging.debug("SFM initialised")
-
-    def add_led_maps_2d(self, maps):
-        self.led_map_2d_queue.put(maps)
+        self.leds: list[LED2D] = []
 
     def shutdown(self):
-        logging.debug("SFM sending shutdown request")
         self.exit_event.set()
 
     def run(self):
-        logging.debug("SFM process starting")
+
+        update_required = False
 
         while not self.exit_event.is_set():
             if self.led_map_2d_queue.empty():
-                map_3d = sfm(self.leds)
-                self.led_map_3d_queue.put(map_3d)
+                if update_required:
+                    print(
+                        f"just finished recieving data, trying to build with {len(self.leds)} points"
+                    )
+                    leds_3d = sfm(self.leds)
+                    print(f"reconstructed leds 3D: {len(leds_3d)}")
+                    self.led_map_3d_queue.put(leds_3d)
+                    update_required = False
             else:
-                led = self.led_map_3d_queue.get()
+                led = self.led_map_2d_queue.get()
                 self.leds.append(led)
+                update_required = True

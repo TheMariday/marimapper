@@ -1,8 +1,7 @@
 import argparse
 import time
-
+from marimapper import multiprocessing_logging as logging
 from marimapper import utils
-from marimapper import logging
 
 
 def main():
