@@ -76,7 +76,6 @@ class Scanner:
                 self.led_map_2d_queue.put(led)
                 time.sleep(0.01)
 
-
             leds = []
 
             for led_id in self.led_id_range:
@@ -101,7 +100,6 @@ class Scanner:
                 self.led_map_2d_queue.put(led)
 
             self.current_view += 1
-
 
             # The filename is made out of the date, then the resolution of the camera
             string_time = time.strftime("%Y%m%d-%H%M%S")

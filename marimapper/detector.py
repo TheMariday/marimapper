@@ -134,7 +134,8 @@ def enable_and_find_led(
 
     # Wait until either we have a result or we run out of time
     while (
-        led.point is None and time.time() < response_time_start + timeout_controller.timeout
+        led.point is None
+        and time.time() < response_time_start + timeout_controller.timeout
     ):
         led.point = find_led(cam, threshold, display)
 
