@@ -12,6 +12,7 @@ from marimapper.file_tools import get_all_2d_led_maps, write_2d_leds_to_file
 from marimapper.utils import get_user_confirmation
 from marimapper.visualize_model import Renderer3D
 from multiprocessing import Queue
+from marimapper.led import last_view
 
 
 class Scanner:
@@ -40,6 +41,8 @@ class Scanner:
 
         for led in self.leds_2d[0:2000]:
             self.led_map_2d_queue.put(led)
+
+        self.current_view = last_view(self.leds_2d) + 1
 
         self.sfm.start()
         self.renderer3d.start()
@@ -73,38 +76,34 @@ class Scanner:
                 self.led_map_2d_queue.put(led)
                 time.sleep(0.01)
 
-            self.detector.detection_request.put(-1)
-            result = self.detector.detection_result.get()
-            if result.valid():
-                multiprocessing_logging.error(
-                    f"All LEDs should be off, but the detector found one at {result.pos()}"
-                )
-                continue
-
-            # The filename is made out of the date, then the resolution of the camera
-            string_time = time.strftime("%Y%m%d-%H%M%S")
-
-            filepath = os.path.join(self.output_dir, f"led_map_2d_{string_time}.csv")
 
             leds = []
 
-            view_id = 0  # change
-
             for led_id in self.led_id_range:
-                self.detector.detect(led_id, view_id)
+                self.detector.detect(led_id, self.current_view)
 
             for _ in tqdm(
                 self.led_id_range,
                 unit="LEDs",
-                desc=f"Capturing sequence to {filepath}",
+                desc="Capturing sequence",
                 total=self.led_id_range.stop,
                 smoothing=0,
             ):
-                led = self.detector.detection_result.get(timeout=10)
+                led = self.detector.detection_result.get()
+
+                if led.point is None:
+                    continue
+
                 print(f"found {led}")
 
                 leds.append(led)
 
                 self.led_map_2d_queue.put(led)
 
+            self.current_view += 1
+
+
+            # The filename is made out of the date, then the resolution of the camera
+            string_time = time.strftime("%Y%m%d-%H%M%S")
+            filepath = os.path.join(self.output_dir, f"led_map_2d_{string_time}.csv")
             write_2d_leds_to_file(leds, filepath)

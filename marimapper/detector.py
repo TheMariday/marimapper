@@ -116,10 +116,12 @@ def enable_and_find_led(
     timeout_controller: TimeoutController,
     threshold: int,
     display: bool = False,
-) -> typing.Optional[LED2D]:
+) -> LED2D:
+
+    led = LED2D(led_id, view_id)
 
     if led_backend is None:
-        return None
+        return led
 
     # First wait for no leds to be visible
     while find_led(cam, threshold, display) is not None:
@@ -131,20 +133,19 @@ def enable_and_find_led(
     led_backend.set_led(led_id, True)
 
     # Wait until either we have a result or we run out of time
-    point = None
     while (
-        point is None and time.time() < response_time_start + timeout_controller.timeout
+        led.point is None and time.time() < response_time_start + timeout_controller.timeout
     ):
-        point = find_led(cam, threshold, display)
+        led.point = find_led(cam, threshold, display)
 
     led_backend.set_led(led_id, False)
 
-    if point is None:
-        return None
+    if led.point is None:
+        return led
 
     timeout_controller.add_response_time(time.time() - response_time_start)
 
     while find_led(cam, threshold, display) is not None:
         pass
 
-    return LED2D(led_id, view_id, point)
+    return led

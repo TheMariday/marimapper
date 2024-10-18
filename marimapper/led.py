@@ -17,7 +17,7 @@ class Point2D:
 
 
 class LED2D:
-    def __init__(self, led_id: int, view_id: int, point: Point2D):
+    def __init__(self, led_id: int, view_id: int, point: typing.Optional[Point2D]=None):
         self.led_id: int = led_id
         self.view_id: int = view_id
         self.point: Point2D = point
