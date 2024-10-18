@@ -1,16 +1,17 @@
+# DO NOT MOVE THIS
+# FATAL WEIRD CRASH IF THIS ISN'T IMPORTED FIRST DON'T ASK
+from marimapper.sfm_process import SFM
+
 import os
 import time
 from tqdm import tqdm
 from pathlib import Path
-
 from marimapper.detector_process import DetectorProcess
-from marimapper import multiprocessing_logging as logging
+from marimapper import multiprocessing_logging
 from marimapper.file_tools import get_all_2d_led_maps, write_2d_leds_to_file
 from marimapper.utils import get_user_confirmation
 from marimapper.visualize_model import Renderer3D
 from multiprocessing import Queue
-from marimapper.sfm_process import SFM
-
 
 class Scanner:
 
@@ -32,14 +33,7 @@ class Scanner:
         )
 
         self.renderer3d = Renderer3D(led_map_3d_queue=self.led_map_3d_queue)
-        self.sfm = SFM(
-            Path(self.output_dir),
-            rescale=True,
-            interpolate=True,
-            event_on_update=self.renderer3d.reload_event,
-            led_map_2d_queue=self.led_map_2d_queue,
-            led_map_3d_queue=self.led_map_3d_queue,
-        )
+        self.sfm = SFM(self.led_map_2d_queue,self.led_map_3d_queue)
 
         self.leds_2d = get_all_2d_led_maps(Path(self.output_dir))
 
@@ -51,7 +45,7 @@ class Scanner:
         self.detector.start()
 
     def close(self):
-        logging.debug("marimapper closing")
+        multiprocessing_logging.debug("marimapper closing")
         self.sfm.shutdown()
         self.renderer3d.shutdown()
         self.detector.shutdown()
@@ -63,7 +57,7 @@ class Scanner:
         self.sfm.terminate()
         self.renderer3d.terminate()
         self.detector.terminate()
-        logging.debug("marimapper closed")
+        multiprocessing_logging.debug("marimapper closed")
 
     def mainloop(self):
 
@@ -77,7 +71,7 @@ class Scanner:
             self.detector.detection_request.put(-1)
             result = self.detector.detection_result.get()
             if result.valid():
-                logging.error(
+                multiprocessing_logging.error(
                     f"All LEDs should be off, but the detector found one at {result.pos()}"
                 )
                 continue

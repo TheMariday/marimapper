@@ -1,7 +1,7 @@
 from marimapper.file_tools import get_all_2d_led_maps
 from marimapper.sfm_process import SFM
 from multiprocessing import Queue
-
+import time
 
 def test_sfm_process_basic():
 
@@ -16,7 +16,7 @@ def test_sfm_process_basic():
 
     for led in leds:  # 2ms
         queue_2d.put(led)
-
+    time.sleep(1) # wait for all to be consumed
     leds_3d = queue_3d.get()  # 320ms
     assert len(leds_3d) == 21
 

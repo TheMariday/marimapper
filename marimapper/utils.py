@@ -34,7 +34,7 @@ def add_backend_args(parser):
         "--backend",
         type=str,
         help="The backend used for led communication, i.e. fadecandy, wled or my_backend.py",
-        default="None",
+        default="dummy",
     )
 
     parser.add_argument(
@@ -136,7 +136,7 @@ def get_backend(backend_name, server=""):
 
         return dummy_backend.Backend()
 
-    raise RuntimeError("Invalid backend name")
+    raise RuntimeError(f"Invalid backend name {backend_name}")
 
 
 class SupressLogging(object):
