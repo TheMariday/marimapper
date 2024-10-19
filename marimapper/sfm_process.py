@@ -46,6 +46,9 @@ class SFM(Process):
     def get_output_queue(self):
         return self._output_queue
 
+    def get_results(self):
+        return self._output_queue.get()
+
     def stop(self):
         self._exit_event.set()
 
