@@ -21,8 +21,6 @@ class Scanner:
         self.output_dir = cli_args.dir
         os.makedirs(self.output_dir, exist_ok=True)
 
-        self.led_id_range = range(cli_args.start, cli_args.end)
-
         self.led_map_3d_queue = Queue()
 
         self.detector = DetectorProcess(
@@ -46,6 +44,10 @@ class Scanner:
         self.sfm.start()
         self.renderer3d.start()
         self.detector.start()
+
+        self.led_id_range = range(
+            cli_args.start, min(cli_args.end, self.detector.get_led_count())
+        )
 
     def close(self):
         logging.debug("marimapper closing")
@@ -85,8 +87,6 @@ class Scanner:
 
                 if led.point is None:
                     continue
-
-                print(f"found {led}")
 
                 leds.append(led)
 

@@ -6,7 +6,9 @@ from marimapper.pycolmap_tools.read_write_model import (
     read_points3D_binary,
 )
 
-from marimapper.led import LED3D, remove_duplicates, View
+from marimapper.led import LED3D, View
+
+# from marimapper.led import remove_duplicates
 
 
 def binary_to_led_map_3d(path: os.path) -> list[LED3D]:
@@ -37,6 +39,7 @@ def binary_to_led_map_3d(path: os.path) -> list[LED3D]:
 
         leds.append(led)
 
-    leds = remove_duplicates(leds)
+    # currently broken
+    # leds = remove_duplicates(leds)
 
     return leds

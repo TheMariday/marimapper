@@ -46,6 +46,9 @@ def draw_led_detections(image: cv2.Mat, led_detection: Point2D) -> cv2.Mat:
         image if len(image.shape) == 3 else cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     )
 
+    if led_detection is None:
+        return render_image
+
     img_height = render_image.shape[0]
     img_width = render_image.shape[1]
 
@@ -101,7 +104,7 @@ def find_led(
     image = cam.read()
     results = find_led_in_image(image, threshold)
 
-    if display and results:
+    if display:
         rendered_image = draw_led_detections(image, results)
         show_image(rendered_image)
 

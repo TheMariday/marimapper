@@ -219,8 +219,9 @@ def merge(leds: list[LED3D]) -> LED3D:
     return new_led
 
 
+# currently broken
 def remove_duplicates(leds: list[LED3D]) -> list[LED3D]:
-
+    raise NotImplementedError("currently broken")
     new_leds = []
 
     for led in leds:

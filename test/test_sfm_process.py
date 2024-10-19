@@ -1,6 +1,5 @@
 from marimapper.file_tools import get_all_2d_led_maps
 from marimapper.sfm_process import SFM
-from multiprocessing import Queue
 import time
 
 

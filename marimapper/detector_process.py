@@ -26,6 +26,7 @@ class DetectorProcess(Process):
         super().__init__()
         self._detection_request = Queue()  # {led_id, view_id}
         self._detection_result = Queue()  # LED3D
+        self._led_count = Queue()
         self._exit_event = Event()
 
         self._device = device
@@ -41,12 +42,17 @@ class DetectorProcess(Process):
     def get_results(self) -> LED2D:
         return self._detection_result.get()
 
+    def get_led_count(self):
+        return self._led_count.get()
+
     def stop(self):
         self._exit_event.set()
 
     def run(self):
 
         led_backend = get_backend(self._led_backend_name, self._led_backend_server)
+
+        self._led_count.put(led_backend.get_led_count())
 
         cam = Camera(self._device)
 
