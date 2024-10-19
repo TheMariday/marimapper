@@ -45,17 +45,10 @@ class Point3D:
         new.error = self.error + other.error
         return new
 
-    def __sub__(self, other):
-        new = Point3D()
-        new.position = self.position - other.position
-        new.normal = self.normal - other.normal
-        new.error = self.error - other.error
-        return new
-
     def __mul__(self, other):
         new = Point3D()
         new.position = self.position * other
-        new.normal = self.normal * other
+        new.normal = self.normal
         new.error = self.error * other
         return new
 
@@ -146,20 +139,23 @@ def rescale(leds: list[LED3D], target_inter_distance=1.0) -> None:
     inter_led_distance = find_inter_led_distance(leds)
     print(inter_led_distance)
     scale = (1.0 / inter_led_distance) * target_inter_distance
-
     for led in leds:
         led.point *= scale
+        for view in led.views:
+            view.position = view.position * scale
 
 
 def recenter(leds: list[LED3D]):
 
-    center = Point3D()
 
-    center.position = np.median([led.point.position for led in leds], axis=0)
-    print(f"center: {center.position}")
     for led in leds:
-        led.point -= center
+        assert len(led.point.position) == 3
 
+    center = np.median([led.point.position for led in leds], axis=0)
+    for led in leds:
+        led.point.position -= center
+        for view in led.views:
+            view.position = view.position - center
 
 def fill_gap(start_led: LED3D, end_led: LED3D):
 

@@ -22,9 +22,7 @@ def binary_to_led_map_3d(path: os.path) -> list[LED3D]:
         rotation = qvec2rotmat(img.qvec).T
         translation = -rotation @ img.tvec
 
-        view = View(img.id, translation, rotation)
-
-        views[img.id] = view
+        views[img.id] = (img.id, translation, rotation)
 
     for (
         led_data
@@ -35,7 +33,7 @@ def binary_to_led_map_3d(path: os.path) -> list[LED3D]:
 
         led.point.position = led_data.xyz
         led.point.error = led_data.error
-        led.views = [views[view_id] for view_id in led_data.image_ids]
+        led.views = [View(*views[view_id]) for view_id in led_data.image_ids]
 
         leds.append(led)
 

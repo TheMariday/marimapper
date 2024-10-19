@@ -67,13 +67,13 @@ class SFM(Process):
                 if len(leds_3d) == 0:
                     continue
 
+                add_normals(leds_3d)
+
                 if self.rescale:
                     rescale(leds_3d)
 
                 if self.recenter:
                     recenter(leds_3d)
-
-                add_normals(leds_3d)
 
                 self.led_map_3d_queue.put(leds_3d)
                 update_required = False

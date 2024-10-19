@@ -2,7 +2,16 @@ import numpy as np
 import open3d
 from marimapper import multiprocessing_logging as logging
 from multiprocessing import Process, Event
+from marimapper.led import LED3D, View
 
+def get_all_views(leds: list[LED3D]) -> list[View]:
+    views = []
+    for led in leds:
+        for view in led.views:
+            if view.view_id not in [v.view_id for v in views]:
+                views.append(view)
+
+    return views
 
 class Renderer3D(Process):
 
@@ -76,12 +85,13 @@ class Renderer3D(Process):
         leds = self.led_map_3d_queue.get()
 
         logging.debug(f"Fetched led map with size {len(leds)}")
+        all_views = get_all_views(leds)
 
-        # p, l, c = camera_to_points_lines_colors(led_map.cameras)
+        p, l, c = view_to_points_lines_colors(all_views)
 
-        # self.line_set.points = open3d.utility.Vector3dVector(p)
-        # self.line_set.lines = open3d.utility.Vector2iVector(l)
-        # self.line_set.colors = open3d.utility.Vector3dVector(c)
+        self.line_set.points = open3d.utility.Vector3dVector(p)
+        self.line_set.lines = open3d.utility.Vector2iVector(l)
+        self.line_set.colors = open3d.utility.Vector3dVector(c)
 
         self.point_cloud.points = open3d.utility.Vector3dVector(
             np.array([led.point.position for led in leds])
@@ -110,7 +120,7 @@ class Renderer3D(Process):
         logging.debug("Renderer3D process reloaded geometry")
 
 
-def camera_to_points_lines_colors(cameras):  # returns points and lines
+def view_to_points_lines_colors(views):  # returns points and lines
 
     all_points = []
     all_lines = []
@@ -127,13 +137,11 @@ def camera_to_points_lines_colors(cameras):  # returns points and lines
         [[0, 1], [0, 2], [0, 3], [0, 4], [1, 2], [2, 3], [3, 4], [4, 1], [1, 5], [2, 5]]
     )
 
-    for cam_id, camera in enumerate(cameras):
+    for i, view in enumerate(views):
 
-        rotation, translation = camera
+        points_in_world = [(view.rotation @ p + view.position) for p in camera_cone_points]
 
-        points_in_world = [(rotation @ p + translation) for p in camera_cone_points]
-
-        offset = cam_id * len(camera_cone_points)
+        offset = i * len(camera_cone_points)
 
         all_points.extend(points_in_world)
         all_lines.extend(camera_cone_lines + offset)
