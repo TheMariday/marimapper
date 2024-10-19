@@ -37,12 +37,11 @@ class Scanner:
         self.renderer3d = Renderer3D(led_map_3d_queue=self.led_map_3d_queue)
         self.sfm = SFM(self.led_map_2d_queue, self.led_map_3d_queue)
 
-        self.leds_2d = get_all_2d_led_maps(Path(self.output_dir))
-
-        for led in self.leds_2d[0:2000]:
+        leds = get_all_2d_led_maps(Path(self.output_dir))
+        for led in leds:
             self.led_map_2d_queue.put(led)
 
-        self.current_view = last_view(self.leds_2d) + 1
+        self.current_view = last_view(leds) + 1
 
         self.sfm.start()
         self.renderer3d.start()
@@ -71,10 +70,6 @@ class Scanner:
 
             if not start_scan:
                 return
-
-            for led in self.leds_2d[2000:]:
-                self.led_map_2d_queue.put(led)
-                time.sleep(0.01)
 
             leds = []
 

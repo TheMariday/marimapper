@@ -1,6 +1,13 @@
 import numpy as np
-import math
 import typing
+import math
+
+
+class View:
+    def __init__(self, view_id, position, rotation):
+        self.view_id = view_id
+        self.rotation = rotation
+        self.position = position
 
 
 class Point2D:
@@ -57,7 +64,7 @@ class LED3D:
     def __init__(self, led_id):
         self.led_id = led_id
         self.point = Point3D()
-        self.views = []
+        self.views: list[View] = []
 
 
 # returns none if there isn't that led in the list!
@@ -116,6 +123,8 @@ def get_leds_with_view(leds: list[LED2D], view_id: int) -> list[LED2D]:
 
 
 def last_view(leds: list[LED2D]):
+    if len(leds) == 0:
+        return -1
     return max([led.view_id for led in leds])
 
 

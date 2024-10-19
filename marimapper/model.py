@@ -6,14 +6,25 @@ from marimapper.pycolmap_tools.read_write_model import (
     read_points3D_binary,
 )
 
-from marimapper.led import LED3D, remove_duplicates
+from marimapper.led import LED3D, remove_duplicates, View
 
 
 def binary_to_led_map_3d(path: os.path) -> list[LED3D]:
 
     points_bin = read_points3D_binary(os.path.join(path, "0", "points3D.bin"))
+    images_bin = read_images_binary(os.path.join(path, "0", "images.bin"))
 
-    leds: list[LED3D] = []
+    views = {}
+    leds = []
+
+    for img in images_bin.values():
+
+        rotation = qvec2rotmat(img.qvec).T
+        translation = -rotation @ img.tvec
+
+        view = View(img.id, translation, rotation)
+
+        views[img.id] = view
 
     for (
         led_data
@@ -24,35 +35,10 @@ def binary_to_led_map_3d(path: os.path) -> list[LED3D]:
 
         led.point.position = led_data.xyz
         led.point.error = led_data.error
-        led.views = led_data.image_ids
+        led.views = [views[view_id] for view_id in led_data.image_ids]
 
         leds.append(led)
 
     leds = remove_duplicates(leds)
 
     return leds
-
-
-class ReconstructedCamera:
-    def __init__(self, camera_id, translation, rotation):
-        self.camera_id = camera_id
-        self.rotation = rotation
-        self.translation = translation
-
-
-def binary_to_cameras(path: os.path) -> list[ReconstructedCamera]:
-
-    cameras = []
-
-    images_bin = read_images_binary(os.path.join(path, "0", "images.bin"))
-
-    for img in images_bin.values():
-
-        rotation = qvec2rotmat(img.qvec).T
-        translation = -rotation @ img.tvec
-
-        camera = ReconstructedCamera(img.id, translation, rotation)
-
-        cameras.append(camera)
-
-    return cameras
