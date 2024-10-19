@@ -1,5 +1,5 @@
 from marimapper.scanner import Scanner
-from marimapper import multiprocessing_logging
+from marimapper import logging
 import os
 import signal
 import argparse
@@ -11,7 +11,7 @@ from marimapper.utils import add_camera_args, add_backend_args
 
 
 def main():
-    multiprocessing_logging.info("Starting MariMapper")
+    logging.info("Starting MariMapper")
 
     parser = argparse.ArgumentParser(description="Captures LED flashes to file")
 

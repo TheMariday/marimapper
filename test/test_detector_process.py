@@ -23,8 +23,6 @@ def test_detector_process_basic(monkeypatch):
     assert results.point.u() == pytest.approx(0.4029418361244019)
     assert results.point.v() == pytest.approx(0.4029538809144072)
 
-    detector_process.exit_event.set()
-
 
 if __name__ == "__main__":
     test_detector_process_basic()

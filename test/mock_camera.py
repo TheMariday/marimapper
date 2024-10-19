@@ -1,4 +1,4 @@
-from marimapper import multiprocessing_logging as logging
+from marimapper import logging as logging
 import cv2
 import numpy as np
 

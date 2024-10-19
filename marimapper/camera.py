@@ -1,5 +1,5 @@
 import cv2
-from marimapper import multiprocessing_logging as logging
+from marimapper import logging as logging
 
 
 class CameraSettings:

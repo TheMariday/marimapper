@@ -1,4 +1,4 @@
-from multiprocessing import Process, Event, Queue
+from multiprocessing import Process, Queue, Event
 from marimapper.detector import (
     show_image,
     set_cam_default,
@@ -6,11 +6,10 @@ from marimapper.detector import (
     TimeoutController,
     set_cam_dark,
     enable_and_find_led,
-    DETECTOR_WINDOW_NAME,
 )
 from marimapper.led import LED2D
 from marimapper.utils import get_backend
-import cv2
+from marimapper import logging
 
 
 class DetectorProcess(Process):
@@ -25,10 +24,9 @@ class DetectorProcess(Process):
         display: bool = True,
     ):
         super().__init__()
-
-        self.exit_event = Event()
-        self.detection_request = Queue()  # {led_id, view_id}
-        self.detection_result = Queue()  # LED3D
+        self._detection_request = Queue()  # {led_id, view_id}
+        self._detection_result = Queue()  # LED3D
+        self._exit_event = Event()
 
         self._device = device
         self._dark_exposure = dark_exposure
@@ -37,14 +35,14 @@ class DetectorProcess(Process):
         self._led_backend_server = led_backend_server
         self._display = display
 
-    def __del__(self):
-        self.close()
-
     def detect(self, led_id: int, view_id: int):
-        self.detection_request.put((led_id, view_id))
+        self._detection_request.put((led_id, view_id))
 
     def get_results(self) -> LED2D:
-        return self.detection_result.get()
+        return self._detection_result.get()
+
+    def stop(self):
+        self._exit_event.set()
 
     def run(self):
 
@@ -54,11 +52,11 @@ class DetectorProcess(Process):
 
         timeout_controller = TimeoutController()
 
-        while not self.exit_event.is_set():
+        while not self._exit_event.is_set():
 
-            if not self.detection_request.empty():
+            if not self._detection_request.empty():
                 set_cam_dark(cam, self._dark_exposure)
-                led_id, view_id = self.detection_request.get()
+                led_id, view_id = self._detection_request.get()
                 result = enable_and_find_led(
                     cam,
                     led_backend,
@@ -69,26 +67,12 @@ class DetectorProcess(Process):
                     self._display,
                 )
 
-                self.detection_result.put(result)
+                self._detection_result.put(result)
             else:
                 set_cam_default(cam)
                 if self._display:
                     image = cam.read()
                     show_image(image)
 
-            if self._display:
-                # if we close the window
-                if (
-                    cv2.getWindowProperty(DETECTOR_WINDOW_NAME, cv2.WND_PROP_VISIBLE)
-                    <= 0
-                ):
-                    self.exit_event.set()
-                    continue
-
-        if self._display:
-            cv2.destroyAllWindows()
-
+        logging.info("resetting cam!")
         set_cam_default(cam)
-
-    def shutdown(self):
-        self.exit_event.set()

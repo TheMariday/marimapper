@@ -1,8 +1,10 @@
 import numpy as np
 import open3d
-from marimapper import multiprocessing_logging as logging
+from marimapper import logging as logging
 from multiprocessing import Process, Event
 from marimapper.led import LED3D, View
+import time
+
 
 def get_all_views(leds: list[LED3D]) -> list[View]:
     views = []
@@ -13,42 +15,42 @@ def get_all_views(leds: list[LED3D]) -> list[View]:
 
     return views
 
-class Renderer3D(Process):
 
-    def __init__(self, led_map_3d_queue):
+class VisualiseProcess(Process):
+
+    def __init__(self, input_queue):
         logging.debug("Renderer3D initialising")
         super().__init__()
         self._vis = None
-        self.exit_event = Event()
-        self.led_map_3d_queue = led_map_3d_queue
+        self._input_queue = input_queue
+        self._exit_event = Event()
         self.point_cloud = None
         self.line_set = None
         self.strip_set = None
         logging.debug("Renderer3D initialised")
 
-    def shutdown(self):
-        self.exit_event.set()
+    def stop(self):
+        self._exit_event.set()
 
     def run(self):
         logging.debug("Renderer3D process starting")
 
+        # wait for data to arrive sensibly
+        while self._input_queue.empty():
+            if self._exit_event.is_set():
+                return
+            time.sleep(0.1)
+
         self.initialise_visualiser__()
         self.reload_geometry__(True)
 
-        while not self.exit_event.is_set():
+        while not self._exit_event.is_set():
 
-            if not self.led_map_3d_queue.empty():
+            if not self._input_queue.empty():
                 self.reload_geometry__()
 
-            window_closed = not self._vis.poll_events()
-
-            if window_closed:
-                logging.debug("Renderer3D process window closed, stopping process")
-                self.exit_event.set()
-
+            self._vis.poll_events()
             self._vis.update_renderer()
-
-        self._vis.destroy_window()
 
     def initialise_visualiser__(self):
         logging.debug("Renderer3D process initialising visualiser")
@@ -82,7 +84,7 @@ class Renderer3D(Process):
 
         logging.debug("Renderer3D process reloading geometry")
 
-        leds = self.led_map_3d_queue.get()
+        leds = self._input_queue.get()
 
         logging.debug(f"Fetched led map with size {len(leds)}")
         all_views = get_all_views(leds)
@@ -139,7 +141,9 @@ def view_to_points_lines_colors(views):  # returns points and lines
 
     for i, view in enumerate(views):
 
-        points_in_world = [(view.rotation @ p + view.position) for p in camera_cone_points]
+        points_in_world = [
+            (view.rotation @ p + view.position) for p in camera_cone_points
+        ]
 
         offset = i * len(camera_cone_points)
 

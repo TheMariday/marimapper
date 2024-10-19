@@ -7,10 +7,10 @@ import time
 from tqdm import tqdm
 from pathlib import Path
 from marimapper.detector_process import DetectorProcess
-from marimapper import multiprocessing_logging
+from marimapper import logging
 from marimapper.file_tools import get_all_2d_led_maps, write_2d_leds_to_file
 from marimapper.utils import get_user_confirmation
-from marimapper.visualize_model import Renderer3D
+from marimapper.visualize_process import VisualiseProcess
 from multiprocessing import Queue
 from marimapper.led import last_view
 
@@ -23,7 +23,6 @@ class Scanner:
 
         self.led_id_range = range(cli_args.start, cli_args.end)
 
-        self.led_map_2d_queue = Queue()
         self.led_map_3d_queue = Queue()
 
         self.detector = DetectorProcess(
@@ -34,33 +33,32 @@ class Scanner:
             cli_args.server,
         )
 
-        self.renderer3d = Renderer3D(led_map_3d_queue=self.led_map_3d_queue)
-        self.sfm = SFM(self.led_map_2d_queue, self.led_map_3d_queue)
+        self.sfm = SFM()
 
-        leds = get_all_2d_led_maps(Path(self.output_dir))
-        for led in leds:
-            self.led_map_2d_queue.put(led)
+        self.leds = get_all_2d_led_maps(Path(self.output_dir))
+        for led in self.leds:
+            self.sfm.add_detection(led)
 
-        self.current_view = last_view(leds) + 1
+        self.current_view = last_view(self.leds) + 1
+
+        self.renderer3d = VisualiseProcess(input_queue=self.sfm.get_output_queue())
 
         self.sfm.start()
         self.renderer3d.start()
         self.detector.start()
 
     def close(self):
-        multiprocessing_logging.debug("marimapper closing")
-        self.sfm.shutdown()
-        self.renderer3d.shutdown()
-        self.detector.shutdown()
+        logging.debug("marimapper closing")
+
+        self.detector.stop()
+        self.sfm.stop()
+        self.renderer3d.stop()
 
         self.sfm.join()
         self.renderer3d.join()
         self.detector.join()
 
-        self.sfm.terminate()
-        self.renderer3d.terminate()
-        self.detector.terminate()
-        multiprocessing_logging.debug("marimapper closed")
+        logging.debug("marimapper closed")
 
     def mainloop(self):
 
@@ -83,7 +81,7 @@ class Scanner:
                 total=self.led_id_range.stop,
                 smoothing=0,
             ):
-                led = self.detector.detection_result.get()
+                led = self.detector.get_results()
 
                 if led.point is None:
                     continue
@@ -92,7 +90,7 @@ class Scanner:
 
                 leds.append(led)
 
-                self.led_map_2d_queue.put(led)
+                self.sfm.add_detection(led)
 
             self.current_view += 1
 

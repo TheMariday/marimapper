@@ -147,7 +147,6 @@ def rescale(leds: list[LED3D], target_inter_distance=1.0) -> None:
 
 def recenter(leds: list[LED3D]):
 
-
     for led in leds:
         assert len(led.point.position) == 3
 
@@ -156,6 +155,7 @@ def recenter(leds: list[LED3D]):
         led.point.position -= center
         for view in led.views:
             view.position = view.position - center
+
 
 def fill_gap(start_led: LED3D, end_led: LED3D):
 

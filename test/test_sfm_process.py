@@ -21,8 +21,6 @@ def test_sfm_process_basic():
     leds_3d = queue_3d.get()  # 320ms
     assert len(leds_3d) == 21
 
-    sfm_process.exit_event.set()
-
 
 if __name__ == "__main__":
     test_sfm_process_basic()

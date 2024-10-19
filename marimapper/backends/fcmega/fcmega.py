@@ -1,7 +1,7 @@
 import serial
 import struct
 import serial.tools.list_ports
-from marimapper import multiprocessing_logging as logging
+from marimapper import logging as logging
 
 
 class FCMega:
