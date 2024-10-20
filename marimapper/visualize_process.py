@@ -109,6 +109,9 @@ class VisualiseProcess(Process):
         self.point_cloud.normals = open3d.utility.Vector3dVector(
             np.array([led.point.normal for led in leds]) * 0.2
         )
+        self.point_cloud.colors = open3d.utility.Vector3dVector(
+            np.array([led.get_color() for led in leds])
+        )
 
         self.strip_set.points = self.point_cloud.points
 

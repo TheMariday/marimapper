@@ -1,5 +1,5 @@
 from multiprocessing import Process, Event, Queue, get_logger
-from marimapper.led import LED2D, rescale, recenter, LED3D
+from marimapper.led import LED2D, rescale, recenter, LED3D, fill_gaps
 from marimapper.sfm import sfm
 import open3d
 import numpy as np
@@ -22,16 +22,18 @@ def add_normals(leds: list[LED3D]):
     camera_normals = []
     for led in leds:
         views = [view.position for view in led.views]
-        camera_normals.append(np.average(views, axis=0))
+        camera_normals.append(np.average(views, axis=0) if views else None)
 
     for led, camera_normal, open3d_normal in zip(leds, camera_normals, pcd.normals):
 
         led.point.normal = open3d_normal / np.linalg.norm(open3d_normal)
 
-        angle = np.arccos(np.clip(np.dot(camera_normal, open3d_normal), -1.0, 1.0))
+        if camera_normal is not None:
 
-        if angle > math.pi / 2.0:
-            led.point.normal *= -1
+            angle = np.arccos(np.clip(np.dot(camera_normal, open3d_normal), -1.0, 1.0))
+
+            if angle > math.pi / 2.0:
+                led.point.normal *= -1
 
 
 class SFM(Process):
@@ -78,11 +80,13 @@ class SFM(Process):
                 if len(leds_3d) == 0:
                     continue
 
-                add_normals(leds_3d)
-
                 rescale(leds_3d)
 
+                fill_gaps(leds_3d)
+
                 recenter(leds_3d)
+
+                add_normals(leds_3d)
 
                 self._output_queue.put(leds_3d)
                 update_required = False

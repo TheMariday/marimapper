@@ -41,6 +41,10 @@ class Point3D:
         self.position = np.zeros(3)
         self.normal = np.zeros(3)
         self.error = 0.0
+        self.info = []
+
+    def set_position(self, x, y, z):
+        self.position = np.array([x, y, z])
 
     def __add__(self, other):
         new = Point3D()
@@ -52,16 +56,37 @@ class Point3D:
     def __mul__(self, other):
         new = Point3D()
         new.position = self.position * other
-        new.normal = self.normal
+        new.normal = self.normal * other
         new.error = self.error * other
         return new
 
 
+class LEDState:
+    INTERPOLATED: int = 0
+    MERGED: int = 1
+
+
 class LED3D:
+
     def __init__(self, led_id):
         self.led_id = led_id
         self.point = Point3D()
         self.views: list[View] = []
+        self.state = []
+
+    def add_state(self, state: int):
+        self.state.append(state)
+
+    def has_state(self, state: int) -> bool:
+        return state in self.state
+
+    def get_color(self):
+        if self.has_state(LEDState.INTERPOLATED):
+            return 255, 0, 0
+        if self.has_state(LEDState.MERGED):
+            return 255, 0, 255
+
+        return 0, 255, 0
 
 
 # returns none if there isn't that led in the list!
@@ -169,37 +194,44 @@ def fill_gap(start_led: LED3D, end_led: LED3D):
 
         new_led = LED3D(start_led.led_id + led_offset)
         fraction = led_offset / (total_missing_leds + 1)
+        p1 = start_led.point * (1 - fraction)
+        p2 = end_led.point * fraction
+        new_led.point = p1 + p2
 
-        new_led.position = start_led.point * (1 - fraction) + end_led.point * fraction
-
+        new_led.add_state(LEDState.INTERPOLATED)
         new_leds.append(new_led)
 
     return new_leds
 
 
-def fill_gaps(leds: list[LED3D], max_dist_err=0.2, max_missing=5) -> list[LED3D]:
-
-    led_to_led_distance = find_inter_led_distance(leds)
-    min_distance = (1 - max_dist_err) * led_to_led_distance
-    max_distance = (1 + max_dist_err) * led_to_led_distance
+def fill_gaps(leds: list[LED3D], max_distance: float = 1.1, max_missing=5):
 
     new_leds = []
 
     for led in leds:
 
         next_led = get_next(led, leds)
-        gap = get_gap(led, next_led)
-        if gap == 0:
+
+        if next_led is None:
             continue
 
-        distance = get_distance(led, next_led)
+        gap = get_gap(led, next_led) - 1
 
-        distance_per_led = distance / (gap + 1)
+        if 1.0 < gap <= max_missing:
 
-        if (min_distance < distance_per_led < max_distance) and gap < max_missing:
-            new_leds += fill_gap(led, next_led)
+            distance = get_distance(led, next_led)
 
-    return new_leds
+            distance_per_led = distance / (gap + 1)
+
+            if (distance_per_led < max_distance) and gap <= max_missing:
+                new_leds += fill_gap(led, next_led)
+
+    new_led_count = len(new_leds)
+
+    if new_led_count > 0:
+        logger.debug(f"filled {new_led_count} LEDs")
+
+    leds += new_leds
 
 
 def merge(leds: list[LED3D]) -> LED3D:
@@ -218,6 +250,7 @@ def merge(leds: list[LED3D]) -> LED3D:
     new_led.point.position = np.average([led.point.position for led in leds], axis=0)
     new_led.point.normal = np.average([led.point.normal for led in leds], axis=0)
     new_led.point.error = sum([led.point.error for led in leds])
+    new_led.add_state(LEDState.MERGED)
 
     return new_led
 
