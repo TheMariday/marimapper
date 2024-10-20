@@ -11,7 +11,6 @@ from multiprocessing import get_logger
 from marimapper.file_tools import get_all_2d_led_maps, write_2d_leds_to_file
 from marimapper.utils import get_user_confirmation
 from marimapper.visualize_process import VisualiseProcess
-from multiprocessing import Queue
 from marimapper.led import last_view
 
 logger = get_logger()
@@ -23,8 +22,6 @@ class Scanner:
         logger.debug("initialising scanner")
         self.output_dir = cli_args.dir
         os.makedirs(self.output_dir, exist_ok=True)
-
-        self.led_map_3d_queue = Queue()
 
         self.detector = DetectorProcess(
             cli_args.device,

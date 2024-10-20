@@ -1,7 +1,6 @@
 from marimapper.scanner import Scanner
 from multiprocessing import log_to_stderr
 import os
-import signal
 import argparse
 import logging
 from marimapper.utils import add_camera_args, add_backend_args
@@ -12,6 +11,7 @@ from marimapper.utils import add_camera_args, add_backend_args
 
 
 logger = log_to_stderr()
+logger.setLevel(level=logging.ERROR)
 
 
 def main():
@@ -40,10 +40,6 @@ def main():
 
     scanner.mainloop()
     scanner.close()
-
-    # For some reason python refuses to actually exit here when an error is thrown, so I'm brute forcing it
-    os.kill(os.getpid(), signal.SIGINT)
-    os.kill(os.getpid(), signal.CTRL_C_EVENT)
 
 
 if __name__ == "__main__":

@@ -3,11 +3,11 @@ import csv
 from marimapper import utils
 from multiprocessing import get_logger
 
-logging = get_logger()
+logger = get_logger()
 
 
 def read_coordinates_from_csv(csv_file_name):
-    logging.info(f"Loading coordinates from {csv_file_name}")
+    logger.info(f"Loading coordinates from {csv_file_name}")
     with open(csv_file_name, newline="") as csvfile:
         csv_reader = csv.DictReader(csvfile)
         list_of_leds = []
@@ -35,7 +35,7 @@ def read_coordinates_from_csv(csv_file_name):
 
 def upload_map_to_pixelblaze(cli_args):
     final_coordinate_list = read_coordinates_from_csv(cli_args.csv_file)
-    logging.info(final_coordinate_list)
+    logger.info(final_coordinate_list)
 
     upload_coordinates = utils.get_user_confirmation(
         "Upload coordinates to Pixelblaze? [y/n]: "
@@ -43,9 +43,9 @@ def upload_map_to_pixelblaze(cli_args):
     if not upload_coordinates:
         return
 
-    logging.info(
+    logger.info(
         f"Uploading coordinates to pixelblaze {cli_args.server if cli_args.server is not None else ''}"
     )
     led_backend = utils.get_backend("pixelblaze", cli_args.server)
     led_backend.set_map_coordinates(final_coordinate_list)
-    logging.info("Finished")
+    logger.info("Finished")

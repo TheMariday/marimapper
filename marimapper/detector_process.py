@@ -12,7 +12,7 @@ from marimapper.utils import get_backend
 
 from multiprocessing import get_logger
 
-logging = get_logger()
+logger = get_logger()
 
 
 class DetectorProcess(Process):
@@ -29,7 +29,10 @@ class DetectorProcess(Process):
         super().__init__()
         self._detection_request = Queue()  # {led_id, view_id}
         self._detection_result = Queue()  # LED3D
+        self._detection_request.cancel_join_thread()
+        self._detection_result.cancel_join_thread()
         self._led_count = Queue()
+        self._led_count.cancel_join_thread()
         self._exit_event = Event()
 
         self._device = device
@@ -83,5 +86,11 @@ class DetectorProcess(Process):
                     image = cam.read()
                     show_image(image)
 
-        logging.info("resetting cam!")
+        logger.info("resetting cam!")
         set_cam_default(cam)
+
+        # clear the queues, don't ask why.
+        while not self._detection_request.empty():
+            self._detection_request.get()
+        while not self._detection_result.empty():
+            self._detection_result.get()

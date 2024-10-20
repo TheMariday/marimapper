@@ -3,7 +3,7 @@ import numpy as np
 
 from multiprocessing import get_logger
 
-logging = get_logger()
+logger = get_logger()
 
 
 class MockCamera:
@@ -12,7 +12,7 @@ class MockCamera:
 
         self.frame_id = 0
 
-        logging.info(f"Connecting to camera {device_id} ...")
+        logger.info(f"Connecting to camera {device_id} ...")
         self.device_id = device_id
         self.device = cv2.VideoCapture(device_id)
         real_frames = []

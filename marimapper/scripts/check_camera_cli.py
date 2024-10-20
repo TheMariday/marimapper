@@ -3,9 +3,11 @@ import argparse
 from marimapper.detector import find_led, set_cam_dark
 from marimapper.utils import add_camera_args
 from marimapper.camera import Camera
-from multiprocessing import get_logger
+from multiprocessing import log_to_stderr
+import logging
 
-logging = get_logger()
+logger = log_to_stderr()
+logger.setLevel(level=logging.INFO)
 
 
 def main():
@@ -15,14 +17,18 @@ def main():
     )
 
     add_camera_args(parser)
+    parser.add_argument("-v", "--verbose", action="store_true")
 
     args = parser.parse_args()
+
+    if args.verbose:
+        logger.setLevel(logging.DEBUG)
 
     cam = Camera(args.device)
 
     set_cam_dark(cam, args.exposure)
 
-    logging.info(
+    logger.info(
         "Camera connected! Hold an LED up to the camera to check LED identification"
     )
 

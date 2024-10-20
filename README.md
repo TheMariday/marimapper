@@ -131,10 +131,9 @@ Fill out the blanks and check it by running `marimapper_check_backend --backend 
 
 ## Step 3: [It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
 
-Run `marimapper --dir my_scan --backend fadecandy`
+In a new folder, run `marimapper --backend fadecandy`
 
-Change `my_scan` to the directory you want to save your scan
-and `fadecandy` to whatever backend you're using
+and `fadecandy` to whatever backend you're using and use `--help` to show more options
 
 Set up your LEDs so most of them are in view and when you're ready, type `y` when prompted with `Start scan? [y/n]`
 

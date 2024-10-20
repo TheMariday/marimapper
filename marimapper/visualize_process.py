@@ -5,10 +5,11 @@ from multiprocessing import Process, Event
 from marimapper.led import LED3D, View
 import time
 
-logging = get_logger()
+logger = get_logger()
 
-#Temporary fix to stop the zero points issue when visualising
+# Temporary fix to stop the zero points issue when visualising
 open3d.utility.set_verbosity_level(open3d.utility.VerbosityLevel.Error)
+
 
 def get_all_views(leds: list[LED3D]) -> list[View]:
     views = []
@@ -23,7 +24,7 @@ def get_all_views(leds: list[LED3D]) -> list[View]:
 class VisualiseProcess(Process):
 
     def __init__(self, input_queue):
-        logging.debug("Renderer3D initialising")
+        logger.debug("Renderer3D initialising")
         super().__init__()
         self._vis = None
         self._input_queue = input_queue
@@ -31,13 +32,13 @@ class VisualiseProcess(Process):
         self.point_cloud = None
         self.line_set = None
         self.strip_set = None
-        logging.debug("Renderer3D initialised")
+        logger.debug("Renderer3D initialised")
 
     def stop(self):
         self._exit_event.set()
 
     def run(self):
-        logging.debug("Renderer3D process starting")
+        logger.debug("Renderer3D process starting")
 
         # wait for data to arrive sensibly
         while self._input_queue.empty():
@@ -57,7 +58,7 @@ class VisualiseProcess(Process):
             self._vis.update_renderer()
 
     def initialise_visualiser__(self):
-        logging.debug("Renderer3D process initialising visualiser")
+        logger.debug("Renderer3D process initialising visualiser")
 
         self._vis = open3d.visualization.Visualizer()
         self._vis.create_window(
@@ -78,15 +79,15 @@ class VisualiseProcess(Process):
         )
         render_options.background_color = [0.2, 0.2, 0.2]
 
-        logging.debug("Renderer3D process initialised visualiser")
+        logger.debug("Renderer3D process initialised visualiser")
 
     def reload_geometry__(self, first=False):
 
-        logging.debug("Renderer3D process reloading geometry")
+        logger.debug("Renderer3D process reloading geometry")
 
         leds = self._input_queue.get()
 
-        logging.debug(f"Fetched led map with size {len(leds)}")
+        logger.debug(f"Fetched led map with size {len(leds)}")
         all_views = get_all_views(leds)
 
         p, l, c = view_to_points_lines_colors(all_views)
@@ -126,7 +127,7 @@ class VisualiseProcess(Process):
             self._vis.update_geometry(self.line_set)
             self._vis.update_geometry(self.strip_set)
 
-        logging.debug("Renderer3D process reloaded geometry")
+        logger.debug("Renderer3D process reloaded geometry")
 
 
 def view_to_points_lines_colors(views):  # returns points and lines
