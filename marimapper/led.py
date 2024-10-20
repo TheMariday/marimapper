@@ -198,6 +198,8 @@ def fill_gap(start_led: LED3D, end_led: LED3D):
         p2 = end_led.point * fraction
         new_led.point = p1 + p2
 
+        new_led.views = start_led.views + end_led.views
+
         new_led.add_state(LEDState.INTERPOLATED)
         new_leds.append(new_led)
 
