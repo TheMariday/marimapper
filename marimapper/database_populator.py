@@ -1,7 +1,7 @@
 from itertools import combinations
 from math import radians, tan
 import os
-
+from multiprocessing import get_logger
 import numpy as np
 
 from marimapper.pycolmap_tools.database import COLMAPDatabase
@@ -9,9 +9,11 @@ from marimapper.led import LED2D, get_view_ids, get_leds_with_view
 
 ARBITRARY_SCALE = 2000
 
+logger = get_logger()
+
 
 def populate_database(db_path: os.path, leds: list[LED2D]):
-
+    logger.debug(f"Populating sfm database with {len(leds)} leds, path: {db_path}")
     views = get_view_ids(leds)
     map_features = np.zeros((max(views) + 1, 1, 2))
 

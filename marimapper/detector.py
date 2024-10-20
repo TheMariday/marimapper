@@ -1,15 +1,17 @@
 import cv2
 import time
 import typing
+from multiprocessing import get_logger
 
 from marimapper.camera import Camera
 from marimapper.timeout_controller import TimeoutController
 from marimapper.led import Point2D, LED2D
 
-DETECTOR_WINDOW_NAME = "MariMapper - Detector"
+logger = get_logger()
 
 
 def find_led_in_image(image: cv2.Mat, threshold: int = 128) -> typing.Optional[Point2D]:
+    logger.debug("looking for led in image")
 
     if len(image.shape) > 2:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -21,6 +23,7 @@ def find_led_in_image(image: cv2.Mat, threshold: int = 128) -> typing.Optional[P
     led_response_count = len(contours)
 
     if led_response_count == 0:
+        logger.debug("could not find led")
         return None
 
     moments = cv2.moments(image_thresh)
@@ -37,11 +40,13 @@ def find_led_in_image(image: cv2.Mat, threshold: int = 128) -> typing.Optional[P
 
     brightness = 1.0
 
+    logger.debug(f"found led at {center_u} {center_v} with brightness {brightness}")
+
     return Point2D(center_u, center_v, contours, brightness)  # todo, normalise contours
 
 
 def draw_led_detections(image: cv2.Mat, led_detection: Point2D) -> cv2.Mat:
-
+    logger.debug("drawing detection")
     render_image = (
         image if len(image.shape) == 3 else cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     )
@@ -73,7 +78,7 @@ def draw_led_detections(image: cv2.Mat, led_detection: Point2D) -> cv2.Mat:
 
 
 def show_image(image: cv2.Mat) -> None:
-    cv2.imshow(DETECTOR_WINDOW_NAME, image)
+    cv2.imshow("MariMapper - Detector", image)
     key = cv2.waitKey(1)
 
     if key == 27:  # esc
@@ -82,6 +87,7 @@ def show_image(image: cv2.Mat) -> None:
 
 def set_cam_default(cam: Camera) -> None:
     if cam.state != "default":
+        logger.info("resetting cam to default")
         cam.reset()
         cam.eat()
         cam.state = "default"
@@ -89,6 +95,7 @@ def set_cam_default(cam: Camera) -> None:
 
 def set_cam_dark(cam: Camera, exposure: int) -> None:
     if cam.state != "dark":
+        logger.info("setting cam to dark mode")
         cam.set_autofocus(0, 0)
         cam.set_exposure_mode(0)
         cam.set_gain(0)

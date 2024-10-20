@@ -4,8 +4,6 @@ import sys
 import importlib.util
 from inspect import signature
 
-from marimapper import logging as logging
-
 
 def add_camera_args(parser):
     parser.add_argument(
@@ -54,7 +52,7 @@ def add_backend_args(parser):
 def get_user_confirmation(prompt):  # pragma: no coverage
 
     try:
-        uin = input(logging.colorise(prompt, logging.Col.BLUE))
+        uin = input(prompt)
 
         while uin.lower() not in ("y", "n"):
             uin = input()

@@ -1,5 +1,7 @@
 import cv2
-from marimapper import logging as logging
+from multiprocessing import get_logger
+
+logger = get_logger()
 
 
 class CameraSettings:
@@ -21,14 +23,14 @@ class CameraSettings:
 class Camera:
 
     def __init__(self, device_id):
-        logging.info(f"Connecting to camera {device_id} ...")
+        logger.info(f"Connecting to device {device_id} ...")
         self.device_id = device_id
 
         for capture_method in [cv2.CAP_DSHOW, cv2.CAP_V4L2, cv2.CAP_ANY]:
             self.device = cv2.VideoCapture(device_id, capture_method)
             if self.device.isOpened():
-                logging.debug(
-                    f"Connected to camera {device_id} with capture method {capture_method}"
+                logger.debug(
+                    f"Connected to device {device_id} with capture method {capture_method}"
                 )
                 break
 
@@ -63,54 +65,36 @@ class Camera:
     def get_gain(self):
         return int(self.device.get(cv2.CAP_PROP_GAIN))
 
-    def set_resolution(self, width, height):
-
-        logging.debug(f"Setting camera resolution to {width} x {height} ...")
-
-        self.device.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        self.device.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-
-        new_width = self.get_width()
-        new_height = self.get_height()
-
-        # this is cov ignored as it's a strange position to be in but ultimately fine
-        if width != new_width or height != new_height:  # pragma: no cover
-            logging.error(
-                f"Failed to set camera {self.device_id} resolution to {width} x {height}",
-            )
-
-        logging.debug(f"Camera resolution set to {new_width} x {new_height}")
-
     def set_autofocus(self, mode, focus=0):
 
-        logging.debug(f"Setting autofocus to mode {mode} with focus {focus}")
+        logger.debug(f"Setting autofocus to mode {mode} with focus {focus}")
 
         if not self.device.set(cv2.CAP_PROP_AUTOFOCUS, mode):
-            logging.error(f"Failed to set autofocus to {mode}")
+            logger.error(f"Failed to set autofocus to {mode}")
 
         if not self.device.set(cv2.CAP_PROP_FOCUS, focus):
-            logging.error(f"Failed to set focus to {focus}")
+            logger.error(f"Failed to set focus to {focus}")
 
     def set_exposure_mode(self, mode):
 
-        logging.debug(f"Setting exposure to mode {mode}")
+        logger.debug(f"Setting exposure to mode {mode}")
 
         if not self.device.set(cv2.CAP_PROP_AUTO_EXPOSURE, mode):
-            logging.error(f"Failed to put camera into manual exposure mode {mode}")
+            logger.error(f"Failed to put camera into manual exposure mode {mode}")
 
     def set_gain(self, gain):
 
-        logging.debug(f"Setting gain to {gain}")
+        logger.debug(f"Setting gain to {gain}")
 
         if not self.device.set(cv2.CAP_PROP_GAIN, gain):
-            logging.error(f"failed to set camera gain to {gain}")
+            logger.error(f"failed to set camera gain to {gain}")
 
     def set_exposure(self, exposure):
 
-        logging.debug(f"Setting exposure to {exposure}")
+        logger.debug(f"Setting exposure to {exposure}")
 
         if not self.device.set(cv2.CAP_PROP_EXPOSURE, exposure):
-            logging.error(f"Failed to set exposure to {exposure}")
+            logger.error(f"Failed to set exposure to {exposure}")
 
     def eat(self, count=30):
         for _ in range(count):
@@ -119,7 +103,6 @@ class Camera:
     def read(self, color=False):
         ret_val, image = self.device.read()
         if not ret_val:
-            logging.error("Failed to grab frame")
-            return None
+            raise Exception("Failed to read image")
 
         return image

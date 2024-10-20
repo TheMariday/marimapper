@@ -9,7 +9,10 @@ from marimapper.detector import (
 )
 from marimapper.led import LED2D
 from marimapper.utils import get_backend
-from marimapper import logging
+
+from multiprocessing import get_logger
+
+logging = get_logger()
 
 
 class DetectorProcess(Process):

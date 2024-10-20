@@ -137,7 +137,6 @@ def find_inter_led_distance(leds: list[LED2D | LED3D]):
 def rescale(leds: list[LED3D], target_inter_distance=1.0) -> None:
 
     inter_led_distance = find_inter_led_distance(leds)
-    print(inter_led_distance)
     scale = (1.0 / inter_led_distance) * target_inter_distance
     for led in leds:
         led.point *= scale

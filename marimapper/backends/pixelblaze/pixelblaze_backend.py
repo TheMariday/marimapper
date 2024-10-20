@@ -1,5 +1,7 @@
-from marimapper import logging as logging
+from multiprocessing import get_logger
 import pixelblaze
+
+logging = get_logger()
 
 
 class Backend:

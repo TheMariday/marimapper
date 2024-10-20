@@ -6,7 +6,7 @@ on:
     paths-ignore:
       - "README.md"
       - "docs/**"
-      - "scripts/**"
+      - "marimapper/scripts/**"
   pull_request:
     branches: [ "main" ]
 
@@ -37,4 +37,5 @@ jobs:
 
     - name: Pytest
       run: |
+        cd test
         pytest .

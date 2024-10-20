@@ -7,17 +7,20 @@ import time
 from tqdm import tqdm
 from pathlib import Path
 from marimapper.detector_process import DetectorProcess
-from marimapper import logging
+from multiprocessing import get_logger
 from marimapper.file_tools import get_all_2d_led_maps, write_2d_leds_to_file
 from marimapper.utils import get_user_confirmation
 from marimapper.visualize_process import VisualiseProcess
 from multiprocessing import Queue
 from marimapper.led import last_view
 
+logger = get_logger()
+
 
 class Scanner:
 
     def __init__(self, cli_args):
+        logger.debug("initialising scanner")
         self.output_dir = cli_args.dir
         os.makedirs(self.output_dir, exist_ok=True)
 
@@ -49,8 +52,10 @@ class Scanner:
             cli_args.start, min(cli_args.end, self.detector.get_led_count())
         )
 
+        logger.debug("scanner initialised")
+
     def close(self):
-        logging.debug("marimapper closing")
+        logger.debug("scanner closing")
 
         self.detector.stop()
         self.sfm.stop()
@@ -60,7 +65,7 @@ class Scanner:
         self.renderer3d.join()
         self.detector.join()
 
-        logging.debug("marimapper closed")
+        logger.debug("scanner closed")
 
     def mainloop(self):
 
@@ -69,6 +74,7 @@ class Scanner:
             start_scan = get_user_confirmation("Start scan? [y/n]: ")
 
             if not start_scan:
+                print("exiting")
                 return
 
             leds = []

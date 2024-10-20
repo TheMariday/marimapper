@@ -1,10 +1,14 @@
 import numpy as np
 import open3d
-from marimapper import logging as logging
+from multiprocessing import get_logger
 from multiprocessing import Process, Event
 from marimapper.led import LED3D, View
 import time
 
+logging = get_logger()
+
+#Temporary fix to stop the zero points issue when visualising
+open3d.utility.set_verbosity_level(open3d.utility.VerbosityLevel.Error)
 
 def get_all_views(leds: list[LED3D]) -> list[View]:
     views = []
@@ -62,10 +66,6 @@ class VisualiseProcess(Process):
             height=640,
         )
 
-        self.point_cloud = open3d.geometry.PointCloud()
-        self.line_set = open3d.geometry.LineSet()
-        self.strip_set = open3d.geometry.LineSet()
-
         view_ctl = self._vis.get_view_control()
         view_ctl.set_up((0, 1, 0))
         view_ctl.set_lookat((0, 0, 0))
@@ -90,6 +90,13 @@ class VisualiseProcess(Process):
         all_views = get_all_views(leds)
 
         p, l, c = view_to_points_lines_colors(all_views)
+
+        if self.point_cloud is None:
+            self.point_cloud = open3d.geometry.PointCloud()
+        if self.line_set is None:
+            self.line_set = open3d.geometry.LineSet()
+        if self.strip_set is None:
+            self.strip_set = open3d.geometry.LineSet()
 
         self.line_set.points = open3d.utility.Vector3dVector(p)
         self.line_set.lines = open3d.utility.Vector2iVector(l)

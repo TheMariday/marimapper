@@ -7,6 +7,9 @@ from marimapper.database_populator import populate_database
 from marimapper.led import LED3D
 from marimapper.model import binary_to_led_map_3d
 from marimapper.utils import SupressLogging
+from multiprocessing import get_logger
+
+logger = get_logger()
 
 
 def sfm(leds) -> list[LED3D]:
@@ -34,5 +37,5 @@ def sfm(leds) -> list[LED3D]:
             return []
 
         leds = binary_to_led_map_3d(temp_dir)
-        print(f"sfm managed to reconstruct {len(leds)} leds")
+        logger.debug(f"sfm managed to reconstruct {len(leds)} leds")
         return leds

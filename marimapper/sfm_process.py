@@ -1,9 +1,11 @@
-from multiprocessing import Process, Event, Queue
+from multiprocessing import Process, Event, Queue, get_logger
 from marimapper.led import LED2D, rescale, recenter, LED3D
 from marimapper.sfm import sfm
 import open3d
 import numpy as np
 import math
+
+logger = get_logger()
 
 
 # this is here for now as there is some weird import dependency going on...

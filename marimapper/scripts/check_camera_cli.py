@@ -3,7 +3,9 @@ import argparse
 from marimapper.detector import find_led, set_cam_dark
 from marimapper.utils import add_camera_args
 from marimapper.camera import Camera
-from marimapper import logging as logging
+from multiprocessing import get_logger
+
+logging = get_logger()
 
 
 def main():

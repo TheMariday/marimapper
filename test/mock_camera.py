@@ -1,6 +1,9 @@
-from marimapper import logging as logging
 import cv2
 import numpy as np
+
+from multiprocessing import get_logger
+
+logging = get_logger()
 
 
 class MockCamera:
