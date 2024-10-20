@@ -43,7 +43,7 @@ def add_backend_args(parser):
         "--end",
         type=int,
         help="Index of the last led you want to scan up to the backends limit",
-        default=100,
+        default=10000,
     )
 
     parser.add_argument("--server", type=str, help="Some backends require a server")

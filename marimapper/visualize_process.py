@@ -2,7 +2,7 @@ import numpy as np
 import open3d
 from multiprocessing import get_logger
 from multiprocessing import Process, Event
-from marimapper.led import LED3D, View
+from marimapper.led import LED3D, View, get_next, get_distance
 import time
 
 logger = get_logger()
@@ -110,13 +110,19 @@ class VisualiseProcess(Process):
             np.array([led.point.normal for led in leds]) * 0.2
         )
 
-        # self.strip_set.points = self.point_cloud.points
-        # self.strip_set.lines = open3d.utility.Vector2iVector(
-        #    led_map.get_connected_leds()
-        # )
-        # self.strip_set.colors = open3d.utility.Vector3dVector(
-        #    [[0.8, 0.8, 0.8] for _ in range(len(self.strip_set.lines))]
-        # )
+        self.strip_set.points = self.point_cloud.points
+
+        strips = []
+        for led_index, led in enumerate(leds):
+            next_led = get_next(led, leds)
+            if next_led is not None:
+                if get_distance(led, next_led) < 1.10:  # + 10%
+                    strips.append((led_index, leds.index(next_led)))
+
+        self.strip_set.lines = open3d.utility.Vector2iVector(strips)
+        self.strip_set.colors = open3d.utility.Vector3dVector(
+            [[0.8, 0.8, 0.8] for _ in range(len(self.strip_set.lines))]
+        )
 
         if first:
             self._vis.add_geometry(self.point_cloud)

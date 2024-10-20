@@ -2,6 +2,10 @@ import numpy as np
 import typing
 import math
 
+from multiprocessing import get_logger
+
+logger = get_logger()
+
 
 class View:
     def __init__(self, view_id, position, rotation):
@@ -218,17 +222,20 @@ def merge(leds: list[LED3D]) -> LED3D:
     return new_led
 
 
-# currently broken
 def remove_duplicates(leds: list[LED3D]) -> list[LED3D]:
-    raise NotImplementedError("currently broken")
     new_leds = []
 
-    for led in leds:
-        leds_found = get_leds(new_leds, led.led_id)
-        if leds_found:
-            new_leds.append(merge(leds_found))
+    led_ids = set([led.led_id for led in leds])
+    for led_id in led_ids:
+        leds_found = get_leds(leds, led_id)
+        if len(leds_found) == 1:
+            new_leds.append(leds_found[0])
         else:
-            new_leds.append(led)
+            new_leds.append(merge(leds_found))
+
+    leds_merged = len(leds) - len(new_leds)
+    if leds_merged > 0:
+        logger.debug(f"merged {len(new_leds)} leds")
 
     return new_leds
 
