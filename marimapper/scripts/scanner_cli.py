@@ -5,10 +5,6 @@ import argparse
 import logging
 from marimapper.utils import add_camera_args, add_backend_args
 
-# PYCHARM DEVELOPER WARNING!
-# You MUST enable "Emulate terminal in output console" in the run configuration or
-# really weird  stuff happens with multiprocessing!
-
 
 logger = log_to_stderr()
 logger.setLevel(level=logging.ERROR)

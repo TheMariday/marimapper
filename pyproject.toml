@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "marimapper"
-version = "V1.3"
+version = "V2.0"
 
 dependencies = [
     "numpy<1.25.0,>=1.17.3",
@@ -54,8 +54,8 @@ marimapper = "marimapper.scripts.scanner_cli:main"
 marimapper_check_camera = "marimapper.scripts.check_camera_cli:main"
 marimapper_check_backend ="marimapper.scripts.check_backend_cli:main"
 marimapper_upload_to_pixelblaze = "marimapper.scripts.upload_map_to_pixelblaze_cli:main"
-marimapper_view_2d_map = "marimapper.scripts.view_2d_map_cli:main"
 
+# this currently does nothing because of path issues
 [tool.coverage.run]
 omit = [
     "*/__init__.py",

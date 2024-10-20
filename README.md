@@ -166,20 +166,6 @@ Here is an example reconstruction of a test tube of LEDs I have
 - Use `1`, `2` & `3` keys to change colour scheme
 </details>
 
-# Random other stuff that doesn't really fit anywhere
-
-There's also a tool to turn your 3D scan into a 3D model, run it with `marimapper_remesh my_3d_map.csv`
-
-You can visualise 2D scans with `marimapper_view_2d_scan led_map_2d_0.csv`
-
-If you want to develop with MariMapper, you can use 
-`pip install "marimapper[develop] @ git+http://github.com/themariday/marimapper"`
-to grab all the tools you need. Flake8, Black, etc.
-
-When installing Marimapper, it will adjust your Python packages to the correct versions. 
-If you don't want this, then run it inside a venv.
-If you're worried about library pollution then I assume you know how to use a venv.
-
 # Feedback
 
 I would really love to hear what you think and if you have any bugs or improvements, please raise them here or drop me a
