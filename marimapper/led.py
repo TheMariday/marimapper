@@ -1,6 +1,7 @@
 import numpy as np
 import typing
 import math
+from typing import Union
 
 from multiprocessing import get_logger
 
@@ -90,21 +91,23 @@ class LED3D:
 
 
 # returns none if there isn't that led in the list!
-def get_led(leds: list[LED2D | LED3D], led_id: int) -> typing.Optional[LED2D | LED3D]:
+def get_led(
+    leds: list[Union[Union[LED2D, LED3D]]], led_id: int
+) -> typing.Optional[Union[LED2D, LED3D]]:
     for led in leds:
         if led.led_id == led_id:
             return led
     return None
 
 
-def get_leds(leds: list[LED2D | LED3D], led_id: int) -> list[LED2D | LED3D]:
+def get_leds(leds: list[Union[LED2D, LED3D]], led_id: int) -> list[Union[LED2D, LED3D]]:
     return [led for led in leds if led.led_id == led_id]
 
 
 # returns none if it's the end!
 def get_next(
-    led_prev: LED2D | LED3D, leds: list[LED2D | LED3D]
-) -> typing.Optional[LED2D | LED3D]:
+    led_prev: Union[LED2D, LED3D], leds: list[Union[LED2D, LED3D]]
+) -> typing.Optional[Union[LED2D, LED3D]]:
 
     closest = None
     for led in leds:
@@ -120,19 +123,19 @@ def get_next(
     return closest
 
 
-def get_gap(led_a: LED2D | LED3D, led_b: LED2D | LED3D) -> int:
+def get_gap(led_a: Union[LED2D, LED3D], led_b: Union[LED2D, LED3D]) -> int:
     return abs(led_a.led_id - led_b.led_id)
 
 
-def get_max_led_id(leds: list[LED2D | LED3D]) -> int:
+def get_max_led_id(leds: list[Union[LED2D, LED3D]]) -> int:
     return max([led.led_id for led in leds])
 
 
-def get_min_led_id(leds: list[LED2D | LED3D]) -> int:
+def get_min_led_id(leds: list[Union[LED2D, LED3D]]) -> int:
     return min([led.led_id for led in leds])
 
 
-def get_distance(led_a: LED2D | LED3D, led_b: LED2D | LED3D):
+def get_distance(led_a: Union[LED2D, LED3D], led_b: Union[LED2D, LED3D]):
     return math.hypot(*(led_a.point.position - led_b.point.position))
 
 
@@ -150,7 +153,7 @@ def last_view(leds: list[LED2D]):
     return max([led.view_id for led in leds])
 
 
-def find_inter_led_distance(leds: list[LED2D | LED3D]):
+def find_inter_led_distance(leds: list[Union[LED2D, LED3D]]):
     distances = []
 
     for led in leds:
