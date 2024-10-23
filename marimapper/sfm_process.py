@@ -40,20 +40,19 @@ class SFM(Process):
 
     def __init__(self):
         super().__init__()
-        self._output_queue = Queue()
-        self._output_queue.cancel_join_thread()
         self._input_queue = Queue()
         self._input_queue.cancel_join_thread()
+        self._output_queues: list[Queue] = []
         self._exit_event = Event()
+
+    def get_input_queue(self) -> Queue:
+        return self._input_queue
 
     def add_detection(self, led: LED2D):
         self._input_queue.put(led)
 
-    def get_output_queue(self):
-        return self._output_queue
-
-    def get_results(self):
-        return self._output_queue.get()
+    def add_output_queue(self, queue: Queue):
+        self._output_queues.append(queue)
 
     def stop(self):
         self._exit_event.set()
@@ -88,11 +87,13 @@ class SFM(Process):
 
                 add_normals(leds_3d)
 
-                self._output_queue.put(leds_3d)
+                for queue in self._output_queues:
+                    queue.put(leds_3d)
                 update_required = False
 
         # clear the queues, don't ask why.
         while not self._input_queue.empty():
             self._input_queue.get()
-        while not self._output_queue.empty():
-            self._output_queue.get()
+        for queue in self._output_queues:
+            while not queue.empty():
+                queue.get()

@@ -1,7 +1,6 @@
 import numpy as np
 import open3d
-from multiprocessing import get_logger
-from multiprocessing import Process, Event
+from multiprocessing import get_logger, Process, Event, Queue
 from marimapper.led import LED3D, View, get_next, get_distance
 import time
 
@@ -23,16 +22,20 @@ def get_all_views(leds: list[LED3D]) -> list[View]:
 
 class VisualiseProcess(Process):
 
-    def __init__(self, input_queue):
+    def __init__(self):
         logger.debug("Renderer3D initialising")
         super().__init__()
         self._vis = None
-        self._input_queue = input_queue
+        self._input_queue = Queue()
+        self._input_queue.cancel_join_thread()
         self._exit_event = Event()
         self.point_cloud = None
         self.line_set = None
         self.strip_set = None
         logger.debug("Renderer3D initialised")
+
+    def get_input_queue(self) -> Queue:
+        return self._input_queue
 
     def stop(self):
         self._exit_event.set()

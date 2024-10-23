@@ -1,4 +1,4 @@
-from multiprocessing import Process, Queue, Event
+from multiprocessing import get_logger, Process, Queue, Event
 from marimapper.detector import (
     show_image,
     set_cam_default,
@@ -7,10 +7,8 @@ from marimapper.detector import (
     set_cam_dark,
     enable_and_find_led,
 )
-from marimapper.led import LED2D
-from marimapper.utils import get_backend
 
-from multiprocessing import get_logger
+from marimapper.utils import get_backend
 
 logger = get_logger()
 
@@ -27,10 +25,9 @@ class DetectorProcess(Process):
         display: bool = True,
     ):
         super().__init__()
-        self._detection_request = Queue()  # {led_id, view_id}
-        self._detection_result = Queue()  # LED3D
-        self._detection_request.cancel_join_thread()
-        self._detection_result.cancel_join_thread()
+        self._input_queue = Queue()  # {led_id, view_id}
+        self._input_queue.cancel_join_thread()
+        self._output_queues: list[Queue] = []  # LED3D
         self._led_count = Queue()
         self._led_count.cancel_join_thread()
         self._exit_event = Event()
@@ -42,11 +39,14 @@ class DetectorProcess(Process):
         self._led_backend_server = led_backend_server
         self._display = display
 
-    def detect(self, led_id: int, view_id: int):
-        self._detection_request.put((led_id, view_id))
+    def get_input_queue(self) -> Queue:
+        return self._input_queue
 
-    def get_results(self) -> LED2D:
-        return self._detection_result.get()
+    def add_output_queue(self, queue: Queue):
+        self._output_queues.append(queue)
+
+    def detect(self, led_id: int, view_id: int):
+        self._input_queue.put((led_id, view_id))
 
     def get_led_count(self):
         return self._led_count.get()
@@ -66,9 +66,9 @@ class DetectorProcess(Process):
 
         while not self._exit_event.is_set():
 
-            if not self._detection_request.empty():
+            if not self._input_queue.empty():
                 set_cam_dark(cam, self._dark_exposure)
-                led_id, view_id = self._detection_request.get()
+                led_id, view_id = self._input_queue.get()
                 result = enable_and_find_led(
                     cam,
                     led_backend,
@@ -79,7 +79,8 @@ class DetectorProcess(Process):
                     self._display,
                 )
 
-                self._detection_result.put(result)
+                for queue in self._output_queues:
+                    queue.put(result)
             else:
                 set_cam_default(cam)
                 if self._display:
@@ -90,7 +91,9 @@ class DetectorProcess(Process):
         set_cam_default(cam)
 
         # clear the queues, don't ask why.
-        while not self._detection_request.empty():
-            self._detection_request.get()
-        while not self._detection_result.empty():
-            self._detection_result.get()
+        while not self._input_queue.empty():
+            self._input_queue.get()
+
+        for queue in self._output_queues:
+            while not queue.empty():
+                queue.get()

@@ -1,6 +1,7 @@
 import os
 from marimapper.led import Point2D, LED3D, LED2D
 import typing
+from pathlib import Path
 
 
 def load_detections(filename: os.path, view_id) -> typing.Optional[list[LED2D]]:
@@ -51,7 +52,18 @@ def get_all_2d_led_maps(directory: os.path) -> list[LED2D]:
     return points
 
 
-def write_3d_leds_to_file(leds: list[LED3D], filename: str):
+def write_2d_leds_to_file(leds: list[LED2D], filename: Path):
+
+    lines = ["index,u,v"]
+
+    for led in sorted(leds, key=lambda led_t: led_t.led_id):
+        lines.append(f"{led.led_id}," f"{led.point.u():f}," f"{led.point.v():f}")
+
+    with open(filename, "w") as f:
+        f.write("\n".join(lines))
+
+
+def write_3d_leds_to_file(leds: list[LED3D], filename: Path):
 
     lines = ["index,x,y,z,xn,yn,zn,error"]
 
@@ -66,18 +78,6 @@ def write_3d_leds_to_file(leds: list[LED3D], filename: str):
             f"{led.point.normal[2]:f},"
             f"{led.point.error:f}"
         )
-
-    with open(filename, "w") as f:
-        f.write("\n".join(lines))
-
-
-def write_2d_leds_to_file(leds: list[LED2D], filename: str):
-
-    lines = ["index,u,v"]
-
-    for led in sorted(leds, key=lambda led_t: led_t.led_id):
-
-        lines.append(f"{led.led_id}," f"{led.point.u():f}," f"{led.point.v():f}")
 
     with open(filename, "w") as f:
         f.write("\n".join(lines))
