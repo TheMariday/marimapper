@@ -3,17 +3,20 @@ from marimapper.camera import Camera
 from marimapper.detector import find_led
 from marimapper.file_tools import write_2d_leds_to_file, load_detections
 from marimapper.led import LED2D
+from utils import get_test_dir
 
 
 def test_capture_sequence():
-    output_dir_full = os.path.join(os.getcwd(), "test", "scan")
+    output_dir_full = get_test_dir("scan")
 
     os.makedirs(output_dir_full, exist_ok=True)
 
     for view_index in range(9):
 
         cam = Camera(
-            f"MariMapper-Test-Data/9_point_box/cam_{view_index}/capture_%04d.png"
+            get_test_dir(
+                f"MariMapper-Test-Data/9_point_box/cam_{view_index}/capture_%04d.png"
+            )
         )
 
         leds = []
@@ -25,14 +28,15 @@ def test_capture_sequence():
             if point:
                 leds.append(LED2D(led_id, 0, point))
 
-        filepath = os.path.join(output_dir_full, f"led_map_2d_{view_index:04}.csv")
+        filepath = output_dir_full / f"led_map_2d_{view_index:04}.csv"
 
         write_2d_leds_to_file(leds, filepath)
 
 
 def test_capture_sequence_correctness():
+    output_dir_full = get_test_dir("scan")
+
     for view_index in range(9):
-        output_dir_full = os.path.join(os.getcwd(), "test", "scan")
 
         filepath = os.path.join(output_dir_full, f"led_map_2d_{view_index:04}.csv")
 

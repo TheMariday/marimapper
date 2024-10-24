@@ -2,6 +2,7 @@ import tempfile
 import numpy as np
 from marimapper.led import LED3D
 from marimapper.file_tools import write_3d_leds_to_file
+from pathlib import Path
 
 
 def test_file_write():
@@ -22,7 +23,7 @@ def test_file_write():
 
     output_file = tempfile.NamedTemporaryFile(delete=False)
 
-    write_3d_leds_to_file([led], output_file.name)
+    write_3d_leds_to_file([led], Path(output_file.name))
 
     with open(output_file.name) as f:
         lines = f.readlines()
