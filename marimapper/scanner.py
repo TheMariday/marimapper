@@ -2,7 +2,6 @@
 # FATAL WEIRD CRASH IF THIS ISN'T IMPORTED FIRST DON'T ASK
 from marimapper.sfm_process import SFM
 
-import os
 from tqdm import tqdm
 from pathlib import Path
 from marimapper.detector_process import DetectorProcess
@@ -18,17 +17,26 @@ logger = get_logger()
 
 class Scanner:
 
-    def __init__(self, cli_args):
+    def __init__(
+        self,
+        output_dir: Path,
+        device: str,
+        exposure: int,
+        threshold: int,
+        backend: str,
+        server: str,
+        led_start: int,
+        led_end: int,
+    ):
         logger.debug("initialising scanner")
-        self.output_dir = Path(cli_args.dir)
-        os.makedirs(self.output_dir, exist_ok=True)
+        self.output_dir = output_dir
 
         self.detector = DetectorProcess(
-            cli_args.device,
-            cli_args.exposure,
-            cli_args.threshold,
-            cli_args.backend,
-            cli_args.server,
+            device,
+            exposure,
+            threshold,
+            backend,
+            server,
         )
 
         self.sfm = SFM()
@@ -58,7 +66,7 @@ class Scanner:
         self.file_writer.start()
 
         self.led_id_range = range(
-            cli_args.start, min(cli_args.end, self.detector.get_led_count())
+            led_start, min(led_end, self.detector.get_led_count())
         )
 
         logger.debug("scanner initialised")

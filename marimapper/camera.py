@@ -100,7 +100,7 @@ class Camera:
         for _ in range(count):
             self.read()
 
-    def read(self, color=False):
+    def read(self):
         ret_val, image = self.device.read()
         if not ret_val:
             raise Exception("Failed to read image")

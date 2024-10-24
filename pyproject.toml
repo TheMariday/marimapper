@@ -55,7 +55,7 @@ marimapper_check_camera = "marimapper.scripts.check_camera_cli:main"
 marimapper_check_backend ="marimapper.scripts.check_backend_cli:main"
 marimapper_upload_to_pixelblaze = "marimapper.scripts.upload_map_to_pixelblaze_cli:main"
 
-# this currently does nothing because of path issues
+
 [tool.coverage.run]
 omit = [
     "*/__init__.py",

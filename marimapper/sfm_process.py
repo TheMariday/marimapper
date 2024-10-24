@@ -66,9 +66,10 @@ class SFM(Process):
         while not self._exit_event.is_set():
 
             if not self._input_queue.empty():
-                led = self._input_queue.get()
-                leds_2d.append(led)
-                update_required = True
+                led: LED2D = self._input_queue.get()
+                if led.point is not None:
+                    leds_2d.append(led)
+                    update_required = True
 
             else:
                 if not update_required:

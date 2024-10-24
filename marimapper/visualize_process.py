@@ -122,7 +122,7 @@ class VisualiseProcess(Process):
         for led_index, led in enumerate(leds):
             next_led = get_next(led, leds)
             if next_led is not None:
-                if get_distance(led, next_led) < 1.10:  # + 10%
+                if get_distance(led, next_led) < 1.50:  # + 50%
                     strips.append((led_index, leds.index(next_led)))
 
         self.strip_set.lines = open3d.utility.Vector2iVector(strips)

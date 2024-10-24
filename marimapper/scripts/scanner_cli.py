@@ -4,7 +4,7 @@ import os
 import argparse
 import logging
 from marimapper.utils import add_camera_args, add_backend_args
-
+from pathlib import Path
 
 logger = log_to_stderr()
 logger.setLevel(level=logging.ERROR)
@@ -21,7 +21,7 @@ def main():
     parser.add_argument("-v", "--verbose", action="store_true")
 
     parser.add_argument(
-        "--dir", type=str, help="The output folder for your capture", default="."
+        "--dir", type=Path, help="The output folder for your capture", default="."
     )
 
     args = parser.parse_args()
@@ -32,7 +32,16 @@ def main():
     if args.verbose:
         logger.setLevel(logging.DEBUG)
 
-    scanner = Scanner(cli_args=args)
+    scanner = Scanner(
+        args.dir,
+        args.device,
+        args.exposure,
+        args.threshold,
+        args.backend,
+        args.server,
+        args.start,
+        args.end,
+    )
 
     scanner.mainloop()
     scanner.close()
