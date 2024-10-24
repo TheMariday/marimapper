@@ -44,12 +44,6 @@ class Camera:
     def reset(self):
         self.default_settings.apply(self)
 
-    def get_width(self):
-        return int(self.device.get(cv2.CAP_PROP_FRAME_WIDTH))
-
-    def get_height(self):
-        return int(self.device.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
     def get_af_mode(self):
         return int(self.device.get(cv2.CAP_PROP_AUTOFOCUS))
 
