@@ -126,6 +126,7 @@ def get_next(
 def get_gap(led_a: Union[LED2D, LED3D], led_b: Union[LED2D, LED3D]) -> int:
     return abs(led_a.led_id - led_b.led_id)
 
+
 def get_distance(led_a: Union[LED2D, LED3D], led_b: Union[LED2D, LED3D]):
     return math.hypot(*(led_a.point.position - led_b.point.position))
 
