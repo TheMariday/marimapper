@@ -92,8 +92,14 @@ class Scanner:
             start_scan = get_user_confirmation("Start scan? [y/n]: ")
 
             if not start_scan:
-                print("exiting")
+                print("Exiting Marimapper")
                 return
+
+            if len(self.led_id_range) == 0:
+                print(
+                    "LED range is zero, have you chosen a backend with 'marimapper --backend'?"
+                )
+                continue
 
             for led_id in self.led_id_range:
                 self.detector.detect(led_id, self.current_view)

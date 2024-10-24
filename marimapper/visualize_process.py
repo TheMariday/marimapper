@@ -74,6 +74,8 @@ class VisualiseProcess(Process):
         view_ctl.set_up((0, 1, 0))
         view_ctl.set_lookat((0, 0, 0))
         view_ctl.set_zoom(0.3)
+        # set far distance to 200x the inter-led distance
+        view_ctl.set_constant_z_far(200)
 
         render_options = self._vis.get_render_option()
         render_options.point_show_normal = True

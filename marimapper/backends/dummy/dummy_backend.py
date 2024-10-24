@@ -4,7 +4,7 @@ class Backend:
         pass
 
     def get_led_count(self):
-        return 1
+        return 0
 
     def set_led(self, led_index: int, on: bool):
         pass

@@ -4,6 +4,7 @@ from marimapper.sfm import sfm
 import open3d
 import numpy as np
 import math
+import time
 
 logger = get_logger()
 
@@ -65,19 +66,19 @@ class SFM(Process):
 
         while not self._exit_event.is_set():
 
-            if not self._input_queue.empty():
+            while not self._input_queue.empty():
                 led: LED2D = self._input_queue.get()
                 if led.point is not None:
                     leds_2d.append(led)
                     update_required = True
 
-            else:
-                if not update_required:
-                    continue
+            if update_required:
+                update_required = False
 
                 leds_3d = sfm(leds_2d)
 
                 if len(leds_3d) == 0:
+                    logger.info("Failed to reconstruct any leds")
                     continue
 
                 rescale(leds_3d)
@@ -90,7 +91,9 @@ class SFM(Process):
 
                 for queue in self._output_queues:
                     queue.put(leds_3d)
-                update_required = False
+
+            else:
+                time.sleep(1)
 
         # clear the queues, don't ask why.
         while not self._input_queue.empty():

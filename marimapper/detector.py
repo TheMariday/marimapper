@@ -11,7 +11,6 @@ logger = get_logger()
 
 
 def find_led_in_image(image: cv2.Mat, threshold: int = 128) -> typing.Optional[Point2D]:
-    logger.debug("looking for led in image")
 
     if len(image.shape) > 2:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -23,7 +22,6 @@ def find_led_in_image(image: cv2.Mat, threshold: int = 128) -> typing.Optional[P
     led_response_count = len(contours)
 
     if led_response_count == 0:
-        logger.debug("could not find led")
         return None
 
     moments = cv2.moments(image_thresh)
@@ -46,7 +44,6 @@ def find_led_in_image(image: cv2.Mat, threshold: int = 128) -> typing.Optional[P
 
 
 def draw_led_detections(image: cv2.Mat, led_detection: Point2D) -> cv2.Mat:
-    logger.debug("drawing detection")
     render_image = (
         image if len(image.shape) == 3 else cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     )

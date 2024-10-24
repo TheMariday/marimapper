@@ -21,7 +21,11 @@ def main():
     parser.add_argument("-v", "--verbose", action="store_true")
 
     parser.add_argument(
-        "--dir", type=Path, help="The output folder for your capture", default="."
+        "dir",
+        nargs="?",
+        type=Path,
+        default=os.getcwd(),
+        help="the location for your maps, defaults to the current working directory",
     )
 
     args = parser.parse_args()
