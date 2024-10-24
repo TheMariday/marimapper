@@ -1,50 +1,50 @@
 import os
-
-from marimapper.reconstructor import Reconstructor
-from marimapper.led_map_2d import LEDMap2D
+from marimapper.camera import Camera
+from marimapper.detector import find_led
+from marimapper.file_tools import write_2d_leds_to_file, load_detections
+from marimapper.led import LED2D
+from utils import get_test_dir
 
 
 def test_capture_sequence():
-    output_dir_full = os.path.join(os.getcwd(), "test", "scan")
+    output_dir_full = get_test_dir("scan")
 
     os.makedirs(output_dir_full, exist_ok=True)
 
     for view_index in range(9):
 
-        reconstructor = Reconstructor(
-            device=f"test/MariMapper-Test-Data/9_point_box/cam_{view_index}/capture_%04d.png",
-            dark_exposure=-10,
-            threshold=128,
-            led_backend=None,
+        cam = Camera(
+            get_test_dir(
+                f"MariMapper-Test-Data/9_point_box/cam_{view_index}/capture_%04d.png"
+            )
         )
 
-        led_map_2d = LEDMap2D()
+        leds = []
 
         for led_id in range(24):
 
-            result = reconstructor.find_led(False)
+            point = find_led(cam, display=False)
 
-            if result:
-                led_map_2d.add_detection(led_id, result)
+            if point:
+                leds.append(LED2D(led_id, 0, point))
 
-        filepath = os.path.join(output_dir_full, f"led_map_2d_{view_index:04}.csv")
+        filepath = output_dir_full / f"led_map_2d_{view_index:04}.csv"
 
-        led_map_2d.write_to_file(filepath)
+        write_2d_leds_to_file(leds, filepath)
 
 
 def test_capture_sequence_correctness():
+    output_dir_full = get_test_dir("scan")
+
     for view_index in range(9):
-        output_dir_full = os.path.join(os.getcwd(), "test", "scan")
 
         filepath = os.path.join(output_dir_full, f"led_map_2d_{view_index:04}.csv")
 
-        led_map_2d = LEDMap2D(filepath)
+        leds = load_detections(filepath, view_index)
 
         if view_index in [0, 4, 8]:
             assert (  # If it's a straight on view, there should be 9 points
-                len(led_map_2d) == 9
+                len(leds) == 9
             )
         else:
-            assert (  # If it's a diagonal-ish view, then we see 15 points
-                len(led_map_2d) == 15
-            )
+            assert len(leds) == 15  # If it's a diagonal-ish view, then we see 15 points

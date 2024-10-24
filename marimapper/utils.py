@@ -4,8 +4,6 @@ import sys
 import importlib.util
 from inspect import signature
 
-from marimapper import logging
-
 
 def add_camera_args(parser):
     parser.add_argument(
@@ -14,18 +12,7 @@ def add_camera_args(parser):
         help="Camera device index, set to 1 if using a laptop with a USB webcam",
         default=0,
     )
-    parser.add_argument(
-        "--width",
-        type=int,
-        help="Camera width, usually uses 640 by default",
-        default=-1,
-    )
-    parser.add_argument(
-        "--height",
-        type=int,
-        help="Camera height, usually uses 480 by default",
-        default=-1,
-    )
+
     parser.add_argument(
         "--exposure",
         type=int,
@@ -45,12 +32,13 @@ def add_backend_args(parser):
         "--backend",
         type=str,
         help="The backend used for led communication, i.e. fadecandy, wled or my_backend.py",
-        default="None",
+        default="dummy",
     )
 
     parser.add_argument(
         "--start", type=int, help="Index of the first led you want to scan", default=0
     )
+
     parser.add_argument(
         "--end",
         type=int,
@@ -64,7 +52,7 @@ def add_backend_args(parser):
 def get_user_confirmation(prompt):  # pragma: no coverage
 
     try:
-        uin = input(logging.colorise(prompt, logging.Col.BLUE))
+        uin = input(prompt)
 
         while uin.lower() not in ("y", "n"):
             uin = input()
@@ -141,10 +129,12 @@ def get_backend(backend_name, server=""):
     if os.path.isfile(backend_name) and backend_name.endswith(".py"):
         return load_custom_backend(backend_name, server)
 
-    if backend_name == "None":
-        return None
+    if backend_name == "dummy":
+        from marimapper.backends.dummy import dummy_backend
 
-    raise RuntimeError("Invalid backend name")
+        return dummy_backend.Backend()
+
+    raise RuntimeError(f"Invalid backend name {backend_name}")
 
 
 class SupressLogging(object):

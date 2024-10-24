@@ -1,26 +1,31 @@
 from itertools import combinations
 from math import radians, tan
-
+import os
+from multiprocessing import get_logger
 import numpy as np
 
 from marimapper.pycolmap_tools.database import COLMAPDatabase
+from marimapper.led import LED2D, get_view_ids, get_leds_with_view
+
+ARBITRARY_SCALE = 2000
+
+logger = get_logger()
 
 
-def populate(db_path, led_maps_2d):
+def populate_database(db_path: os.path, leds: list[LED2D]):
+    logger.debug(f"Populating sfm database with {len(leds)} leds, path: {db_path}")
+    views = get_view_ids(leds)
+    map_features = np.zeros((max(views) + 1, 1, 2))
 
-    map_features = np.zeros((len(led_maps_2d), 1, 2))
+    for view in views:
 
-    for map_index, led_map_2d in enumerate(led_maps_2d):
+        for led in get_leds_with_view(leds, view):
 
-        for led_index in led_map_2d.led_indexes():
-
-            pad_needed = led_index - map_features.shape[1] + 1
+            pad_needed = led.led_id - map_features.shape[1] + 1
             if pad_needed > 0:
                 map_features = np.pad(map_features, [(0, 0), (0, pad_needed), (0, 0)])
 
-            map_features[map_index][led_index] = (
-                np.array(led_map_2d.get_detection(led_index).pos()) * 2000
-            )
+            map_features[view][led.led_id] = led.point.position * ARBITRARY_SCALE
 
     db = COLMAPDatabase.connect(db_path)
 
@@ -29,8 +34,8 @@ def populate(db_path, led_maps_2d):
     # model=0 means that it's a "SIMPLE PINHOLE" with just 1 focal length parameter that I think should get optimised
     # the params here should be f, cx, cy
 
-    width = 2000
-    height = 2000
+    width = ARBITRARY_SCALE
+    height = ARBITRARY_SCALE
     fov = 60  # degrees, this gets optimised so doesn't //really// matter that much
 
     SIMPLE_PINHOLE = 0
@@ -45,13 +50,13 @@ def populate(db_path, led_maps_2d):
 
     # Create dummy images_all_the_same.
 
-    image_ids = [db.add_image(str(i), camera_id) for i in range(len(led_maps_2d))]
+    image_ids = [db.add_image(str(view), camera_id) for view in range(max(views) + 1)]
 
     # Create some keypoints
     for i, keypoints in enumerate(map_features):
         db.add_keypoints(image_ids[i], keypoints)
 
-    for view_1_id, view_2_id in combinations(range(len(led_maps_2d)), 2):
+    for view_1_id, view_2_id in combinations(views, 2):
         view_1_keypoints = map_features[view_1_id]
         view_2_keypoints = map_features[view_2_id]
 

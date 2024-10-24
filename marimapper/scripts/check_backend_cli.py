@@ -1,8 +1,11 @@
 import argparse
 import time
-
+from multiprocessing import log_to_stderr
 from marimapper import utils
-from marimapper import logging
+import logging
+
+logger = log_to_stderr()
+logger.setLevel(level=logging.INFO)
 
 
 def main():
@@ -20,23 +23,28 @@ def main():
         default=0,
     )
 
+    parser.add_argument("-v", "--verbose", action="store_true")
+
     args = parser.parse_args()
 
-    logging.info(f"Loading {args.backend} backend")
+    if args.verbose:
+        logger.setLevel(logging.DEBUG)
+
+    logger.info(f"Loading {args.backend} backend")
 
     led_backend = utils.get_backend(args.backend, args.server)
 
-    logging.info("Press ctrl-c to cancel")
+    logger.info("Press ctrl-c to cancel")
 
     while True:
         time.sleep(1)
 
-        logging.info(f"Turning on LED {args.reference_led}")
+        logger.info(f"Turning on LED {args.reference_led}")
         led_backend.set_led(args.reference_led, True)
 
         time.sleep(1)
 
-        logging.info(f"Turning off LED {args.reference_led}")
+        logger.info(f"Turning off LED {args.reference_led}")
         led_backend.set_led(args.reference_led, False)
 
 

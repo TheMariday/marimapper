@@ -1,5 +1,7 @@
-from marimapper import logging
+from multiprocessing import get_logger
 import pixelblaze
+
+logger = get_logger()
 
 
 class Backend:
@@ -12,7 +14,7 @@ class Backend:
 
     def get_led_count(self):
         pixel_count = self.pb.getPixelCount()
-        logging.info(f"Pixelblaze reports {pixel_count} pixels")
+        logger.info(f"Pixelblaze reports {pixel_count} pixels")
         return pixel_count
 
     def set_led(self, led_index: int, on: bool):

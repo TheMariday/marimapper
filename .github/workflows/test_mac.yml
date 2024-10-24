@@ -6,7 +6,7 @@ on:
     paths-ignore:
       - "README.md"
       - "docs/**"
-      - "scripts/**"
+      - "marimapper/scripts/**"
   pull_request:
     branches: [ "main" ]
 

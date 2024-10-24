@@ -1,32 +1,39 @@
 import pytest
 
-from marimapper.led_identifier import find_led_in_image, draw_led_detections
+from marimapper.detector import find_led_in_image, draw_led_detections
 from marimapper.camera import Camera
+from utils import get_test_dir
 
 
 def test_basic_image_loading():
 
-    mock_camera = Camera("test/MariMapper-Test-Data/9_point_box/cam_0/capture_0000.png")
+    mock_camera = Camera(
+        get_test_dir("MariMapper-Test-Data/9_point_box/cam_0/capture_0000.png")
+    )
 
-    detection = find_led_in_image(mock_camera.read(color=False))
-    assert detection.u == pytest.approx(0.4029418361244019)
-    assert detection.v == pytest.approx(0.4029538809144072)
+    detection = find_led_in_image(mock_camera.read())
+    assert detection.u() == pytest.approx(0.4029418361244019)
+    assert detection.v() == pytest.approx(0.4029538809144072)
 
 
 def test_none_found():
 
-    mock_camera = Camera("test/MariMapper-Test-Data/9_point_box/cam_0/capture_%04d.png")
+    mock_camera = Camera(
+        get_test_dir("MariMapper-Test-Data/9_point_box/cam_0/capture_%04d.png")
+    )
 
     for frame_id in range(24):
-        frame = mock_camera.read(color=False)
+        frame = mock_camera.read()
         if frame_id in [7, 15, 23]:
-            led_results = find_led_in_image(frame)
-            assert led_results is None
+            led_detection = find_led_in_image(frame)
+            assert led_detection is None
 
 
 def test_draw_results():
 
-    mock_camera = Camera("test/MariMapper-Test-Data/9_point_box/cam_0/capture_%04d.png")
+    mock_camera = Camera(
+        get_test_dir("MariMapper-Test-Data/9_point_box/cam_0/capture_%04d.png")
+    )
     frame = mock_camera.read()
-    led_results = find_led_in_image(frame)
-    draw_led_detections(frame, led_results)
+    led_detection = find_led_in_image(frame)
+    draw_led_detections(frame, led_detection)

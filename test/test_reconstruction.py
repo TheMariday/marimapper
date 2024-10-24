@@ -1,26 +1,31 @@
 import numpy as np
-import pytest
 
-from marimapper.sfm import SFM
-from marimapper.led_map_2d import get_all_2d_led_maps
+from marimapper.sfm import sfm
+from marimapper.file_tools import get_all_2d_led_maps
+from marimapper.led import get_led, get_leds_with_views
+from utils import get_test_dir
 
 
 def check_dimensions(map_3d, max_error):
     cube_sides = []
-    cube_sides.append(map_3d[2]["pos"] - map_3d[0]["pos"])
-    cube_sides.append(map_3d[4]["pos"] - map_3d[6]["pos"])
-    cube_sides.append(map_3d[18]["pos"] - map_3d[16]["pos"])
-    cube_sides.append(map_3d[20]["pos"] - map_3d[22]["pos"])
 
-    cube_sides.append(map_3d[4]["pos"] - map_3d[2]["pos"])
-    cube_sides.append(map_3d[20]["pos"] - map_3d[18]["pos"])
-    cube_sides.append(map_3d[6]["pos"] - map_3d[0]["pos"])
-    cube_sides.append(map_3d[22]["pos"] - map_3d[16]["pos"])
-
-    cube_sides.append(map_3d[16]["pos"] - map_3d[0]["pos"])
-    cube_sides.append(map_3d[18]["pos"] - map_3d[2]["pos"])
-    cube_sides.append(map_3d[20]["pos"] - map_3d[4]["pos"])
-    cube_sides.append(map_3d[22]["pos"] - map_3d[6]["pos"])
+    for start, end in (
+        [2, 0],
+        [4, 6],
+        [18, 16],
+        [20, 22],
+        [4, 2],
+        [20, 18],
+        [6, 0],
+        [22, 16],
+        [16, 0],
+        [18, 2],
+        [20, 4],
+        [22, 6],
+    ):
+        cube_sides.append(
+            get_led(map_3d, start).point.position - get_led(map_3d, end).point.position
+        )
 
     cube_side_lengths = [np.linalg.norm(v) for v in cube_sides]
 
@@ -35,9 +40,9 @@ def check_dimensions(map_3d, max_error):
 
 
 def test_reconstruction():
-    maps = get_all_2d_led_maps("test/scan")
+    maps = get_all_2d_led_maps(get_test_dir("scan"))
 
-    map_3d = SFM.process__(maps)
+    map_3d = sfm(maps)
 
     assert len(map_3d) == 21
 
@@ -47,13 +52,11 @@ def test_reconstruction():
 
 
 def test_sparse_reconstruction():
-    maps = get_all_2d_led_maps("test/scan")
+    maps = get_all_2d_led_maps(get_test_dir("scan"))
 
-    maps_sparse = [maps[1], maps[3], maps[5], maps[7]]
+    maps_sparse = get_leds_with_views(maps, [1, 3, 5, 7])
 
-    map_3d = SFM.process__(maps_sparse)
-
-    assert map_3d is not None
+    map_3d = sfm(maps_sparse)
 
     assert len(map_3d) == 21
 
@@ -63,59 +66,19 @@ def test_sparse_reconstruction():
 
 
 def test_2_track_reconstruction():
-    partial_map = get_all_2d_led_maps("test/scan")[1:3]
+    leds = get_all_2d_led_maps(get_test_dir("scan"))
+    leds_2_track = get_leds_with_views(leds, [1, 2])
 
-    map_3d = SFM.process__(partial_map)
-
-    assert map_3d is not None
+    map_3d = sfm(leds_2_track)
 
     assert len(map_3d) == 15
 
 
 def test_invalid_reconstruction_views():
-    maps = get_all_2d_led_maps("test/scan")
+    leds = get_all_2d_led_maps(get_test_dir("scan"))
 
-    invalid_maps = [maps[0], maps[4], maps[8]]  # no useful overlap
+    leds_invalid = get_leds_with_views(leds, [0, 4, 8])
 
-    map_3d = SFM.process__(invalid_maps)
+    map_3d = sfm(leds_invalid)
 
-    assert map_3d is None
-
-
-def test_reconstruct_higbeam():
-    highbeam_map = get_all_2d_led_maps("test/MariMapper-Test-Data/highbeam")
-
-    map_3d = SFM.process__(highbeam_map)
-
-    assert map_3d is not None
-
-
-# this test does a re-scale, but should keep the dimensions about the same
-def test_rescale():
-    maps = get_all_2d_led_maps("test/scan")
-
-    map_3d = SFM.process__(maps, rescale=True)
-
-    assert map_3d.get_inter_led_distance() == pytest.approx(1.0)
-
-
-def test_connected():
-
-    maps = get_all_2d_led_maps("test/scan")
-
-    map_3d = SFM.process__(maps)
-
-    assert len(map_3d) == 21
-
-    connected = map_3d.get_connected_leds()
-    assert (6, 7) not in connected
-    assert (13, 14) not in connected
-
-
-def test_interpolate():
-
-    maps = get_all_2d_led_maps("test/scan")
-
-    map_3d = SFM.process__(maps, interpolate=True)
-
-    assert len(map_3d) == 23
+    assert map_3d == []

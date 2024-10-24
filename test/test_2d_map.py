@@ -1,5 +1,6 @@
 import tempfile
-from marimapper.led_map_2d import LEDMap2D, get_all_2d_led_maps
+from marimapper.file_tools import load_detections, get_all_2d_led_maps
+from marimapper.led import get_led
 
 
 def test_partially_valid_data():
@@ -14,21 +15,22 @@ bananas,apples,grapes
     )
     temp_led_map_file.close()
 
-    led_map = LEDMap2D(filepath=temp_led_map_file.name)
+    led_map = load_detections(temp_led_map_file.name, 0)
 
-    assert led_map.valid
+    assert led_map is not None
 
     assert len(led_map) == 2
 
-    assert led_map.get_detection(0).pos() == (0.379490, 0.407710)
-
-    assert led_map.get_detection(2).pos() == (0, 0)
+    assert get_led(led_map, 0).point.position[0] == 0.379490
+    assert get_led(led_map, 0).point.position[1] == 0.407710
+    assert get_led(led_map, 2).point.position[0] == 0
+    assert get_led(led_map, 2).point.position[1] == 0
 
 
 def test_invalid_path():
 
-    led_map = LEDMap2D(filepath="doesnt-exist-i-hope")
-    assert not led_map.valid
+    led_map = load_detections("doesnt-exist-i-hope", 0)
+    assert led_map is None
 
 
 def test_get_all_maps():
@@ -55,7 +57,7 @@ def test_get_all_maps():
     )
     temp_led_map_file_invalid.close()
 
-    all_maps = get_all_2d_led_maps(directory=directory.name)
+    all_maps = get_all_2d_led_maps(directory.name)
 
     assert len(all_maps) == 1
 

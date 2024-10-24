@@ -1,7 +1,9 @@
 import serial
 import struct
 import serial.tools.list_ports
-from marimapper import logging
+from multiprocessing import get_logger
+
+logger = get_logger()
 
 
 class FCMega:
@@ -24,7 +26,7 @@ class FCMega:
     def _get_port(self):
         for device in serial.tools.list_ports.comports():
             if device.serial_number.startswith("FCM"):
-                logging.info(f"found port {device.name}")
+                logger.info(f"found port {device.name}")
                 return device.name
 
         return None

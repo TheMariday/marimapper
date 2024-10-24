@@ -131,10 +131,9 @@ Fill out the blanks and check it by running `marimapper_check_backend --backend 
 
 ## Step 3: [It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
 
-Run `marimapper --dir my_scan --backend fadecandy`
+In a new folder, run `marimapper --backend fadecandy`
 
-Change `my_scan` to the directory you want to save your scan
-and `fadecandy` to whatever backend you're using
+and `fadecandy` to whatever backend you're using and use `--help` to show more options
 
 Set up your LEDs so most of them are in view and when you're ready, type `y` when prompted with `Start scan? [y/n]`
 
@@ -166,20 +165,6 @@ Here is an example reconstruction of a test tube of LEDs I have
 - Use the `+` / `-` keys to increase / decrease point sizes
 - Use `1`, `2` & `3` keys to change colour scheme
 </details>
-
-# Random other stuff that doesn't really fit anywhere
-
-There's also a tool to turn your 3D scan into a 3D model, run it with `marimapper_remesh my_3d_map.csv`
-
-You can visualise 2D scans with `marimapper_view_2d_scan led_map_2d_0.csv`
-
-If you want to develop with MariMapper, you can use 
-`pip install "marimapper[develop] @ git+http://github.com/themariday/marimapper"`
-to grab all the tools you need. Flake8, Black, etc.
-
-When installing Marimapper, it will adjust your Python packages to the correct versions. 
-If you don't want this, then run it inside a venv.
-If you're worried about library pollution then I assume you know how to use a venv.
 
 # Feedback
 
