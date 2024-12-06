@@ -214,7 +214,7 @@ def fill_gaps(leds: list[LED3D], max_distance: float = 1.1, max_missing=5):
 
         gap = get_gap(led, next_led) - 1
 
-        if 1.0 < gap <= max_missing:
+        if 1 <= gap <= max_missing:
 
             distance = get_distance(led, next_led)
 
