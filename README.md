@@ -113,9 +113,8 @@ into the PixelBlaze editor and upload it as a new pattern.
 
 It might also need a port like `:8000`, not sure... Someone help me out here!
 
-There is also the 
-`marimapper_upload_to_pixelblaze` 
-however this might not work due to [issue 41](https://github.com/TheMariday/marimapper/issues/41) 
+Once you've completed your 3D map, upload it to pixelblaze using
+`marimapper_upload_to_pixelblaze --help`
 
 </details>
 
