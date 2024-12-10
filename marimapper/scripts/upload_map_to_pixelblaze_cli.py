@@ -5,7 +5,10 @@ from marimapper.backends.pixelblaze.upload_map_to_pixelblaze import (
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Upload led_map_3d.csv to pixelblaze")
+    parser = argparse.ArgumentParser(
+        description="Upload led_map_3d.csv to pixelblaze",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
     parser.add_argument("--server", type=str, help="pixelblaze server ip")
     parser.add_argument(
         "--csv_file", type=str, help="The csv file to convert", required=True

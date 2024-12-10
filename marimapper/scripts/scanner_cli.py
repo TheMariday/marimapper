@@ -13,7 +13,10 @@ logger.setLevel(level=logging.ERROR)
 def main():
     logger.info("Starting MariMapper")
 
-    parser = argparse.ArgumentParser(description="Captures LED flashes to file")
+    parser = argparse.ArgumentParser(
+        description="Captures LED flashes to file",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
 
     add_camera_args(parser)
     add_backend_args(parser)
@@ -26,6 +29,13 @@ def main():
         type=Path,
         default=os.getcwd(),
         help="the location for your maps, defaults to the current working directory",
+    )
+
+    parser.add_argument(
+        "--max_fill",
+        type=int,
+        default=5,
+        help="The max number of consecutive LEDs that can be estimated based on adjacent LEDs",
     )
 
     args = parser.parse_args()
@@ -45,6 +55,7 @@ def main():
         args.server,
         args.start,
         args.end,
+        args.max_fill,
     )
 
     scanner.mainloop()

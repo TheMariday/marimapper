@@ -27,6 +27,7 @@ class Scanner:
         server: str,
         led_start: int,
         led_end: int,
+        max_fill: int,
     ):
         logger.debug("initialising scanner")
         self.output_dir = output_dir
@@ -39,7 +40,7 @@ class Scanner:
             server,
         )
 
-        self.sfm = SFM()
+        self.sfm = SFM(max_fill)
 
         self.file_writer = FileWriterProcess(self.output_dir)
 

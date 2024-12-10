@@ -39,12 +39,13 @@ def add_normals(leds: list[LED3D]):
 
 class SFM(Process):
 
-    def __init__(self):
+    def __init__(self, max_fill=5):
         super().__init__()
         self._input_queue = Queue()
         self._input_queue.cancel_join_thread()
         self._output_queues: list[Queue] = []
         self._exit_event = Event()
+        self.max_fill = max_fill
 
     def get_input_queue(self) -> Queue:
         return self._input_queue
@@ -83,7 +84,7 @@ class SFM(Process):
 
                 rescale(leds_3d)
 
-                fill_gaps(leds_3d)
+                fill_gaps(leds_3d, max_missing=self.max_fill)
 
                 recenter(leds_3d)
 

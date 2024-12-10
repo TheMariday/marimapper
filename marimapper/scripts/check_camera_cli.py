@@ -13,7 +13,8 @@ logger.setLevel(level=logging.INFO)
 def main():
 
     parser = argparse.ArgumentParser(
-        description="Tests your webcam and LED detection algorithms"
+        description="Tests your webcam and LED detection algorithms",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
     add_camera_args(parser)

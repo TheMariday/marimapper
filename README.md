@@ -27,13 +27,18 @@ pipx install "git+https://github.com/themariday/marimapper"
 
 If you have Python 3.12 installed, install 3.11 and add `--python /path/to/python3.11` to the above `pipx install` command 
 
-pipx not working? You can also download this repo and run `pip install .` from inside it
+[PIPx not working](https://github.com/TheMariday/marimapper/issues/42)? You can also download this repo and run `pip install .` from inside it!
 
 You can run the scripts anywhere by just typing them into a console, on windows append `.exe` to the script name.
 
 You can append `--help` to any command to show you all argument options.
 
 ## Step 1: Test your camera
+
+> [!TIP]
+> use `--help` for any MariMapper command to show a full list of additional arguments! 
+> 
+> Some not even in this doc...
 
 Run `marimapper_check_camera` to ensure your camera is compatible with MariMapper, or check the list below:
 
@@ -55,13 +60,16 @@ Test LED identification by turning down the lights and holding a torch or led up
 This should start with few warnings, no errors and produce a **very** dark image
 with a single crosshair on centered on your LED.
 
+Wrong webcam? MariMapper tools use `--device 0` by default, use `--device 1` to switch to your second webcam.
 
 ![alt text](docs/images/camera_check.png "Camera Check window")
 
 
 > [!TIP]
-> If your camera doesn't support exposure adjustment, or the image is still too bright, try dimming the lights and playing around with the `--exposure` and `--threshold` arguments
-
+> If your camera doesn't support exposure adjustment, or the image is still too bright, try dimming the lights and playing around with:
+> 
+> - `--exposure` - The lower the darker, defaults to `-10`, my webcam only goes down to `-11`
+> - `--threshold` - The lower the more detections, ranges between `0-255`,  defaults to `128`
 ## Step 2: Choose your backend
 
 For the Marimapper to communicate with your leds, it requires a backend.
@@ -73,6 +81,9 @@ The following backends are built-in:
 
 To use the Fadecandy backend, please ensure that you are running the Fadecandy server
 A fork of the Fadecandy repo can be found [here](https://github.com/TheMariday/fadecandy)
+
+Use 
+`--backend fadecandy --server 127.0.0.1:7890` to enable this backend, adjusting the server IP and port where needed
 
 </details>
 
@@ -96,9 +107,15 @@ Source code can be found [here](https://github.com/TheMariday/fcmega)
 
 Using Pixelblaze as a backend requires you to upload the 
 [marimapper.epe](marimapper/backends/pixelblaze/marimapper.epe) 
-pattern to your pixelblaze using 
+into the PixelBlaze editor and upload it as a new pattern.
+
+`--backend PixelBlaze --server 192.168.4.1` to enable this backend, adjusting the server IP where needed
+
+It might also need a port like `:8000`, not sure... Someone help me out here!
+
+There is also the 
 `marimapper_upload_to_pixelblaze` 
-before running Marimapper.
+however this might not work due to [issue 41](https://github.com/TheMariday/marimapper/issues/41) 
 
 </details>
 
@@ -137,7 +154,7 @@ and `fadecandy` to whatever backend you're using and use `--help` to show more o
 
 Set up your LEDs so most of them are in view and when you're ready, type `y` when prompted with `Start scan? [y/n]`
 
-This will turn each LED on and off in turn, do not move the camera or leds during capture!
+This will turn each LED on and off in turn, **do not move the camera or leds during capture!**
 
 If you just want a 2D map, this is where you can stop!
 
@@ -147,7 +164,9 @@ Rotate your leds or move your webcam to a new position
 > As long as some of your leds are mostly in view, you can move your webcam to wherever you like!
 > Try and get at least 3 views between 6° - 20° apart
 
-Once you have at least 2 2d maps, a new window will appear showing the reconstructed 3D positions of your LEDs.
+Once you have a few views and the reconstructor succeeds, a new window will appear showing the reconstructed 3D positions of your LEDs.
+
+If the window doesn't appear after 4 scans, then something has gone horribly wrong. Delete the scan .csv files in the current working directory and try again.
 
 If it doesn't look quite right, add some more scans!
 

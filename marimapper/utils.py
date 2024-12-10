@@ -22,6 +22,8 @@ def add_camera_args(parser):
     parser.add_argument(
         "--threshold",
         type=int,
+        choices=range(0, 255),
+        metavar="[0-100]",
         help="LED detection threshold, reducing this number will reduce false positives",
         default=128,
     )
@@ -46,7 +48,11 @@ def add_backend_args(parser):
         default=10000,
     )
 
-    parser.add_argument("--server", type=str, help="Some backends require a server")
+    parser.add_argument(
+        "--server",
+        type=str,
+        help="Some backends require a server, for example 172.0.0.1:7890",
+    )
 
 
 def get_user_confirmation(prompt):  # pragma: no coverage
@@ -100,7 +106,8 @@ def check_backend(backend):
 
 
 def get_backend(backend_name, server=""):
-    if backend_name == "fadecandy":
+
+    if backend_name.lower() == "fadecandy":
         from marimapper.backends.fadecandy import fadecandy_backend
 
         if server:
@@ -108,7 +115,7 @@ def get_backend(backend_name, server=""):
         else:
             return fadecandy_backend.Backend()
 
-    if backend_name == "wled":
+    if backend_name.lower() == "wled":
         from marimapper.backends.wled import wled_backend
 
         if server:
@@ -116,12 +123,12 @@ def get_backend(backend_name, server=""):
         else:
             return wled_backend.Backend()
 
-    if backend_name == "fcmega":
+    if backend_name.lower() == "fcmega":
         from marimapper.backends.fcmega import fcmega_backend
 
         return fcmega_backend.Backend()
 
-    if backend_name == "pixelblaze":
+    if backend_name.lower() == "pixelblaze":
         from marimapper.backends.pixelblaze import pixelblaze_backend
 
         return pixelblaze_backend.Backend(server)
@@ -129,7 +136,7 @@ def get_backend(backend_name, server=""):
     if os.path.isfile(backend_name) and backend_name.endswith(".py"):
         return load_custom_backend(backend_name, server)
 
-    if backend_name == "dummy":
+    if backend_name.lower() == "dummy":
         from marimapper.backends.dummy import dummy_backend
 
         return dummy_backend.Backend()

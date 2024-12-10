@@ -11,7 +11,8 @@ logger.setLevel(level=logging.INFO)
 def main():
 
     parser = argparse.ArgumentParser(
-        description="Tests a particular backend by making a reference led blink"
+        description="Tests a particular backend by making a reference led blink",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
     utils.add_backend_args(parser)
