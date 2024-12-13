@@ -1,12 +1,12 @@
 from marimapper.scanner import Scanner
-from multiprocessing import log_to_stderr
+import multiprocessing
 import os
 import argparse
 import logging
 from marimapper.utils import add_camera_args, add_backend_args
 from pathlib import Path
 
-logger = log_to_stderr()
+logger = multiprocessing.log_to_stderr()
 logger.setLevel(level=logging.ERROR)
 
 
@@ -45,6 +45,17 @@ def main():
 
     if args.verbose:
         logger.setLevel(logging.DEBUG)
+
+    # This is to do with an issue with open3d bug in estimate normals
+    # https://github.com/isl-org/Open3D/issues/1428
+    # if left to its default fork start method, add_normals in sfm_process will fail
+    # add_normals is also in the wrong file, it should be in sfm.py, but this causes a dependancy crash
+    # I think there is something very wrong with open3d.geometry.PointCloud.estimate_normals()
+    # See https://github.com/TheMariday/marimapper/issues/46
+    # I would prefer not to call this here as it means that any process being called after this will have a different
+    # spawn method, however it makes tests more robust in isolation
+    # This is only an issue on Linux, as on Windows and Mac, the default start method is spawn
+    multiprocessing.set_start_method("spawn")
 
     scanner = Scanner(
         args.dir,

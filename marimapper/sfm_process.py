@@ -10,6 +10,7 @@ logger = get_logger()
 
 
 # this is here for now as there is some weird import dependency going on...
+# See https://github.com/TheMariday/marimapper/issues/46
 def add_normals(leds: list[LED3D]):
 
     pcd = open3d.geometry.PointCloud()
