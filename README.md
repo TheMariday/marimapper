@@ -149,7 +149,7 @@ Fill out the blanks and check it by running `marimapper_check_backend --backend 
 
 In a new folder, run `marimapper --backend fadecandy`
 
-and `fadecandy` to whatever backend you're using and use `--help` to show more options
+and change `fadecandy` to whatever backend you're using and use `--help` to show more options
 
 Set up your LEDs so most of them are in view and when you're ready, type `y` when prompted with `Start scan? [y/n]`
 
