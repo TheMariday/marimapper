@@ -7,5 +7,4 @@ import multiprocessing
 # See https://github.com/TheMariday/marimapper/issues/46
 @pytest.fixture(scope="session", autouse=True)
 def force_spawn():
-    pass
-    # multiprocessing.set_start_method("spawn") # this is commented out to see if CI crashes on github
+    multiprocessing.set_start_method("spawn")
