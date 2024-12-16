@@ -1,7 +1,7 @@
 import numpy as np
 import open3d
 from multiprocessing import get_logger, Process, Event, Queue
-from marimapper.led import LED3D, View, get_next, get_distance
+from marimapper.led import LED3D, View, get_next, get_distance, led_to_color
 import time
 
 logger = get_logger()
@@ -115,7 +115,7 @@ class VisualiseProcess(Process):
             np.array([led.point.normal for led in leds]) * 0.2
         )
         self.point_cloud.colors = open3d.utility.Vector3dVector(
-            np.array([led.get_color() for led in leds])
+            np.array([led_to_color(led) for led in leds])
         )
 
         self.strip_set.points = self.point_cloud.points

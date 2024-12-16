@@ -9,6 +9,7 @@ from marimapper.detector import (
 )
 
 from marimapper.utils import get_backend
+from marimapper.led import led_to_color
 
 logger = get_logger()
 
@@ -27,6 +28,8 @@ class DetectorProcess(Process):
         super().__init__()
         self._input_queue = Queue()  # {led_id, view_id}
         self._input_queue.cancel_join_thread()
+        self._led_info_queue = Queue()  # {led_id, view_id}
+        self._led_info_queue.cancel_join_thread()
         self._output_queues: list[Queue] = []  # LED3D
         self._led_count = Queue()
         self._led_count.cancel_join_thread()
@@ -41,6 +44,9 @@ class DetectorProcess(Process):
 
     def get_input_queue(self) -> Queue:
         return self._input_queue
+
+    def get_led_info_queue(self):
+        return self._led_info_queue
 
     def add_output_queue(self, queue: Queue):
         self._output_queues.append(queue)
@@ -68,6 +74,7 @@ class DetectorProcess(Process):
 
             if not self._input_queue.empty():
                 set_cam_dark(cam, self._dark_exposure)
+                led_backend.black()
                 led_id, view_id = self._input_queue.get()
                 result = enable_and_find_led(
                     cam,
@@ -82,6 +89,18 @@ class DetectorProcess(Process):
                 for queue in self._output_queues:
                     queue.put(result)
             else:
+
+
+                leds3d = None
+                while not self._led_info_queue.empty():
+                    leds3d = self._led_info_queue.get()
+
+                if leds3d is not None:
+                    for led in leds3d:
+                        col = led_to_color(led)
+                        led_backend.set_led_col(led.led_id, col)
+
+
                 set_cam_default(cam)
                 if self._display:
                     image = cam.read()

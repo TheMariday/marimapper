@@ -62,10 +62,15 @@ class Point3D:
         return new
 
 
-class LEDState:
-    INTERPOLATED: int = 0
-    MERGED: int = 1
+class LEDInfo:
+    NONE: int = 0
 
+    RECONSTRUCTED: int = 1
+    INTERPOLATED: int = 2
+    MERGED: int = 3
+
+    DETECTED: int = 4
+    UNRECONSTRUCTABLE: int = 5
 
 class LED3D:
 
@@ -73,21 +78,56 @@ class LED3D:
         self.led_id = led_id
         self.point = Point3D()
         self.views: list[View] = []
-        self.state = []
+        self.detections: list[LED2D] = []
+        self.interpolated = False
+        self.merged = False
 
-    def add_state(self, state: int):
-        self.state.append(state)
 
-    def has_state(self, state: int) -> bool:
-        return state in self.state
 
-    def get_color(self):
-        if self.has_state(LEDState.INTERPOLATED):
-            return 255, 0, 0
-        if self.has_state(LEDState.MERGED):
-            return 255, 0, 255
+class Colors:
+    RED = [255,0,0]
+    GREEN = [0,255,0]
+    BLUE = [0,0,255]
+    ORANGE = [255,165,0]
+    AQUA = [0,255,255]
+    YELLOW = [255,255,0]
+    PINK = [255, 0, 255]
+    BLACK = [0,0,0]
 
-        return 0, 255, 0
+
+def led_to_color(led: LED3D) -> list[int]:
+    info = get_info(led)
+
+    if info == LEDInfo.RECONSTRUCTED:
+        return Colors.GREEN
+    if info in [LEDInfo.INTERPOLATED, LEDInfo.MERGED]:
+        return Colors.AQUA
+    if info == LEDInfo.DETECTED:
+        return Colors.ORANGE
+    if info == LEDInfo.UNRECONSTRUCTABLE:
+        return Colors.RED
+
+    return Colors.BLUE
+
+def get_info(led: LED3D) -> int:
+
+    if led.point.position.any() and led.interpolated:
+        return LEDInfo.INTERPOLATED
+
+    if led.point.position.any() and led.merged:
+        return LEDInfo.MERGED
+
+    if led.point.position.any():
+        return LEDInfo.RECONSTRUCTED
+
+    if len(led.detections) == 1:
+        return LEDInfo.DETECTED
+
+    if len(led.detections) >= 2:
+        return LEDInfo.UNRECONSTRUCTABLE
+
+    return LEDInfo.NONE
+
 
 
 # returns none if there isn't that led in the list!
@@ -195,7 +235,7 @@ def fill_gap(start_led: LED3D, end_led: LED3D):
 
         new_led.views = start_led.views + end_led.views
 
-        new_led.add_state(LEDState.INTERPOLATED)
+        new_led.interpolated = True
         new_leds.append(new_led)
 
     return new_leds
@@ -247,8 +287,7 @@ def merge(leds: list[LED3D]) -> LED3D:
     new_led.point.position = np.average([led.point.position for led in leds], axis=0)
     new_led.point.normal = np.average([led.point.normal for led in leds], axis=0)
     new_led.point.error = sum([led.point.error for led in leds])
-    new_led.add_state(LEDState.MERGED)
-
+    new_led.merged = True
     return new_led
 
 
@@ -272,3 +311,14 @@ def remove_duplicates(leds: list[LED3D]) -> list[LED3D]:
 
 def get_leds_with_views(leds: list[LED2D], view_ids) -> list[LED2D]:
     return [led for led in leds if led.view_id in view_ids]
+
+def merge_3d_2d(leds3d: list[LED3D], leds2d: list[LED2D]):
+
+    for detection in leds2d:
+        led = get_led(leds3d, detection.led_id)
+
+        if led is None:
+            led = LED3D(detection.led_id)
+            leds3d.append(led)
+
+        led.detections.append(detection)

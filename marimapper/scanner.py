@@ -61,6 +61,7 @@ class Scanner:
 
         self.sfm.add_output_queue(self.renderer3d.get_input_queue())
         self.sfm.add_output_queue(self.file_writer.get_3d_input_queue())
+        self.sfm.add_output_queue(self.detector.get_led_info_queue())
         self.sfm.start()
         self.renderer3d.start()
         self.detector.start()

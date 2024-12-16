@@ -1,5 +1,5 @@
 from multiprocessing import Process, Event, Queue, get_logger
-from marimapper.led import LED2D, rescale, recenter, LED3D, fill_gaps
+from marimapper.led import LED2D, rescale, recenter, LED3D, fill_gaps, merge_3d_2d
 from marimapper.sfm import sfm
 import open3d
 import numpy as np
@@ -90,6 +90,8 @@ class SFM(Process):
                 recenter(leds_3d)
 
                 add_normals(leds_3d)
+
+                merge_3d_2d(leds_3d, leds_2d)
 
                 for queue in self._output_queues:
                     queue.put(leds_3d)
