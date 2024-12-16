@@ -51,8 +51,8 @@ class DetectorProcess(Process):
     def add_output_queue(self, queue: Queue):
         self._output_queues.append(queue)
 
-    def detect(self, led_id: int, view_id: int):
-        self._input_queue.put((led_id, view_id))
+    def detect(self, led_id_from: int, led_id_to: int, view_id: int):
+        self._input_queue.put((led_id_from, led_id_to, view_id))
 
     def get_led_count(self):
         return self._led_count.get()
@@ -75,21 +75,21 @@ class DetectorProcess(Process):
             if not self._input_queue.empty():
                 set_cam_dark(cam, self._dark_exposure)
                 led_backend.black()
-                led_id, view_id = self._input_queue.get()
-                result = enable_and_find_led(
-                    cam,
-                    led_backend,
-                    led_id,
-                    view_id,
-                    timeout_controller,
-                    self._threshold,
-                    self._display,
-                )
+                led_id_from, led_id_to, view_id = self._input_queue.get()
 
-                for queue in self._output_queues:
-                    queue.put(result)
+                for led_id in range(led_id_from, led_id_to):
+                    result = enable_and_find_led(
+                        cam,
+                        led_backend,
+                        led_id,
+                        view_id,
+                        timeout_controller,
+                        self._threshold,
+                        self._display,
+                    )
+                    for queue in self._output_queues:
+                        queue.put(result)
             else:
-
 
                 leds3d = None
                 while not self._led_info_queue.empty():
@@ -99,7 +99,6 @@ class DetectorProcess(Process):
                     for led in leds3d:
                         col = led_to_color(led)
                         led_backend.set_led_col(led.led_id, col)
-
 
                 set_cam_default(cam)
                 if self._display:

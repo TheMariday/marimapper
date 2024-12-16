@@ -72,6 +72,7 @@ class LEDInfo:
     DETECTED: int = 4
     UNRECONSTRUCTABLE: int = 5
 
+
 class LED3D:
 
     def __init__(self, led_id):
@@ -83,16 +84,15 @@ class LED3D:
         self.merged = False
 
 
-
 class Colors:
-    RED = [255,0,0]
-    GREEN = [0,255,0]
-    BLUE = [0,0,255]
-    ORANGE = [255,165,0]
-    AQUA = [0,255,255]
-    YELLOW = [255,255,0]
+    RED = [255, 0, 0]
+    GREEN = [0, 255, 0]
+    BLUE = [0, 0, 255]
+    ORANGE = [255, 165, 0]
+    AQUA = [0, 255, 255]
+    YELLOW = [255, 255, 0]
     PINK = [255, 0, 255]
-    BLACK = [0,0,0]
+    BLACK = [0, 0, 0]
 
 
 def led_to_color(led: LED3D) -> list[int]:
@@ -108,6 +108,7 @@ def led_to_color(led: LED3D) -> list[int]:
         return Colors.RED
 
     return Colors.BLUE
+
 
 def get_info(led: LED3D) -> int:
 
@@ -127,7 +128,6 @@ def get_info(led: LED3D) -> int:
         return LEDInfo.UNRECONSTRUCTABLE
 
     return LEDInfo.NONE
-
 
 
 # returns none if there isn't that led in the list!
@@ -311,6 +311,7 @@ def remove_duplicates(leds: list[LED3D]) -> list[LED3D]:
 
 def get_leds_with_views(leds: list[LED2D], view_ids) -> list[LED2D]:
     return [led for led in leds if led.view_id in view_ids]
+
 
 def merge_3d_2d(leds3d: list[LED3D], leds2d: list[LED2D]):
 

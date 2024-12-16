@@ -27,7 +27,7 @@ class Backend:
         self.leds[led_index] = (100, 100, 100) if on else (0, 0, 0)
 
     def set_led_col(self, led_id, col):
-        self.leds[led_id] = [int(v/10) for v in col]
+        self.leds[led_id] = [int(v / 10) for v in col]
 
     def black(self):
         self.leds = [(0, 0, 0) for _ in range(self.get_led_count())]

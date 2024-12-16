@@ -45,6 +45,7 @@ class SFM(Process):
         self._input_queue = Queue()
         self._input_queue.cancel_join_thread()
         self._output_queues: list[Queue] = []
+        self._output_led_info_queue: Queue = Queue()
         self._exit_event = Event()
         self.max_fill = max_fill
 

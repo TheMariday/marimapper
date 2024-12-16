@@ -103,8 +103,9 @@ class Scanner:
                 )
                 continue
 
-            for led_id in self.led_id_range:
-                self.detector.detect(led_id, self.current_view)
+            self.detector.detect(
+                self.led_id_range.start, self.led_id_range.stop, self.current_view
+            )
 
             for _ in tqdm(
                 self.led_id_range,
