@@ -3,18 +3,21 @@
 [![Supported Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue)]()
 [![Windows](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml)
 [![Ubuntu](https://github.com/TheMariday/MariMapper/actions/workflows/test_ubuntu.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_ubuntu.yml)
-[![MacOS](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml)
+<!-- [![MacOS](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml) -->
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-
-> [!CAUTION]
-> [This tool does not currently support Python 3.12](https://github.com/TheMariday/marimapper/issues/27)
-
 
 ### Marimapper uses your webcam to map addressable LEDs to 3D space!
 
 ![](docs/images/reconstruct_with_normals_and_strips.png)
 
 Above example data folder can be found under [docs/highbeam_example/](docs/highbeam_example)
+
+> [!CAUTION]
+> [This tool does not currently support Python 3.12](https://github.com/TheMariday/marimapper/issues/27)
+
+> [!CAUTION]
+> Whilst this tool is Mac compatible, there have been [some reports](https://github.com/TheMariday/marimapper/issues/51) that webcam exposure control is not avaliable on Mac.
+
 
 ## Step 0: Install
 
