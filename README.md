@@ -14,10 +14,12 @@
 Above example data folder can be found under [docs/highbeam_example/](docs/highbeam_example)
 
 > [!CAUTION]
-> [This tool does not currently support Python 3.12](https://github.com/TheMariday/marimapper/issues/27)
+> [This tool does not support Python 3.12](https://github.com/TheMariday/marimapper/issues/27)
 
 > [!CAUTION]
-> Whilst this tool is Mac compatible, there have been [some reports](https://github.com/TheMariday/marimapper/issues/51) that webcam exposure control is not avaliable on Mac.
+> Exposure control is [not supported on mac](https://github.com/TheMariday/marimapper/issues/51)
+> 
+> You can however adjust the exposure manually in third party tools or use the software that comes with your webcam
 
 
 ## Step 0: Install
