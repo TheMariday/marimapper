@@ -38,8 +38,6 @@ If you have Python 3.12 installed, install 3.11 and add `--python /path/to/pytho
 
 You can run the scripts anywhere by just typing them into a console, on windows append `.exe` to the script name.
 
-You can append `--help` to any command to show you all argument options.
-
 ## Step 1: Test your camera
 
 > [!TIP]
