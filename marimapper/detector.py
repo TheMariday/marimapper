@@ -36,11 +36,9 @@ def find_led_in_image(image: cv2.Mat, threshold: int = 128) -> typing.Optional[P
     v_offset = (img_width - img_height) / 2.0
     center_v = (center_v + v_offset) / img_width
 
-    brightness = 1.0
+    logger.debug(f"found led at {center_u} {center_v}")
 
-    logger.debug(f"found led at {center_u} {center_v} with brightness {brightness}")
-
-    return Point2D(center_u, center_v, contours, brightness)  # todo, normalise contours
+    return Point2D(center_u, center_v, contours)  # todo, normalise contours
 
 
 def draw_led_detections(image: cv2.Mat, led_detection: Point2D) -> cv2.Mat:

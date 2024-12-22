@@ -16,10 +16,9 @@ class View:
 
 
 class Point2D:
-    def __init__(self, u, v, contours=(), brightness=1.0):
+    def __init__(self, u, v, contours=()):
         self.position: np.array = np.array([u, v])
         self.contours = contours
-        self.brightness: float = brightness
 
     def u(self):
         return self.position[0]

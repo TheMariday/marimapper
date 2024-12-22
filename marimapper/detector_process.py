@@ -6,7 +6,9 @@ from marimapper.detector import (
     TimeoutController,
     set_cam_dark,
     enable_and_find_led,
+    find_led,
 )
+import time
 
 from marimapper.utils import get_backend
 
@@ -75,6 +77,12 @@ class DetectorProcess(Process):
             if not self._input_queue.empty():
                 set_cam_dark(cam, self._dark_exposure)
                 led_id_from, led_id_to, view_id = self._input_queue.get()
+
+                # First wait for no leds to be visible
+                while find_led(cam, self._threshold, self._display) is not None:
+                    logger.info("Waiting for no leds to be visible in the scene")
+                    time.sleep(1)
+
                 for led_id in range(led_id_from, led_id_to):
                     result = enable_and_find_led(
                         cam,
