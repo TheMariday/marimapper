@@ -2,6 +2,7 @@ import numpy as np
 import open3d
 from multiprocessing import get_logger, Process, Event, Queue
 from marimapper.led import LED3D, View, get_next, get_distance
+from marimapper.generic_process import GenericProcess
 import time
 
 logger = get_logger()
@@ -20,39 +21,29 @@ def get_all_views(leds: list[LED3D]) -> list[View]:
     return views
 
 
-class VisualiseProcess(Process):
+class VisualiseProcess(GenericProcess):
 
     def __init__(self):
         logger.debug("Renderer3D initialising")
         super().__init__()
         self._vis = None
-        self._input_queue = Queue()
-        self._input_queue.cancel_join_thread()
-        self._exit_event = Event()
         self.point_cloud = None
         self.line_set = None
         self.strip_set = None
         logger.debug("Renderer3D initialised")
 
-    def get_input_queue(self) -> Queue:
-        return self._input_queue
-
-    def stop(self):
-        self._exit_event.set()
 
     def run(self):
         logger.debug("Renderer3D process starting")
 
         # wait for data to arrive sensibly
-        while self._input_queue.empty():
-            if self._exit_event.is_set():
-                return
+        while self._input_queue.empty() and self.running():
             time.sleep(0.1)
 
         self.initialise_visualiser__()
         self.reload_geometry__(True)
 
-        while not self._exit_event.is_set():
+        while self.running():
 
             if not self._input_queue.empty():
                 self.reload_geometry__()

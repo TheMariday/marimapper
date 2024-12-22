@@ -1,4 +1,5 @@
 from multiprocessing import Process, Queue, Event
+from marimapper.generic_process import GenericProcess
 import time
 from marimapper.file_tools import write_3d_leds_to_file, write_2d_leds_to_file
 from pathlib import Path
@@ -7,20 +8,14 @@ import os
 from marimapper.detector_process import DetectionControlEnum
 
 
-class FileWriterProcess(Process):
+class FileWriterProcess(GenericProcess):
 
     def __init__(self, base_path: Path):
         super().__init__()
         self._input_queue_2d = Queue()
-        self._input_queue_2d.cancel_join_thread()
         self._input_queue_3d = Queue()
-        self._input_queue_3d.cancel_join_thread()
-        self._exit_event = Event()
         self._base_path = base_path
         os.makedirs(self._base_path, exist_ok=True)
-
-    def stop(self):
-        self._exit_event.set()
 
     def get_2d_input_queue(self):
         return self._input_queue_2d
@@ -39,7 +34,7 @@ class FileWriterProcess(Process):
 
         requires_update = set()
 
-        while not self._exit_event.is_set():
+        while self.running():
             if not self._input_queue_3d.empty():
                 leds = self._input_queue_3d.get()
                 write_3d_leds_to_file(leds, self._base_path / "led_map_3d.csv")

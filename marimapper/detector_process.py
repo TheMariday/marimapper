@@ -1,4 +1,5 @@
-from multiprocessing import get_logger, Process, Queue, Event
+from multiprocessing import get_logger, Queue
+from marimapper.generic_process import GenericProcess
 from marimapper.detector import (
     show_image,
     set_cam_default,
@@ -21,7 +22,7 @@ class DetectionControlEnum:
     DELETE = 2
 
 
-class DetectorProcess(Process):
+class DetectorProcess(GenericProcess):
 
     def __init__(
         self,
@@ -33,13 +34,7 @@ class DetectorProcess(Process):
         display: bool = True,
     ):
         super().__init__()
-        self._input_queue = Queue()  # {led_id, view_id}
-        self._input_queue.cancel_join_thread()
-        self._output_queues: list[Queue] = []  # LED3D
         self._led_count = Queue()
-        self._led_count.cancel_join_thread()
-        self._exit_event = Event()
-
         self._device = device
         self._dark_exposure = dark_exposure
         self._threshold = threshold
@@ -47,20 +42,11 @@ class DetectorProcess(Process):
         self._led_backend_server = led_backend_server
         self._display = display
 
-    def get_input_queue(self) -> Queue:
-        return self._input_queue
-
-    def add_output_queue(self, queue: Queue):
-        self._output_queues.append(queue)
-
     def detect(self, led_id_from: int, led_id_to: int, view_id: int):
         self._input_queue.put((led_id_from, led_id_to, view_id))
 
     def get_led_count(self):
         return self._led_count.get()
-
-    def stop(self):
-        self._exit_event.set()
 
     def run(self):
 
@@ -72,7 +58,7 @@ class DetectorProcess(Process):
 
         timeout_controller = TimeoutController()
 
-        while not self._exit_event.is_set():
+        while self.running():
 
             if not self._input_queue.empty():
                 set_cam_dark(cam, self._dark_exposure)
