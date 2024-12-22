@@ -4,7 +4,7 @@ from marimapper.file_tools import write_3d_leds_to_file, write_2d_leds_to_file
 from pathlib import Path
 import os
 
-from marimapper.led import LED2D
+from marimapper.detector_process import DetectionControlEnum
 
 
 class FileWriterProcess(Process):
@@ -45,14 +45,19 @@ class FileWriterProcess(Process):
                 write_3d_leds_to_file(leds, self._base_path / "led_map_3d.csv")
 
             if not self._input_queue_2d.empty():
-                led: LED2D = self._input_queue_2d.get()
-                if led.point is not None:
-                    if led.view_id not in view_id_to_filename:
-                        view_id_to_filename[led.view_id] = self.get_new_filename()
-                        views[led.view_id] = []
+                control, led = self._input_queue_2d.get()
+                if control != DetectionControlEnum.DETECT:
+                    continue
 
-                    views[led.view_id].append(led)
-                    requires_update.add(led.view_id)
+                if led.point is None:
+                    continue
+
+                if led.view_id not in view_id_to_filename:
+                    view_id_to_filename[led.view_id] = self.get_new_filename()
+                    views[led.view_id] = []
+
+                views[led.view_id].append(led)
+                requires_update.add(led.view_id)
 
             else:
                 for view_id in requires_update:

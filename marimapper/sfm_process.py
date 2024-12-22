@@ -1,6 +1,13 @@
 from multiprocessing import Process, Event, Queue, get_logger
-from marimapper.led import LED2D, rescale, recenter, LED3D, fill_gaps
+from marimapper.led import (
+    rescale,
+    recenter,
+    LED3D,
+    fill_gaps,
+    get_leds_with_view,
+)
 from marimapper.sfm import sfm
+from marimapper.detector_process import DetectionControlEnum
 import open3d
 import numpy as np
 import math
@@ -38,21 +45,43 @@ def add_normals(leds: list[LED3D]):
                 led.point.normal *= -1
 
 
+def sanity_check(leds_2d, leds_3d, view) -> None:
+
+    if len(leds_2d) == 0 or len(leds_3d) == 0:
+        return
+
+    leds_3d_ids = set([led.led_id for led in leds_3d])
+    view_ids = [led.led_id for led in get_leds_with_view(leds_2d, view)]
+    overlap_len = len(leds_3d_ids.intersection(view_ids))
+    overlap_percentage = int((overlap_len / len(view_ids)) * 100)
+
+    logger.debug(f"scan {view} has overlap of {overlap_len} or {overlap_percentage}%")
+
+    if overlap_len < 10:
+        logger.error(
+            f"Scan {view} has a very low overlap with the reconstructed model "
+            f"(only {overlap_len} points) and therefore may have been disregarded"
+        )
+    if overlap_percentage < 0.5:
+        logger.warning(
+            f"Scan {view} has a low overlap with the reconstructed model "
+            f"(only {overlap_percentage}%) and therefore may have been disregarded"
+        )
+
+
 class SFM(Process):
 
-    def __init__(self, max_fill=5):
+    def __init__(self, max_fill=5, existing_leds=None):
         super().__init__()
         self._input_queue = Queue()
         self._input_queue.cancel_join_thread()
         self._output_queues: list[Queue] = []
         self._exit_event = Event()
         self.max_fill = max_fill
+        self.leds_2d = existing_leds if existing_leds is not None else []
 
     def get_input_queue(self) -> Queue:
         return self._input_queue
-
-    def add_detection(self, led: LED2D):
-        self._input_queue.put(led)
 
     def add_output_queue(self, queue: Queue):
         self._output_queues.append(queue)
@@ -62,26 +91,41 @@ class SFM(Process):
 
     def run(self):
 
-        update_required = False
-
-        leds_2d = []
+        update_required = len(self.leds_2d) > 0
+        check_required = False
+        view_id = 0
 
         while not self._exit_event.is_set():
 
             while not self._input_queue.empty():
-                led: LED2D = self._input_queue.get()
-                if led.point is not None:
-                    leds_2d.append(led)
+                control, data = self._input_queue.get()
+                if control == DetectionControlEnum.DETECT:
+                    detection = data
+                    self.leds_2d.append(detection)
                     update_required = True
+
+                if control == DetectionControlEnum.DONE:
+                    view_id = data
+                    check_required = True
+
+                if control == DetectionControlEnum.DELETE:
+                    view_id = data
+                    self.leds_2d = [
+                        led for led in self.leds_2d if led.view_id != view_id
+                    ]
 
             if update_required:
                 update_required = False
 
-                leds_3d = sfm(leds_2d)
+                leds_3d = sfm(self.leds_2d)
 
                 if len(leds_3d) == 0:
                     logger.info("Failed to reconstruct any leds")
                     continue
+
+                if check_required:
+                    check_required = False
+                    sanity_check(self.leds_2d, leds_3d, view_id)
 
                 rescale(leds_3d)
 

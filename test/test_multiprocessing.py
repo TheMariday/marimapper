@@ -6,14 +6,12 @@ from utils import get_test_dir
 
 def test_sfm_process():
 
-    sfm = SFM()
-
     leds = get_all_2d_led_maps(get_test_dir("MariMapper-Test-Data/can"))
+
+    sfm = SFM(existing_leds=leds)
 
     output_queue = Queue()
 
-    for led in leds:
-        sfm.add_detection(led)
     sfm.add_output_queue(output_queue)
     sfm.start()
 

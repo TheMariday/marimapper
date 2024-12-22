@@ -4,7 +4,7 @@ from marimapper.sfm_process import SFM
 
 from tqdm import tqdm
 from pathlib import Path
-from marimapper.detector_process import DetectorProcess
+from marimapper.detector_process import DetectorProcess, DetectionControlEnum
 from multiprocessing import get_logger, Queue
 from marimapper.file_tools import get_all_2d_led_maps
 from marimapper.utils import get_user_confirmation
@@ -40,16 +40,13 @@ class Scanner:
             server,
         )
 
-        self.sfm = SFM(max_fill)
-
         self.file_writer = FileWriterProcess(self.output_dir)
 
-        leds = get_all_2d_led_maps(self.output_dir)
+        existing_leds = get_all_2d_led_maps(self.output_dir)
 
-        for led in leds:
-            self.sfm.add_detection(led)
+        self.sfm = SFM(max_fill, existing_leds)
 
-        self.current_view = last_view(leds) + 1
+        self.current_view = last_view(existing_leds) + 1
 
         self.renderer3d = VisualiseProcess()
 
@@ -86,6 +83,34 @@ class Scanner:
         self.file_writer.join()
         logger.debug("scanner closed")
 
+    def wait_for_scan(self):
+
+        with tqdm(
+            total=self.led_id_range.stop - self.led_id_range.start,
+            unit="LEDs",
+            desc="Capturing sequence",
+            smoothing=0,
+        ) as progress_bar:
+
+            while True:
+
+                control, data = self.detector_update_queue.get()
+
+                if control == DetectionControlEnum.DETECT:
+                    led = data
+                    progress = led.led_id - self.led_id_range.start
+
+                    progress_bar.update(progress)
+                    progress_bar.refresh()
+
+                if control == DetectionControlEnum.DONE:
+                    done_view = data
+                    assert done_view == self.current_view
+                    return True
+
+                if control == DetectionControlEnum.DELETE:
+                    return False
+
     def mainloop(self):
 
         while True:
@@ -102,16 +127,11 @@ class Scanner:
                 )
                 continue
 
-            for led_id in self.led_id_range:
-                self.detector.detect(led_id, self.current_view)
+            self.detector.detect(
+                self.led_id_range.start, self.led_id_range.stop, self.current_view
+            )
 
-            for _ in tqdm(
-                self.led_id_range,
-                unit="LEDs",
-                desc="Capturing sequence",
-                total=self.led_id_range.stop,
-                smoothing=0,
-            ):
-                self.detector_update_queue.get()
+            success = self.wait_for_scan()
 
-            self.current_view += 1
+            if success:
+                self.current_view += 1

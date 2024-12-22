@@ -13,6 +13,12 @@ from marimapper.utils import get_backend
 logger = get_logger()
 
 
+class DetectionControlEnum:
+    DETECT = 0
+    DONE = 1
+    DELETE = 2
+
+
 class DetectorProcess(Process):
 
     def __init__(
@@ -45,8 +51,8 @@ class DetectorProcess(Process):
     def add_output_queue(self, queue: Queue):
         self._output_queues.append(queue)
 
-    def detect(self, led_id: int, view_id: int):
-        self._input_queue.put((led_id, view_id))
+    def detect(self, led_id_from: int, led_id_to: int, view_id: int):
+        self._input_queue.put((led_id_from, led_id_to, view_id))
 
     def get_led_count(self):
         return self._led_count.get()
@@ -68,19 +74,29 @@ class DetectorProcess(Process):
 
             if not self._input_queue.empty():
                 set_cam_dark(cam, self._dark_exposure)
-                led_id, view_id = self._input_queue.get()
-                result = enable_and_find_led(
-                    cam,
-                    led_backend,
-                    led_id,
-                    view_id,
-                    timeout_controller,
-                    self._threshold,
-                    self._display,
-                )
+                led_id_from, led_id_to, view_id = self._input_queue.get()
+                for led_id in range(led_id_from, led_id_to):
+                    result = enable_and_find_led(
+                        cam,
+                        led_backend,
+                        led_id,
+                        view_id,
+                        timeout_controller,
+                        self._threshold,
+                        self._display,
+                    )
 
-                for queue in self._output_queues:
-                    queue.put(result)
+                    for queue in self._output_queues:
+                        queue.put((DetectionControlEnum.DETECT, result))
+
+                movement = False  # TODO
+                if movement:
+                    for queue in self._output_queues:
+                        queue.put((DetectionControlEnum.DELETE, view_id))
+                else:
+                    for queue in self._output_queues:
+                        queue.put((DetectionControlEnum.DONE, view_id))
+
             else:
                 set_cam_default(cam)
                 if self._display:
