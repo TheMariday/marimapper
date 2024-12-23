@@ -1,6 +1,7 @@
 import numpy as np
 import open3d
-from multiprocessing import get_logger, Process, Event, Queue
+from multiprocessing import get_logger, Process, Event
+from marimapper.queues import Queue3D
 from marimapper.led import LED3D, View, get_next, get_distance
 import time
 
@@ -26,15 +27,14 @@ class VisualiseProcess(Process):
         logger.debug("Renderer3D initialising")
         super().__init__()
         self._vis = None
-        self._input_queue = Queue()
-        self._input_queue.cancel_join_thread()
+        self._input_queue = Queue3D()
         self._exit_event = Event()
-        self.point_cloud = None
+        self.point_cloud = None  # mypy does not like this, too bad.
         self.line_set = None
         self.strip_set = None
         logger.debug("Renderer3D initialised")
 
-    def get_input_queue(self) -> Queue:
+    def get_input_queue(self) -> Queue3D:
         return self._input_queue
 
     def stop(self):
@@ -146,8 +146,8 @@ class VisualiseProcess(Process):
 
 def view_to_points_lines_colors(views):  # returns points and lines
 
-    all_points = []
-    all_lines = []
+    all_points: list[np.ndarray] = []
+    all_lines: list[np.ndarray] = []
 
     camera_scale = 2.0
 

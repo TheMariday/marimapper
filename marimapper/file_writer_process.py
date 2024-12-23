@@ -1,20 +1,18 @@
-from multiprocessing import Process, Queue, Event
+from multiprocessing import Process, Event
+from marimapper.queues import Queue2D, Queue3D, DetectionControlEnum
+from marimapper.led import LED2D
 import time
 from marimapper.file_tools import write_3d_leds_to_file, write_2d_leds_to_file
 from pathlib import Path
 import os
-
-from marimapper.detector_process import DetectionControlEnum
 
 
 class FileWriterProcess(Process):
 
     def __init__(self, base_path: Path):
         super().__init__()
-        self._input_queue_2d = Queue()
-        self._input_queue_2d.cancel_join_thread()
-        self._input_queue_3d = Queue()
-        self._input_queue_3d.cancel_join_thread()
+        self._input_queue_2d = Queue2D()
+        self._input_queue_3d = Queue3D()
         self._exit_event = Event()
         self._base_path = base_path
         os.makedirs(self._base_path, exist_ok=True)
@@ -34,8 +32,8 @@ class FileWriterProcess(Process):
 
     # This function is a bit gross and needs cleaning up
     def run(self):
-        views = {}
-        view_id_to_filename = {}
+        views: dict[int, list[LED2D]] = {}
+        view_id_to_filename: dict[int, Path] = {}
 
         requires_update = set()
 
@@ -64,9 +62,3 @@ class FileWriterProcess(Process):
                     write_2d_leds_to_file(views[view_id], view_id_to_filename[view_id])
                 requires_update = set()
                 time.sleep(1)
-
-        # clear the queues, don't ask why.
-        while not self._input_queue_2d.empty():
-            self._input_queue_2d.get()
-        while not self._input_queue_3d.empty():
-            self._input_queue_3d.get()

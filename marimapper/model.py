@@ -1,5 +1,5 @@
 import os
-
+from pathlib import Path
 from marimapper.pycolmap_tools.read_write_model import (
     qvec2rotmat,
     read_images_binary,
@@ -10,7 +10,7 @@ from marimapper.led import LED3D, View
 from marimapper.led import remove_duplicates
 
 
-def binary_to_led_map_3d(path: os.path) -> list[LED3D]:
+def binary_to_led_map_3d(path: Path) -> list[LED3D]:
 
     points_bin = read_points3D_binary(os.path.join(path, "0", "points3D.bin"))
     images_bin = read_images_binary(os.path.join(path, "0", "images.bin"))

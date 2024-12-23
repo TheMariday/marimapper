@@ -1,17 +1,19 @@
-from multiprocessing import Process, Event, Queue, get_logger
+from multiprocessing import Process, Event, get_logger
 from marimapper.led import (
     rescale,
     recenter,
     LED3D,
     fill_gaps,
     get_leds_with_view,
+    LED2D,
 )
 from marimapper.sfm import sfm
-from marimapper.detector_process import DetectionControlEnum
+from marimapper.queues import Queue2D, Queue3D, DetectionControlEnum
 import open3d
 import numpy as np
 import math
 import time
+from typing import Union
 
 logger = get_logger()
 
@@ -71,19 +73,20 @@ def sanity_check(leds_2d, leds_3d, view) -> None:
 
 class SFM(Process):
 
-    def __init__(self, max_fill=5, existing_leds=None):
+    def __init__(
+        self, max_fill: int = 5, existing_leds: Union[list[LED2D], None] = None
+    ):
         super().__init__()
-        self._input_queue = Queue()
-        self._input_queue.cancel_join_thread()
-        self._output_queues: list[Queue] = []
-        self._exit_event = Event()
+        self._input_queue: Queue2D = Queue2D()
+        self._output_queues: list[Queue3D] = []
+        self._exit_event: Event() = Event()
         self.max_fill = max_fill
         self.leds_2d = existing_leds if existing_leds is not None else []
 
-    def get_input_queue(self) -> Queue:
+    def get_input_queue(self) -> Queue2D:
         return self._input_queue
 
-    def add_output_queue(self, queue: Queue):
+    def add_output_queue(self, queue: Queue3D):
         self._output_queues.append(queue)
 
     def stop(self):
@@ -101,8 +104,9 @@ class SFM(Process):
                 control, data = self._input_queue.get()
                 if control == DetectionControlEnum.DETECT:
                     detection = data
-                    self.leds_2d.append(detection)
-                    update_required = True
+                    if detection.point is not None:  # this is nasty
+                        self.leds_2d.append(detection)
+                        update_required = True
 
                 if control == DetectionControlEnum.DONE:
                     view_id = data
@@ -140,10 +144,3 @@ class SFM(Process):
 
             else:
                 time.sleep(1)
-
-        # clear the queues, don't ask why.
-        while not self._input_queue.empty():
-            self._input_queue.get()
-        for queue in self._output_queues:
-            while not queue.empty():
-                queue.get()

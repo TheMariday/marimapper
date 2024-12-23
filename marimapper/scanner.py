@@ -4,9 +4,9 @@ from marimapper.sfm_process import SFM
 
 from tqdm import tqdm
 from pathlib import Path
-from marimapper.detector_process import DetectorProcess, DetectionControlEnum
-from marimapper.queues import Queue3D, Queue2D
-from multiprocessing import get_logger, Queue
+from marimapper.detector_process import DetectorProcess
+from marimapper.queues import Queue2D, DetectionControlEnum
+from multiprocessing import get_logger
 from marimapper.file_tools import get_all_2d_led_maps
 from marimapper.utils import get_user_confirmation
 from marimapper.visualize_process import VisualiseProcess
@@ -97,11 +97,12 @@ class Scanner:
 
                 control, data = self.detector_update_queue.get()
 
-                if control == DetectionControlEnum.DETECT:
-                    led = data
-                    progress = led.led_id - self.led_id_range.start
+                if control == DetectionControlEnum.FAIL:
+                    logger.error("scan failed")
+                    return False
 
-                    progress_bar.update(progress)
+                if control == DetectionControlEnum.DETECT:
+                    progress_bar.update(1)
                     progress_bar.refresh()
 
                 if control == DetectionControlEnum.DONE:

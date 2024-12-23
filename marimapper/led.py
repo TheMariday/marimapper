@@ -1,7 +1,7 @@
 import numpy as np
 import typing
 import math
-from typing import Union
+from typing import Union, Optional
 
 from multiprocessing import get_logger
 
@@ -28,12 +28,13 @@ class Point2D:
 
 
 class LED2D:
-    def __init__(
-        self, led_id: int, view_id: int, point: typing.Optional[Point2D] = None
-    ):
+    def __init__(self, led_id: int, view_id: int, point: Optional[Point2D] = None):
         self.led_id: int = led_id
         self.view_id: int = view_id
-        self.point: Point2D = point
+        self.point: Optional[Point2D] = point
+
+    def has_point(self) -> bool:
+        return self.point is not None
 
 
 class Point3D:

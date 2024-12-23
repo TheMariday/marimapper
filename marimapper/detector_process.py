@@ -1,5 +1,4 @@
 from multiprocessing import get_logger, Process, Queue, Event
-from enum import Enum
 from marimapper.detector import (
     show_image,
     set_cam_default,
@@ -9,17 +8,11 @@ from marimapper.detector import (
     enable_and_find_led,
     find_led,
 )
-import time
 
+from marimapper.queues import RequestDetectionsQueue, Queue2D, DetectionControlEnum
 from marimapper.utils import get_backend
 
 logger = get_logger()
-
-
-class DetectionControlEnum(Enum):
-    DETECT = 0
-    DONE = 1
-    DELETE = 2
 
 
 class DetectorProcess(Process):
@@ -34,10 +27,9 @@ class DetectorProcess(Process):
         display: bool = True,
     ):
         super().__init__()
-        self._input_queue = Queue()  # {led_id, view_id}
-        self._input_queue.cancel_join_thread()
-        self._output_queues: list[Queue] = []  # LED3D
-        self._led_count = Queue()
+        self._request_detections_queue = RequestDetectionsQueue()  # {led_id, view_id}
+        self._output_queues: list[Queue2D] = []  # LED3D
+        self._led_count: Queue = Queue()
         self._led_count.cancel_join_thread()
         self._exit_event = Event()
 
@@ -48,14 +40,14 @@ class DetectorProcess(Process):
         self._led_backend_server = led_backend_server
         self._display = display
 
-    def get_input_queue(self) -> Queue:
-        return self._input_queue
+    def get_request_detections_queue(self) -> RequestDetectionsQueue:
+        return self._request_detections_queue
 
-    def add_output_queue(self, queue: Queue):
+    def add_output_queue(self, queue: Queue2D):
         self._output_queues.append(queue)
 
     def detect(self, led_id_from: int, led_id_to: int, view_id: int):
-        self._input_queue.put((led_id_from, led_id_to, view_id))
+        self._request_detections_queue.request(led_id_from, led_id_to, view_id)
 
     def get_led_count(self):
         return self._led_count.get()
@@ -75,36 +67,43 @@ class DetectorProcess(Process):
 
         while not self._exit_event.is_set():
 
-            if not self._input_queue.empty():
+            if not self._request_detections_queue.empty():
                 set_cam_dark(cam, self._dark_exposure)
-                led_id_from, led_id_to, view_id = self._input_queue.get()
+                led_id_from, led_id_to, view_id = (
+                    self._request_detections_queue.get_id_from_id_to_view()
+                )
 
                 # First wait for no leds to be visible
-                while find_led(cam, self._threshold, self._display) is not None:
-                    logger.info("Waiting for no leds to be visible in the scene")
-                    time.sleep(1)
-
-                for led_id in range(led_id_from, led_id_to):
-                    result = enable_and_find_led(
-                        cam,
-                        led_backend,
-                        led_id,
-                        view_id,
-                        timeout_controller,
-                        self._threshold,
-                        self._display,
+                if find_led(cam, self._threshold, self._display) is not None:
+                    logger.error(
+                        "Detector process can detect an LED when no LEDs should be visible"
                     )
-
                     for queue in self._output_queues:
-                        queue.put((DetectionControlEnum.DETECT, result))
+                        queue.put(DetectionControlEnum.FAIL, None)
 
-                movement = False  # TODO
-                if movement:
-                    for queue in self._output_queues:
-                        queue.put((DetectionControlEnum.DELETE, view_id))
                 else:
-                    for queue in self._output_queues:
-                        queue.put((DetectionControlEnum.DONE, view_id))
+
+                    for led_id in range(led_id_from, led_id_to):
+                        result = enable_and_find_led(
+                            cam,
+                            led_backend,
+                            led_id,
+                            view_id,
+                            timeout_controller,
+                            self._threshold,
+                            self._display,
+                        )
+
+                        for queue in self._output_queues:
+                            queue.put(DetectionControlEnum.DETECT, result)
+
+                    movement = False  # TODO
+                    if movement:
+                        for queue in self._output_queues:
+                            queue.put(DetectionControlEnum.DELETE, view_id)
+                    else:
+                        for queue in self._output_queues:
+                            queue.put(DetectionControlEnum.DONE, view_id)
 
             else:
                 set_cam_default(cam)
@@ -114,11 +113,3 @@ class DetectorProcess(Process):
 
         logger.info("resetting cam!")
         set_cam_default(cam)
-
-        # clear the queues, don't ask why.
-        while not self._input_queue.empty():
-            self._input_queue.get()
-
-        for queue in self._output_queues:
-            while not queue.empty():
-                queue.get()

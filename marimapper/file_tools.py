@@ -4,7 +4,7 @@ import typing
 from pathlib import Path
 
 
-def load_detections(filename: os.path, view_id) -> typing.Optional[list[LED2D]]:
+def load_detections(filename: Path, view_id) -> typing.Optional[list[LED2D]]:
 
     if not os.path.exists(filename):
         return None
@@ -38,7 +38,7 @@ def load_detections(filename: os.path, view_id) -> typing.Optional[list[LED2D]]:
     return leds
 
 
-def get_all_2d_led_maps(directory: os.path) -> list[LED2D]:
+def get_all_2d_led_maps(directory: Path) -> list[LED2D]:
     points = []
 
     for view_id, filename in enumerate(sorted(os.listdir(directory))):

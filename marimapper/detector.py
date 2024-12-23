@@ -1,16 +1,17 @@
 import cv2
 import time
-import typing
 from multiprocessing import get_logger
 
 from marimapper.camera import Camera
 from marimapper.timeout_controller import TimeoutController
 from marimapper.led import Point2D, LED2D
+from typing import Optional
+import numpy as np
 
 logger = get_logger()
 
 
-def find_led_in_image(image: cv2.Mat, threshold: int = 128) -> typing.Optional[Point2D]:
+def find_led_in_image(image: np.ndarray, threshold: int = 128) -> Optional[Point2D]:
 
     if len(image.shape) > 2:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -41,7 +42,7 @@ def find_led_in_image(image: cv2.Mat, threshold: int = 128) -> typing.Optional[P
     return Point2D(center_u, center_v, contours)  # todo, normalise contours
 
 
-def draw_led_detections(image: cv2.Mat, led_detection: Point2D) -> cv2.Mat:
+def draw_led_detections(image: cv2.Mat, led_detection: Optional[Point2D]) -> np.ndarray:
     render_image = (
         image if len(image.shape) == 3 else cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     )
@@ -72,7 +73,7 @@ def draw_led_detections(image: cv2.Mat, led_detection: Point2D) -> cv2.Mat:
     return render_image
 
 
-def show_image(image: cv2.Mat) -> None:
+def show_image(image: np.ndarray) -> None:
     cv2.imshow("MariMapper - Detector", image)
     key = cv2.waitKey(1)
 
@@ -101,16 +102,16 @@ def set_cam_dark(cam: Camera, exposure: int) -> None:
 
 def find_led(
     cam: Camera, threshold: int = 128, display: bool = True
-) -> typing.Optional[Point2D]:
+) -> Optional[Point2D]:
 
     image = cam.read()
-    results = find_led_in_image(image, threshold)
+    point = find_led_in_image(image, threshold)
 
     if display:
-        rendered_image = draw_led_detections(image, results)
+        rendered_image = draw_led_detections(image, point)
         show_image(rendered_image)
 
-    return results
+    return point
 
 
 def enable_and_find_led(
@@ -125,9 +126,6 @@ def enable_and_find_led(
 
     led = LED2D(led_id, view_id)
 
-    if led_backend is None:
-        return led
-
     # First wait for no leds to be visible
     while find_led(cam, threshold, display) is not None:
         pass
@@ -138,16 +136,18 @@ def enable_and_find_led(
     led_backend.set_led(led_id, True)
 
     # Wait until either we have a result or we run out of time
+    point = None
     while (
-        led.point is None
-        and time.time() < response_time_start + timeout_controller.timeout
+        point is None and time.time() < response_time_start + timeout_controller.timeout
     ):
-        led.point = find_led(cam, threshold, display)
+        point = find_led(cam, threshold, display)
 
     led_backend.set_led(led_id, False)
 
-    if led.point is None:
+    if point is None:  # if we don't have a point, return the led as is
         return led
+
+    led.point = point
 
     timeout_controller.add_response_time(time.time() - response_time_start)
 
