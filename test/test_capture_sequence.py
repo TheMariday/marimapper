@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from marimapper.camera import Camera
 from marimapper.detector import find_led
 from marimapper.file_tools import write_2d_leds_to_file, load_detections
@@ -38,7 +39,7 @@ def test_capture_sequence_correctness():
 
     for view_index in range(9):
 
-        filepath = os.path.join(output_dir_full, f"led_map_2d_{view_index:04}.csv")
+        filepath = Path(output_dir_full, f"led_map_2d_{view_index:04}.csv")
 
         leds = load_detections(filepath, view_index)
 

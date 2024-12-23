@@ -1,5 +1,4 @@
-import os
-
+from pathlib import Path
 from tempfile import TemporaryDirectory
 import pycolmap
 
@@ -15,7 +14,7 @@ logger = get_logger()
 def sfm(leds_2d: list[LED2D]) -> list[LED3D]:
 
     with TemporaryDirectory() as temp_dir:
-        database_path = os.path.join(temp_dir, "database.db")
+        database_path = Path(temp_dir, "database.db")
 
         populate_database(database_path, leds_2d)
 
@@ -39,10 +38,11 @@ def sfm(leds_2d: list[LED2D]) -> list[LED3D]:
         # However I think it might be misleading or confusing as they will appear with no relative transform.
         # Because of this, lots of existing functionality like inter-led distance might break
         # Leaving it out for now but perhaps something to come back to.
-        if not os.path.exists(os.path.join(temp_dir, "0", "points3D.bin")):
+
+        if not Path(temp_dir, "0", "points3D.bin").exists():
             return []
 
-        leds_3d = binary_to_led_map_3d(temp_dir)
+        leds_3d = binary_to_led_map_3d(Path(temp_dir))
         logger.debug(f"sfm managed to reconstruct {len(leds_3d)} leds")
 
         return leds_3d

@@ -82,22 +82,19 @@ def show_image(image: np.ndarray) -> None:
 
 
 def set_cam_default(cam: Camera) -> None:
-    if cam.state != "default":
-        logger.info("resetting cam to default")
-        cam.reset()
-        cam.eat()
-        cam.state = "default"
+
+    logger.info("resetting cam to default")
+    cam.reset()
+    cam.eat()
 
 
 def set_cam_dark(cam: Camera, exposure: int) -> None:
-    if cam.state != "dark":
-        logger.info("setting cam to dark mode")
-        cam.set_autofocus(0, 0)
-        cam.set_exposure_mode(0)
-        cam.set_gain(0)
-        cam.set_exposure(exposure)
-        cam.eat()
-        cam.state = "dark"
+    logger.info("setting cam to dark mode")
+    cam.set_autofocus(0, 0)
+    cam.set_exposure_mode(0)
+    cam.set_gain(0)
+    cam.set_exposure(exposure)
+    cam.eat()
 
 
 def find_led(
@@ -122,9 +119,7 @@ def enable_and_find_led(
     timeout_controller: TimeoutController,
     threshold: int,
     display: bool = False,
-) -> LED2D:
-
-    led = LED2D(led_id, view_id)
+) -> Optional[LED2D]:
 
     # First wait for no leds to be visible
     while find_led(cam, threshold, display) is not None:
@@ -145,13 +140,11 @@ def enable_and_find_led(
     led_backend.set_led(led_id, False)
 
     if point is None:  # if we don't have a point, return the led as is
-        return led
-
-    led.point = point
+        return None
 
     timeout_controller.add_response_time(time.time() - response_time_start)
 
     while find_led(cam, threshold, display) is not None:
         pass
 
-    return led
+    return LED2D(led_id, view_id, point)

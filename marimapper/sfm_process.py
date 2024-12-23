@@ -79,7 +79,7 @@ class SFM(Process):
         super().__init__()
         self._input_queue: Queue2D = Queue2D()
         self._output_queues: list[Queue3D] = []
-        self._exit_event: Event() = Event()
+        self._exit_event = Event()
         self.max_fill = max_fill
         self.leds_2d = existing_leds if existing_leds is not None else []
 

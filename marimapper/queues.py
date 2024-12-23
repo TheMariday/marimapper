@@ -6,9 +6,10 @@ from enum import Enum
 
 class DetectionControlEnum(Enum):
     DETECT = 0
-    FAIL = 1
-    DONE = 2
-    DELETE = 3
+    SKIP = 1
+    FAIL = 2
+    DONE = 3
+    DELETE = 4
 
 
 class BaseQueue:
@@ -17,10 +18,10 @@ class BaseQueue:
         self._queue: Queue = Queue()
         self._queue.cancel_join_thread()
 
-    def queue(self):
+    def queue(self) -> Queue:
         return self._queue
 
-    def empty(self):
+    def empty(self) -> bool:
         return self._queue.empty()
 
 

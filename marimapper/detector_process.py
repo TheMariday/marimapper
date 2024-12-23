@@ -55,6 +55,10 @@ class DetectorProcess(Process):
     def stop(self):
         self._exit_event.set()
 
+    def put_in_all_output_queues(self, control: DetectionControlEnum, data):
+        for queue in self._output_queues:
+            queue.put(control, data)
+
     def run(self):
 
         led_backend = get_backend(self._led_backend_name, self._led_backend_server)
@@ -68,45 +72,53 @@ class DetectorProcess(Process):
         while not self._exit_event.is_set():
 
             if not self._request_detections_queue.empty():
-                set_cam_dark(cam, self._dark_exposure)
+
                 led_id_from, led_id_to, view_id = (
                     self._request_detections_queue.get_id_from_id_to_view()
                 )
 
-                # First wait for no leds to be visible
+                # scan start here
+                set_cam_dark(cam, self._dark_exposure)
+
+                # Firstly, if there are leds visible, break out
                 if find_led(cam, self._threshold, self._display) is not None:
                     logger.error(
                         "Detector process can detect an LED when no LEDs should be visible"
                     )
-                    for queue in self._output_queues:
-                        queue.put(DetectionControlEnum.FAIL, None)
+                    self.put_in_all_output_queues(DetectionControlEnum.FAIL, None)
+                    continue
 
-                else:
+                for led_id in range(led_id_from, led_id_to):
+                    result = enable_and_find_led(
+                        cam,
+                        led_backend,
+                        led_id,
+                        view_id,
+                        timeout_controller,
+                        self._threshold,
+                        self._display,
+                    )
 
-                    for led_id in range(led_id_from, led_id_to):
-                        result = enable_and_find_led(
-                            cam,
-                            led_backend,
-                            led_id,
-                            view_id,
-                            timeout_controller,
-                            self._threshold,
-                            self._display,
+                    if result is not None:
+                        self.put_in_all_output_queues(
+                            DetectionControlEnum.DETECT, result
                         )
-
-                        for queue in self._output_queues:
-                            queue.put(DetectionControlEnum.DETECT, result)
-
-                    movement = False  # TODO
-                    if movement:
-                        for queue in self._output_queues:
-                            queue.put(DetectionControlEnum.DELETE, view_id)
                     else:
-                        for queue in self._output_queues:
-                            queue.put(DetectionControlEnum.DONE, view_id)
+                        self.put_in_all_output_queues(DetectionControlEnum.SKIP, led_id)
 
-            else:
+                # at this point the scan is done!
+                # Lets do some checking
+                # well, eventually
+                movement = False  # TODO
+                if not movement:
+                    self.put_in_all_output_queues(DetectionControlEnum.DONE, view_id)
+                else:
+                    self.put_in_all_output_queues(DetectionControlEnum.DELETE, view_id)
+
+                # and lets reset everything back to normal
                 set_cam_default(cam)
+
+            if self._request_detections_queue.empty():
                 if self._display:
                     image = cam.read()
                     show_image(image)
