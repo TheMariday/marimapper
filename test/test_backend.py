@@ -110,7 +110,6 @@ def test_wled(monkeypatch):
 
 def test_fcmega(monkeypatch):
 
-    import serial
     import serial.tools.list_ports
 
     class SerialPatch:
@@ -162,3 +161,8 @@ def test_invalid_backend():
 
     with pytest.raises(RuntimeError):
         get_backend("invalid_backend")
+
+def test_dummy_backend():
+
+    dummy = get_backend("dummy")
+    assert dummy.get_led_count() == 0

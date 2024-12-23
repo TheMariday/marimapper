@@ -33,9 +33,6 @@ class LED2D:
         self.view_id: int = view_id
         self.point: Point2D = point
 
-    def has_point(self) -> bool:
-        return self.point is not None
-
 
 class Point3D:
     def __init__(self):
@@ -78,13 +75,10 @@ class LED3D:
     def add_state(self, state: int):
         self.state.append(state)
 
-    def has_state(self, state: int) -> bool:
-        return state in self.state
-
     def get_color(self):
-        if self.has_state(LEDState.INTERPOLATED):
+        if LEDState.INTERPOLATED in self.state:
             return 255, 0, 0
-        if self.has_state(LEDState.MERGED):
+        if LEDState.MERGED in self.state:
             return 255, 0, 255
 
         return 0, 255, 0

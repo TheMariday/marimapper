@@ -1,6 +1,6 @@
 from marimapper.sfm_process import SFM
 from marimapper.file_tools import get_all_2d_led_maps
-from multiprocessing import Queue
+from marimapper.queues import Queue3D
 from utils import get_test_dir
 
 
@@ -10,7 +10,7 @@ def test_sfm_process():
 
     sfm = SFM(existing_leds=leds)
 
-    output_queue = Queue()
+    output_queue = Queue3D()
 
     sfm.add_output_queue(output_queue)
     sfm.start()

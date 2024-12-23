@@ -105,7 +105,6 @@ class Scanner:
 
                 if control == DetectionControlEnum.DONE:
                     done_view = data
-                    assert done_view == self.current_view
                     logger.info(f"Scan complete {done_view}")
                     return True
 

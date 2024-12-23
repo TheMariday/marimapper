@@ -1,12 +1,13 @@
 import cv2
 import time
+from typing import Optional
+import numpy as np
 from multiprocessing import get_logger
 
 from marimapper.camera import Camera
 from marimapper.timeout_controller import TimeoutController
 from marimapper.led import Point2D, LED2D
-from typing import Optional
-import numpy as np
+
 
 logger = get_logger()
 
@@ -102,13 +103,13 @@ def find_led(
 ) -> Optional[Point2D]:
 
     image = cam.read()
-    point = find_led_in_image(image, threshold)
+    results = find_led_in_image(image, threshold)
 
     if display:
-        rendered_image = draw_led_detections(image, point)
+        rendered_image = draw_led_detections(image, results)
         show_image(rendered_image)
 
-    return point
+    return results
 
 
 def enable_and_find_led(
@@ -139,7 +140,7 @@ def enable_and_find_led(
 
     led_backend.set_led(led_id, False)
 
-    if point is None:  # if we don't have a point, return the led as is
+    if point is None:
         return None
 
     timeout_controller.add_response_time(time.time() - response_time_start)
