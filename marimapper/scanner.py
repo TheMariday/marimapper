@@ -5,6 +5,7 @@ from marimapper.sfm_process import SFM
 from tqdm import tqdm
 from pathlib import Path
 from marimapper.detector_process import DetectorProcess, DetectionControlEnum
+from marimapper.queues import Queue3D, Queue2D
 from multiprocessing import get_logger, Queue
 from marimapper.file_tools import get_all_2d_led_maps
 from marimapper.utils import get_user_confirmation
@@ -50,7 +51,7 @@ class Scanner:
 
         self.renderer3d = VisualiseProcess()
 
-        self.detector_update_queue = Queue()
+        self.detector_update_queue = Queue2D()
 
         self.detector.add_output_queue(self.sfm.get_input_queue())
         self.detector.add_output_queue(self.detector_update_queue)
