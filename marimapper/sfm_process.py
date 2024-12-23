@@ -62,12 +62,14 @@ def sanity_check(leds_2d, leds_3d, view) -> None:
     if overlap_len < 10:
         logger.error(
             f"Scan {view} has a very low overlap with the reconstructed model "
-            f"(only {overlap_len} points) and therefore may have been disregarded"
+            f"(only {overlap_len} points) and therefore may be disregarded when reconstructing"
+            "unless scans are added between this and the prior scan"
         )
     if overlap_percentage < 0.5:
         logger.warning(
             f"Scan {view} has a low overlap with the reconstructed model "
-            f"(only {overlap_percentage}%) and therefore may have been disregarded"
+            f"(only {overlap_percentage}%) and therefore may be disregarded when reconstructing"
+            "unless scans are added between this and the prior scan"
         )
 
 
@@ -103,10 +105,9 @@ class SFM(Process):
             while not self._input_queue.empty():
                 control, data = self._input_queue.get()
                 if control == DetectionControlEnum.DETECT:
-                    detection = data
-                    if detection.point is not None:  # this is nasty
-                        self.leds_2d.append(detection)
-                        update_required = True
+                    led2d = data
+                    self.leds_2d.append(led2d)
+                    update_required = True
 
                 if control == DetectionControlEnum.DONE:
                     view_id = data

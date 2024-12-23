@@ -38,6 +38,12 @@ def main():
         help="The max number of consecutive LEDs that can be estimated based on adjacent LEDs",
     )
 
+    parser.add_argument(
+        "--disable_movement_check",
+        action="store_false",
+        help="Disables checking of movement when a scan completes",
+    )
+
     args = parser.parse_args()
 
     if not os.path.isdir(args.dir):
@@ -67,6 +73,7 @@ def main():
         args.start,
         args.end,
         args.max_fill,
+        args.disable_movement_check
     )
 
     scanner.mainloop()

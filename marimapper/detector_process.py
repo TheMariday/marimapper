@@ -8,7 +8,7 @@ from marimapper.detector import (
     enable_and_find_led,
     find_led,
 )
-
+from marimapper.led import get_distance
 from marimapper.queues import RequestDetectionsQueue, Queue2D, DetectionControlEnum
 from marimapper.utils import get_backend
 
@@ -25,6 +25,7 @@ class DetectorProcess(Process):
         led_backend_name: str,
         led_backend_server: str,
         display: bool = True,
+        check_movement=True,
     ):
         super().__init__()
         self._request_detections_queue = RequestDetectionsQueue()  # {led_id, view_id}
@@ -39,6 +40,7 @@ class DetectorProcess(Process):
         self._led_backend_name = led_backend_name
         self._led_backend_server = led_backend_server
         self._display = display
+        self._check_movement = check_movement
 
     def get_request_detections_queue(self) -> RequestDetectionsQueue:
         return self._request_detections_queue
@@ -88,8 +90,9 @@ class DetectorProcess(Process):
                     self.put_in_all_output_queues(DetectionControlEnum.FAIL, None)
                     continue
 
+                leds = []
                 for led_id in range(led_id_from, led_id_to):
-                    result = enable_and_find_led(
+                    led = enable_and_find_led(
                         cam,
                         led_backend,
                         led_id,
@@ -99,17 +102,35 @@ class DetectorProcess(Process):
                         self._display,
                     )
 
-                    if result is not None:
-                        self.put_in_all_output_queues(
-                            DetectionControlEnum.DETECT, result
-                        )
+                    if led is not None:
+                        self.put_in_all_output_queues(DetectionControlEnum.DETECT, led)
                     else:
                         self.put_in_all_output_queues(DetectionControlEnum.SKIP, led_id)
+                        leds.append(led)
 
-                # at this point the scan is done!
-                # Lets do some checking
-                # well, eventually
-                movement = False  # TODO
+                movement = False
+                if self._check_movement:
+                    led_previous = leds[0]
+
+                    led_current = enable_and_find_led(
+                        cam,
+                        led_backend,
+                        led_previous.led_id,
+                        view_id,
+                        timeout_controller,
+                        self._threshold,
+                        self._display,
+                    )
+                    if led_current is not None:
+                        distance = get_distance(led_current, led_previous)
+                        if distance > 0.01:  # 1% movement
+                            movement = True
+                    else:
+                        logger.error(
+                            f"went back to check led {led_previous.led_id} for movement, and led could no longer be found"
+                        )
+                        movement = True
+
                 if not movement:
                     self.put_in_all_output_queues(DetectionControlEnum.DONE, view_id)
                 else:

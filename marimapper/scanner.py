@@ -29,6 +29,7 @@ class Scanner:
         led_start: int,
         led_end: int,
         max_fill: int,
+        check_movement: bool
     ):
         logger.debug("initialising scanner")
         self.output_dir = output_dir
@@ -39,6 +40,7 @@ class Scanner:
             threshold,
             backend,
             server,
+            check_movement
         )
 
         self.file_writer = FileWriterProcess(self.output_dir)
@@ -78,10 +80,6 @@ class Scanner:
         self.renderer3d.stop()
         self.file_writer.stop()
 
-        self.sfm.join()
-        self.renderer3d.join()
-        self.detector.join()
-        self.file_writer.join()
         logger.debug("scanner closed")
 
     def wait_for_scan(self):
@@ -108,9 +106,12 @@ class Scanner:
                 if control == DetectionControlEnum.DONE:
                     done_view = data
                     assert done_view == self.current_view
+                    logger.info(f"Scan complete {done_view}")
                     return True
 
                 if control == DetectionControlEnum.DELETE:
+                    view_id = data
+                    logger.info(f"Deleting scan {view_id}")
                     return False
 
     def mainloop(self):
