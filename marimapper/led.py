@@ -75,10 +75,13 @@ class LED3D:
     def add_state(self, state: int):
         self.state.append(state)
 
+    def has_state(self, state: int) -> bool:
+        return state in self.state
+
     def get_color(self):
-        if LEDState.INTERPOLATED in self.state:
+        if self.has_state(LEDState.INTERPOLATED):
             return 255, 0, 0
-        if LEDState.MERGED in self.state:
+        if self.has_state(LEDState.MERGED):
             return 255, 0, 255
 
         return 0, 255, 0
@@ -152,7 +155,7 @@ def find_inter_led_distance(leds: list[Union[LED2D, LED3D]]):
     return np.median(distances)
 
 
-def rescale(leds: list[LED3D], target_inter_distance=1.0) -> None:
+def rescale(leds: list[LED3D], target_inter_distance=1.0) -> int:
 
     inter_led_distance = find_inter_led_distance(leds)
     scale = (1.0 / inter_led_distance) * target_inter_distance
@@ -160,6 +163,8 @@ def rescale(leds: list[LED3D], target_inter_distance=1.0) -> None:
         led.point *= scale
         for view in led.views:
             view.position = view.position * scale
+
+    return scale
 
 
 def recenter(leds: list[LED3D]):

@@ -85,6 +85,7 @@ class SFM(Process):
 
                 if control == DetectionControlEnum.DONE:
                     view_id = data
+                    update_required = True
                     check_required = True
 
                 if control == DetectionControlEnum.DELETE:
@@ -116,13 +117,13 @@ class SFM(Process):
                     if overlap < 10:
                         logger.error(
                             f"Scan {view_id} has a very low overlap with the reconstructed model "
-                            f"(only {overlap} points) and therefore may be disregarded when reconstructing"
+                            f"(only {overlap} points) and therefore may be disregarded when reconstructing "
                             "unless scans are added between this and the prior scan"
                         )
-                    if overlap_percentage < 0.5:
+                    if overlap_percentage < 50:
                         logger.warning(
                             f"Scan {view_id} has a low overlap with the reconstructed model "
-                            f"(only {overlap_percentage}%) and therefore may be disregarded when reconstructing"
+                            f"(only {overlap_percentage}%) and therefore may be disregarded when reconstructing "
                             "unless scans are added between this and the prior scan"
                         )
 

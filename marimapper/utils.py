@@ -61,7 +61,7 @@ def get_user_confirmation(prompt):  # pragma: no coverage
         uin = input(prompt)
 
         while uin.lower() not in ("y", "n"):
-            uin = input()
+            uin = input(prompt)
 
     except KeyboardInterrupt:
         return False

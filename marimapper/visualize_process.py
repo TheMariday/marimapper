@@ -29,7 +29,7 @@ class VisualiseProcess(Process):
         self._vis = None
         self._input_queue = Queue3D()
         self._exit_event = Event()
-        self.point_cloud = None  # mypy does not like this, too bad.
+        self.point_cloud = None
         self.line_set = None
         self.strip_set = None
         logger.debug("Renderer3D initialised")
@@ -74,8 +74,8 @@ class VisualiseProcess(Process):
         view_ctl.set_up((0, 1, 0))
         view_ctl.set_lookat((0, 0, 0))
         view_ctl.set_zoom(0.3)
-        # set far distance to 200x the inter-led distance
-        view_ctl.set_constant_z_far(200)
+        # set far distance to 20000x the inter-led distance
+        view_ctl.set_constant_z_far(20000)
 
         render_options = self._vis.get_render_option()
         render_options.point_show_normal = True
@@ -133,9 +133,11 @@ class VisualiseProcess(Process):
         )
 
         if first:
-            self._vis.add_geometry(self.point_cloud)
-            self._vis.add_geometry(self.line_set)
-            self._vis.add_geometry(self.strip_set)
+            # We only update the bounding box on the point cloud in case
+            # the camera has shot off into the distance
+            self._vis.add_geometry(self.point_cloud, reset_bounding_box=True)
+            self._vis.add_geometry(self.line_set, reset_bounding_box=False)
+            self._vis.add_geometry(self.strip_set, reset_bounding_box=False)
         else:
             self._vis.update_geometry(self.point_cloud)
             self._vis.update_geometry(self.line_set)
