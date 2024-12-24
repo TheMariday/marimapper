@@ -29,18 +29,13 @@ class Scanner:
         led_start: int,
         led_end: int,
         max_fill: int,
-        check_movement: bool
+        check_movement: bool,
     ):
         logger.debug("initialising scanner")
         self.output_dir = output_dir
 
         self.detector = DetectorProcess(
-            device,
-            exposure,
-            threshold,
-            backend,
-            server,
-            check_movement
+            device, exposure, threshold, backend, server, check_movement
         )
 
         self.file_writer = FileWriterProcess(self.output_dir)
@@ -99,7 +94,7 @@ class Scanner:
                     logger.error("scan failed")
                     return False
 
-                if control == DetectionControlEnum.DETECT:
+                if control in [DetectionControlEnum.DETECT, DetectionControlEnum.SKIP]:
                     progress_bar.update(1)
                     progress_bar.refresh()
 

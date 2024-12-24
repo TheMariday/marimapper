@@ -162,6 +162,7 @@ def test_invalid_backend():
     with pytest.raises(RuntimeError):
         get_backend("invalid_backend")
 
+
 def test_dummy_backend():
 
     dummy = get_backend("dummy")

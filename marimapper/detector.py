@@ -23,13 +23,21 @@ def find_led_in_image(image: np.ndarray, threshold: int = 128) -> Optional[Point
 
     led_response_count = len(contours)
 
+    img_height = image.shape[0]
+    img_width = image.shape[1]
+
     if led_response_count == 0:
         return None
 
-    moments = cv2.moments(image_thresh)
+    _, _, _, max_loc = cv2.minMaxLoc(image)
 
-    img_height = image.shape[0]
-    img_width = image.shape[1]
+    brightest_contour = [
+        contour
+        for contour in contours
+        if cv2.pointPolygonTest(contour, max_loc, False) != -1.0
+    ][0]
+
+    moments = cv2.moments(brightest_contour)
 
     center_u = moments["m10"] / max(moments["m00"], 0.00001)
     center_v = moments["m01"] / max(moments["m00"], 0.00001)
@@ -38,7 +46,7 @@ def find_led_in_image(image: np.ndarray, threshold: int = 128) -> Optional[Point
     v_offset = (img_width - img_height) / 2.0
     center_v = (center_v + v_offset) / img_width
 
-    logger.debug(f"found led at {center_u} {center_v}")
+    # logger.debug(f"found led at {center_u} {center_v}")
 
     return Point2D(center_u, center_v, contours)  # todo, normalise contours
 

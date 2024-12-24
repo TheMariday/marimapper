@@ -97,7 +97,7 @@ class SFM(Process):
     def run(self):
 
         update_required = len(self.leds_2d) > 0
-        check_required = False
+        check_required = True
         view_id = 0
 
         while not self._exit_event.is_set():

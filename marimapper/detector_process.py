@@ -104,37 +104,43 @@ class DetectorProcess(Process):
 
                     if led is not None:
                         self.put_in_all_output_queues(DetectionControlEnum.DETECT, led)
+                        leds.append(led)
                     else:
                         self.put_in_all_output_queues(DetectionControlEnum.SKIP, led_id)
-                        leds.append(led)
 
-                movement = False
-                if self._check_movement:
-                    led_previous = leds[0]
+                if leds:
 
-                    led_current = enable_and_find_led(
-                        cam,
-                        led_backend,
-                        led_previous.led_id,
-                        view_id,
-                        timeout_controller,
-                        self._threshold,
-                        self._display,
-                    )
-                    if led_current is not None:
-                        distance = get_distance(led_current, led_previous)
-                        if distance > 0.01:  # 1% movement
-                            movement = True
-                    else:
-                        logger.error(
-                            f"went back to check led {led_previous.led_id} for movement, and led could no longer be found"
+                    movement = False
+                    if self._check_movement:
+                        led_previous = leds[0]
+
+                        led_current = enable_and_find_led(
+                            cam,
+                            led_backend,
+                            led_previous.led_id,
+                            view_id,
+                            timeout_controller,
+                            self._threshold,
+                            self._display,
                         )
-                        movement = True
+                        if led_current is not None:
+                            distance = get_distance(led_current, led_previous)
+                            if distance > 0.01:  # 1% movement
+                                movement = True
+                        else:
+                            logger.error(
+                                f"went back to check led {led_previous.led_id} for movement, and led could no longer be found"
+                            )
+                            movement = True
 
-                if not movement:
-                    self.put_in_all_output_queues(DetectionControlEnum.DONE, view_id)
-                else:
-                    self.put_in_all_output_queues(DetectionControlEnum.DELETE, view_id)
+                    if movement:
+                        self.put_in_all_output_queues(
+                            DetectionControlEnum.DELETE, view_id
+                        )
+                    else:
+                        self.put_in_all_output_queues(
+                            DetectionControlEnum.DONE, view_id
+                        )
 
                 # and lets reset everything back to normal
                 set_cam_default(cam)

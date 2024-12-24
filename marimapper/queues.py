@@ -28,7 +28,7 @@ class RequestDetectionsQueue(BaseQueue):
         self._queue.put((led_id_from, led_id_to, view_id))
 
     def get_id_from_id_to_view(self, timeout=None) -> tuple[int, int, int]:
-        return self._queue.get(timeout)
+        return self._queue.get(timeout=timeout)
 
 
 class Queue2D(BaseQueue):
@@ -37,7 +37,7 @@ class Queue2D(BaseQueue):
         self._queue.put((control, data))
 
     def get(self, timeout=None) -> tuple[DetectionControlEnum, Any]:
-        return self._queue.get(timeout)
+        return self._queue.get(timeout=timeout)
 
 
 class Queue3D(BaseQueue):
@@ -46,4 +46,4 @@ class Queue3D(BaseQueue):
         self._queue.put(leds)
 
     def get(self, timeout=None) -> list[LED3D]:
-        return self._queue.get(timeout)
+        return self._queue.get(timeout=timeout)

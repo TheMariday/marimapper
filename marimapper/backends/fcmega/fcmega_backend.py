@@ -24,4 +24,4 @@ class Backend:
 
     def set_led(self, led_index: int, on: bool):
 
-        self.leds[led_index] = (100, 100, 100) if on else (0, 0, 0)
+        self.leds[led_index] = (255, 255, 255) if on else (0, 0, 0)

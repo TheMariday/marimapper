@@ -7,7 +7,7 @@ from marimapper.utils import add_camera_args, add_backend_args
 from pathlib import Path
 
 logger = multiprocessing.log_to_stderr()
-logger.setLevel(level=logging.ERROR)
+logger.setLevel(level=logging.WARNING)
 
 
 def main():
@@ -73,7 +73,7 @@ def main():
         args.start,
         args.end,
         args.max_fill,
-        args.disable_movement_check
+        args.disable_movement_check,
     )
 
     scanner.mainloop()
