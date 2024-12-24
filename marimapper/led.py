@@ -16,7 +16,7 @@ class View:
 
 
 class Point2D:
-    def __init__(self, u, v, contours=()):
+    def __init__(self, u: float, v: float, contours=()):
         self.position: np.ndarray = np.array([u, v])
         self.contours = contours
 
@@ -86,7 +86,7 @@ class LED3D:
 
 # returns none if there isn't that led in the list!
 def get_led(
-    leds: list[Union[Union[LED2D, LED3D]]], led_id: int
+    leds: list[Union[LED2D, LED3D]], led_id: int
 ) -> typing.Optional[Union[LED2D, LED3D]]:
     for led in leds:
         if led.led_id == led_id:
@@ -266,3 +266,16 @@ def remove_duplicates(leds: list[LED3D]) -> list[LED3D]:
 
 def get_leds_with_views(leds: list[LED2D], view_ids) -> list[LED2D]:
     return [led for led in leds if led.view_id in view_ids]
+
+
+def get_overlap_and_percentage(leds_2d, leds_3d, view) -> tuple[int, int]:
+
+    if len(leds_2d) == 0 or len(leds_3d) == 0:
+        return 0, 0
+
+    leds_3d_ids = set([led.led_id for led in leds_3d])
+    view_ids = [led.led_id for led in get_leds_with_view(leds_2d, view)]
+    overlap_len = len(leds_3d_ids.intersection(view_ids))
+    overlap_percentage = int((overlap_len / len(view_ids)) * 100)
+
+    return overlap_len, overlap_percentage

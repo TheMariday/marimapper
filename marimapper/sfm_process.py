@@ -4,7 +4,7 @@ from marimapper.led import (
     recenter,
     LED3D,
     fill_gaps,
-    get_leds_with_view,
+    get_overlap_and_percentage,
     LED2D,
 )
 from marimapper.sfm import sfm
@@ -45,32 +45,6 @@ def add_normals(leds: list[LED3D]):
 
             if angle > math.pi / 2.0:
                 led.point.normal *= -1
-
-
-def sanity_check(leds_2d, leds_3d, view) -> None:
-
-    if len(leds_2d) == 0 or len(leds_3d) == 0:
-        return
-
-    leds_3d_ids = set([led.led_id for led in leds_3d])
-    view_ids = [led.led_id for led in get_leds_with_view(leds_2d, view)]
-    overlap_len = len(leds_3d_ids.intersection(view_ids))
-    overlap_percentage = int((overlap_len / len(view_ids)) * 100)
-
-    logger.debug(f"scan {view} has overlap of {overlap_len} or {overlap_percentage}%")
-
-    if overlap_len < 10:
-        logger.error(
-            f"Scan {view} has a very low overlap with the reconstructed model "
-            f"(only {overlap_len} points) and therefore may be disregarded when reconstructing"
-            "unless scans are added between this and the prior scan"
-        )
-    if overlap_percentage < 0.5:
-        logger.warning(
-            f"Scan {view} has a low overlap with the reconstructed model "
-            f"(only {overlap_percentage}%) and therefore may be disregarded when reconstructing"
-            "unless scans are added between this and the prior scan"
-        )
 
 
 class SFM(Process):
@@ -130,7 +104,27 @@ class SFM(Process):
 
                 if check_required:
                     check_required = False
-                    sanity_check(self.leds_2d, leds_3d, view_id)
+
+                    overlap, overlap_percentage = get_overlap_and_percentage(
+                        self.leds_2d, leds_3d, view_id
+                    )
+
+                    logger.debug(
+                        f"scan {view_id} has overlap of {overlap} or {overlap_percentage}%"
+                    )
+
+                    if overlap < 10:
+                        logger.error(
+                            f"Scan {view_id} has a very low overlap with the reconstructed model "
+                            f"(only {overlap} points) and therefore may be disregarded when reconstructing"
+                            "unless scans are added between this and the prior scan"
+                        )
+                    if overlap_percentage < 0.5:
+                        logger.warning(
+                            f"Scan {view_id} has a low overlap with the reconstructed model "
+                            f"(only {overlap_percentage}%) and therefore may be disregarded when reconstructing"
+                            "unless scans are added between this and the prior scan"
+                        )
 
                 rescale(leds_3d)
 

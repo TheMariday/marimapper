@@ -88,6 +88,7 @@ class DetectorProcess(Process):
                         "Detector process can detect an LED when no LEDs should be visible"
                     )
                     self.put_in_all_output_queues(DetectionControlEnum.FAIL, None)
+                    set_cam_default(cam)
                     continue
 
                 leds = []

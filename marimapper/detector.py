@@ -42,11 +42,14 @@ def find_led_in_image(image: np.ndarray, threshold: int = 128) -> Optional[Point
     center_u = moments["m10"] / max(moments["m00"], 0.00001)
     center_v = moments["m01"] / max(moments["m00"], 0.00001)
 
+    # I am not sure why this is the case but sometimes is
+    # Am I going to find out why, no, no I am not
+    if center_u == 0 or center_v == 0:
+        return None
+
     center_u = center_u / img_width
     v_offset = (img_width - img_height) / 2.0
     center_v = (center_v + v_offset) / img_width
-
-    # logger.debug(f"found led at {center_u} {center_v}")
 
     return Point2D(center_u, center_v, contours)  # todo, normalise contours
 
