@@ -11,7 +11,8 @@ def main():
     )
     parser.add_argument("--server", type=str, help="pixelblaze server ip")
     parser.add_argument(
-        "--csv_file", type=str,
+        "--csv_file",
+        type=str,
         help="The led_map_3d.csv map file to upload",
         default="led_map_3d.csv",
     )
