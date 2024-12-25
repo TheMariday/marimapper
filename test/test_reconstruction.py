@@ -2,7 +2,7 @@ import numpy as np
 
 from marimapper.sfm import sfm
 from marimapper.file_tools import get_all_2d_led_maps
-from marimapper.led import get_led, get_leds_with_views
+from marimapper.led import get_led, get_leds_with_views, filter_reconstructed
 from utils import get_test_dir
 
 
@@ -43,11 +43,12 @@ def test_reconstruction():
     maps = get_all_2d_led_maps(get_test_dir("scan"))
 
     map_3d = sfm(maps)
+    map_3d_filtered = filter_reconstructed(map_3d)
 
-    assert len(map_3d) == 21
+    assert len(map_3d_filtered) == 21
 
     check_dimensions(
-        map_3d, max_error=0.01  # needs to have a max deviation of less than 1%
+        map_3d_filtered, max_error=0.01  # needs to have a max deviation of less than 1%
     )
 
 
@@ -56,7 +57,7 @@ def test_sparse_reconstruction():
 
     maps_sparse = get_leds_with_views(maps, [1, 3, 5, 7])
 
-    map_3d = sfm(maps_sparse)
+    map_3d = filter_reconstructed(sfm(maps_sparse))
 
     assert len(map_3d) == 21
 
@@ -69,7 +70,7 @@ def test_2_track_reconstruction():
     leds = get_all_2d_led_maps(get_test_dir("scan"))
     leds_2_track = get_leds_with_views(leds, [1, 2])
 
-    map_3d = sfm(leds_2_track)
+    map_3d = filter_reconstructed(sfm(leds_2_track))
 
     assert len(map_3d) == 15
 
@@ -79,6 +80,6 @@ def test_invalid_reconstruction_views():
 
     leds_invalid = get_leds_with_views(leds, [0, 4, 8])
 
-    map_3d = sfm(leds_invalid)
+    map_3d = filter_reconstructed(sfm(leds_invalid))
 
     assert map_3d == []

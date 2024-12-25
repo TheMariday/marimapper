@@ -3,11 +3,11 @@ from marimapper.led import (
     remove_duplicates,
     fill_gaps,
     get_led,
-    LEDState,
     get_next,
     LED2D,
     last_view,
     Point2D,
+    Colors,
 )
 
 
@@ -48,17 +48,17 @@ def test_get_color():
 
     led = LED3D(0)
 
-    assert led.get_color() == (0, 255, 0)
+    assert led.get_color() == Colors.BLUE
 
     interpolated_led = LED3D(0)
-    interpolated_led.add_state(LEDState.INTERPOLATED)
+    interpolated_led.interpolated = True
 
-    assert interpolated_led.get_color() == (255, 0, 0)
+    assert interpolated_led.get_color() == Colors.AQUA
 
     merged_led = LED3D(0)
-    merged_led.add_state(LEDState.MERGED)
+    merged_led.merged = True
 
-    assert merged_led.get_color() == (255, 0, 255)
+    assert merged_led.get_color() == Colors.AQUA
 
 
 def test_get_led():

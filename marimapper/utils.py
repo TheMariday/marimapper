@@ -177,3 +177,12 @@ class SupressLogging(object):
 
         self.outnull_file.close()
         self.errnull_file.close()
+
+
+def backend_black(backend):
+    buffer = [[0, 0, 0] for _ in range(backend.get_led_count())]
+    try:
+        backend.set_leds(buffer)
+        return True
+    except AttributeError:
+        return False

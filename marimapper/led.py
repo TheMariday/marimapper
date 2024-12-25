@@ -2,7 +2,7 @@ import numpy as np
 import typing
 import math
 from typing import Union
-
+from enum import Enum
 from multiprocessing import get_logger
 
 logger = get_logger()
@@ -59,9 +59,26 @@ class Point3D:
         return new
 
 
-class LEDState:
-    INTERPOLATED: int = 0
-    MERGED: int = 1
+class LEDInfo(Enum):
+    NONE: int = 0
+
+    RECONSTRUCTED: int = 1
+    INTERPOLATED: int = 2
+    MERGED: int = 3
+
+    DETECTED: int = 4
+    UNRECONSTRUCTABLE: int = 5
+
+
+class Colors:
+    RED = [255, 0, 0]
+    GREEN = [0, 255, 0]
+    BLUE = [0, 0, 255]
+    ORANGE = [255, 165, 0]
+    AQUA = [0, 255, 255]
+    YELLOW = [255, 255, 0]
+    PINK = [255, 0, 255]
+    BLACK = [0, 0, 0]
 
 
 class LED3D:
@@ -70,21 +87,46 @@ class LED3D:
         self.led_id = led_id
         self.point = Point3D()
         self.views: list[View] = []
-        self.state = []
+        self.detections: list[LED2D] = []
+        self.merged = False
+        self.interpolated = False
 
-    def add_state(self, state: int):
-        self.state.append(state)
+    def has_position(self) -> bool:
+        return bool(self.point.position.any())
 
-    def has_state(self, state: int) -> bool:
-        return state in self.state
+    def get_info(self) -> LEDInfo:
+
+        if self.interpolated:
+            return LEDInfo.INTERPOLATED
+
+        if self.merged:
+            return LEDInfo.MERGED
+
+        if self.has_position():
+            return LEDInfo.RECONSTRUCTED
+
+        if len(self.detections) >= 2:
+            return LEDInfo.UNRECONSTRUCTABLE
+
+        if len(self.detections) == 1:
+            return LEDInfo.DETECTED
+
+        return LEDInfo.NONE
 
     def get_color(self):
-        if self.has_state(LEDState.INTERPOLATED):
-            return 255, 0, 0
-        if self.has_state(LEDState.MERGED):
-            return 255, 0, 255
 
-        return 0, 255, 0
+        info = self.get_info()
+
+        if info == LEDInfo.RECONSTRUCTED:
+            return Colors.GREEN
+        if info in [LEDInfo.INTERPOLATED, LEDInfo.MERGED]:
+            return Colors.AQUA
+        if info == LEDInfo.DETECTED:
+            return Colors.ORANGE
+        if info == LEDInfo.UNRECONSTRUCTABLE:
+            return Colors.RED
+
+        return Colors.BLUE
 
 
 # returns none if there isn't that led in the list!
@@ -194,7 +236,7 @@ def fill_gap(start_led: LED3D, end_led: LED3D):
 
         new_led.views = start_led.views + end_led.views
 
-        new_led.add_state(LEDState.INTERPOLATED)
+        new_led.interpolated = True
         new_leds.append(new_led)
 
     return new_leds
@@ -246,8 +288,7 @@ def merge(leds: list[LED3D]) -> LED3D:
     new_led.point.position = np.average([led.point.position for led in leds], axis=0)
     new_led.point.normal = np.average([led.point.normal for led in leds], axis=0)
     new_led.point.error = sum([led.point.error for led in leds])
-    new_led.add_state(LEDState.MERGED)
-
+    new_led.merged = True
     return new_led
 
 
@@ -284,3 +325,11 @@ def get_overlap_and_percentage(leds_2d, leds_3d, view) -> tuple[int, int]:
     overlap_percentage = int((overlap_len / len(view_ids)) * 100)
 
     return overlap_len, overlap_percentage
+
+
+def get_max_led_id(leds3d: list[LED3D]):
+    return max([led.led_id for led in leds3d])
+
+
+def filter_reconstructed(leds3d: list[LED3D]) -> list[LED3D]:
+    return [led for led in leds3d if led.has_position()]
