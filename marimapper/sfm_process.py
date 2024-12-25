@@ -71,7 +71,7 @@ class SFM(Process):
     def run(self):
 
         update_required = len(self.leds_2d) > 0
-        check_required = True
+        check_required = False
         view_id = 0
 
         while not self._exit_event.is_set():
@@ -101,6 +101,7 @@ class SFM(Process):
 
                 if len(leds_3d) == 0:
                     logger.info("Failed to reconstruct any leds")
+                    check_required = False
                     continue
 
                 if check_required:
