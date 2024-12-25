@@ -116,8 +116,6 @@ into the PixelBlaze editor and upload it as a new pattern.
 
 `--backend PixelBlaze --server 192.168.4.1` to enable this backend, adjusting the server IP where needed
 
-It might also need a port like `:8000`, not sure... Someone help me out here!
-
 Once you've completed your 3D map, upload it to pixelblaze using
 `marimapper_upload_to_pixelblaze --help`
 
