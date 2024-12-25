@@ -242,7 +242,12 @@ def fill_gap(start_led: LED3D, end_led: LED3D):
     return new_leds
 
 
-def fill_gaps(leds: list[LED3D], max_distance: float = 1.1, max_missing=5):
+def fill_gaps(
+    leds: list[LED3D],
+    max_distance: float = 1.1,
+    min_distance: float = 0.5,
+    max_missing=5,
+):
 
     new_leds = []
 
@@ -261,7 +266,7 @@ def fill_gaps(leds: list[LED3D], max_distance: float = 1.1, max_missing=5):
 
             distance_per_led = distance / (gap + 1)
 
-            if (distance_per_led < max_distance) and gap <= max_missing:
+            if (min_distance < distance_per_led < max_distance) and gap <= max_missing:
                 new_leds += fill_gap(led, next_led)
 
     new_led_count = len(new_leds)

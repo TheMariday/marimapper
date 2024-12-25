@@ -14,7 +14,7 @@ logger = get_logger()
 def add_detections_to_leds3d(leds_2d: list[LED2D], leds_3d: list[LED3D]):
 
     for led_2d in leds_2d:
-        if led_2d.view_id not in [o.led_id for o in leds_3d]:
+        if led_2d.led_id not in [o.led_id for o in leds_3d]:
             leds_3d.append(LED3D(led_2d.led_id))
 
         for led3d in get_leds(leds_3d, led_2d.led_id):
@@ -64,8 +64,5 @@ def sfm(leds_2d: list[LED2D]) -> list[LED3D]:
 
         leds_3d = binary_to_led_map_3d(Path(temp_dir))
         logger.debug(f"sfm managed to reconstruct {len(leds_3d)} leds")
-
-        # here we need to populate any missing leds with detections
-        add_detections_to_leds3d(leds_2d, leds_3d)
 
         return leds_3d

@@ -21,7 +21,7 @@ logger = get_logger()
 
 
 def render_led_info(leds3d: list[LED3D], led_backend):
-    buffer = [[0, 0, 0] for _ in get_max_led_id(leds3d)]
+    buffer = [[0, 0, 0] for _ in range(get_max_led_id(leds3d) + 1)]
     for led3d in leds3d:
         buffer[led3d.led_id] = led3d.get_color()
 
@@ -179,8 +179,12 @@ class DetectorProcess(Process):
                     image = cam.read()
                     show_image(image)
 
-                if not self._input_3d_queue.empty():
-                    success = render_led_info(self._input_3d_queue.get(), led_backend)
+                l = None
+                while not self._input_3d_queue.empty():
+                    l = self._input_3d_queue.get()
+
+                if l is not None:
+                    success = render_led_info(l, led_backend)
                     if not success:
                         logger.debug(
                             "failed to update colourful backend buffer due to a missing attribute"

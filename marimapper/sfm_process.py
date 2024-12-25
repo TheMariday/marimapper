@@ -7,7 +7,7 @@ from marimapper.led import (
     get_overlap_and_percentage,
     LED2D,
 )
-from marimapper.sfm import sfm
+from marimapper.sfm import sfm, add_detections_to_leds3d
 from marimapper.queues import Queue2D, Queue3D, DetectionControlEnum
 import open3d
 import numpy as np
@@ -72,6 +72,7 @@ class SFM(Process):
 
         update_required = len(self.leds_2d) > 0
         check_required = True
+        temp = True
         view_id = 0
 
         while not self._exit_event.is_set():
@@ -87,6 +88,7 @@ class SFM(Process):
                     view_id = data
                     update_required = True
                     check_required = True
+                    temp = True
 
                 if control == DetectionControlEnum.DELETE:
                     view_id = data
@@ -134,6 +136,10 @@ class SFM(Process):
                 recenter(leds_3d)
 
                 add_normals(leds_3d)
+
+                if temp:
+                    add_detections_to_leds3d(self.leds_2d, leds_3d)
+                    temp = False
 
                 for queue in self._output_queues:
                     queue.put(leds_3d)
