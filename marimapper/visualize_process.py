@@ -124,7 +124,7 @@ class VisualiseProcess(Process):
         strips = []
         for led_index, led in enumerate(leds):
             next_led = get_next(led, leds)
-            if next_led is not None:
+            if next_led is not None and (next_led.led_id - led.led_id == 1):
                 if get_distance(led, next_led) < 1.50:  # + 50%
                     strips.append((led_index, leds.index(next_led)))
 
