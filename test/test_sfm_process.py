@@ -7,7 +7,7 @@ import time
 
 def test_sfm_process_basic():
 
-    leds = get_all_2d_led_maps(get_test_dir("MariMapper-Test-Data/can"))
+    leds = get_all_2d_led_maps(get_test_dir("MariMapper-Test-Data/9_point_box"))
 
     sfm = SFM(existing_leds=leds)
 
@@ -18,7 +18,7 @@ def test_sfm_process_basic():
 
     map_3d = output_queue.get(timeout=5)
 
-    assert len(map_3d) == 50
+    assert len(map_3d) == 21
 
     sfm.stop()
     timeout = time.time() + 5
@@ -29,7 +29,7 @@ def test_sfm_process_basic():
 
 def test_sfm_process_exit():
 
-    leds = get_all_2d_led_maps(get_test_dir("MariMapper-Test-Data/can"))
+    leds = get_all_2d_led_maps(get_test_dir("MariMapper-Test-Data/9_point_box"))
 
     sfm = SFM(existing_leds=leds)
 
