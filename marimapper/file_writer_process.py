@@ -16,6 +16,7 @@ class FileWriterProcess(Process):
         self._exit_event = Event()
         self._base_path = base_path
         os.makedirs(self._base_path, exist_ok=True)
+        self.daemon = True
 
     def stop(self):
         self._exit_event.set()

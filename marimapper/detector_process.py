@@ -41,6 +41,7 @@ class DetectorProcess(Process):
         self._led_backend_server = led_backend_server
         self._display = display
         self._check_movement = check_movement
+        self.daemon = True
 
     def get_request_detections_queue(self) -> RequestDetectionsQueue:
         return self._request_detections_queue
