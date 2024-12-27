@@ -56,7 +56,9 @@ def sfm(leds_2d: list[LED2D]) -> list[LED3D]:
 
             new_map = binary_to_led_map_3d(Path(temp_dir))
 
-            logger.debug(f"sfm managed to reconstruct {len(new_map)} leds in map {map_id}")
+            logger.debug(
+                f"sfm managed to reconstruct {len(new_map)} leds in map {map_id}"
+            )
 
             leds_3d = new_map if len(new_map) > len(leds_3d) else leds_3d
 

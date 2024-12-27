@@ -72,6 +72,10 @@ class DetectorProcess(Process):
 
         timeout_controller = TimeoutController()
 
+        # we quickly switch to dark mode here to throw any exceptions about the camera early
+        set_cam_dark(cam, self._dark_exposure)
+        set_cam_default(cam)
+
         while not self._exit_event.is_set():
 
             if not self._request_detections_queue.empty():

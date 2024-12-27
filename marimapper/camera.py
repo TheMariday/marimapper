@@ -86,7 +86,7 @@ class Camera:
         logger.debug(f"Setting exposure to {exposure}")
 
         if not self.device.set(cv2.CAP_PROP_EXPOSURE, exposure):
-            logger.warning(f"Failed to set exposure to {exposure}")
+            logger.info(f"Failed to set exposure to {exposure}")
 
     def eat(self, count=30):
         for _ in range(count):
