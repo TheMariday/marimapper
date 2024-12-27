@@ -81,12 +81,15 @@ class Camera:
         if not self.device.set(cv2.CAP_PROP_GAIN, gain):
             logger.info(f"failed to set camera gain to {gain}")
 
-    def set_exposure(self, exposure):
+    def set_exposure(self, exposure: int) -> bool:
 
         logger.debug(f"Setting exposure to {exposure}")
 
         if not self.device.set(cv2.CAP_PROP_EXPOSURE, exposure):
             logger.info(f"Failed to set exposure to {exposure}")
+            return False
+
+        return True
 
     def eat(self, count=30):
         for _ in range(count):
