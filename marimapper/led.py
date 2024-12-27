@@ -97,8 +97,8 @@ def get_color(info):
 
 class LED3D:
 
-    def __init__(self, led_id):
-        self.led_id = led_id
+    def __init__(self, led_id:int):
+        self.led_id: int = led_id
         self.point = Point3D()
         self.views: list[View] = []
         self.detections: list[LED2D] = []

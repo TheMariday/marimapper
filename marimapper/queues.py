@@ -1,4 +1,4 @@
-from marimapper.led import LED2D, LED3D
+from marimapper.led import LED2D, LED3D, LEDInfo
 from multiprocessing import Queue
 from typing import Union, Any
 from enum import Enum
@@ -50,8 +50,8 @@ class Queue3D(BaseQueue):
 
 class Queue3DInfo(BaseQueue):
 
-    def put(self, led_states: dict[int, int]) -> None:
+    def put(self, led_states: dict[int, LEDInfo]) -> None:
         self._queue.put(led_states)
 
-    def get(self, timeout=None) -> dict[int, int]:
+    def get(self, timeout=None) -> dict[int, LEDInfo]:
         return self._queue.get(timeout=timeout)

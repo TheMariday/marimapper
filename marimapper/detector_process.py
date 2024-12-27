@@ -16,6 +16,7 @@ from marimapper.queues import (
     Queue3DInfo
 )
 from marimapper.utils import get_backend, backend_black
+import time
 
 logger = get_logger()
 
@@ -191,3 +192,4 @@ class DetectorProcess(Process):
         logger.info("detector closing, resetting camera and backend")
         set_cam_default(cam)
         backend_black(led_backend)
+        time.sleep(1) # wait a moment for the backend to update before closing
