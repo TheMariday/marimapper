@@ -6,7 +6,7 @@ from marimapper.led import (
     fill_gaps,
     get_overlap_and_percentage,
     LED2D,
-    combine_2d_3d
+    combine_2d_3d,
 )
 from marimapper.sfm import sfm
 
@@ -107,7 +107,7 @@ class SFM(Process):
 
                 leds_3d = sfm(self.leds_2d)
 
-                if len(leds_3d) > 0 :
+                if len(leds_3d) > 0:
 
                     if check_required:
                         check_required = False
@@ -150,7 +150,6 @@ class SFM(Process):
 
                     for queue in self._output_info_queues:
                         queue.put(led_info)
-
 
                 for queue in self._output_queues:
                     queue.put(leds_3d)

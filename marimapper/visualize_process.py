@@ -82,9 +82,7 @@ class VisualiseProcess(Process):
 
         render_options = self._vis.get_render_option()
         render_options.point_show_normal = True
-        render_options.point_color_option = (
-            open3d.visualization.PointColorOption.Color
-        )
+        render_options.point_color_option = open3d.visualization.PointColorOption.Color
         render_options.background_color = [0.2, 0.2, 0.2]
 
         logger.debug("Renderer3D process initialised visualiser")

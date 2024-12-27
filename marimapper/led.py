@@ -81,6 +81,7 @@ class Colors:
     PINK = [255, 0, 255]
     BLACK = [0, 0, 0]
 
+
 def get_color(info):
 
     if info == LEDInfo.RECONSTRUCTED:
@@ -97,7 +98,7 @@ def get_color(info):
 
 class LED3D:
 
-    def __init__(self, led_id:int):
+    def __init__(self, led_id: int):
         self.led_id: int = led_id
         self.point = Point3D()
         self.views: list[View] = []
@@ -248,8 +249,8 @@ def fill_gap(start_led: LED3D, end_led: LED3D):
 
 def fill_gaps(
     leds: list[LED3D],
-    max_distance: float = 1.1,
-    min_distance: float = 0.5,
+    min_distance: float = 0.8,
+    max_distance: float = 1.2,
     max_missing=5,
 ):
 
@@ -342,6 +343,7 @@ def get_max_led_id(leds3d: list[LED3D]):
 
 def filter_reconstructed(leds3d: list[LED3D]) -> list[LED3D]:
     return [led for led in leds3d if led.has_position()]
+
 
 def combine_2d_3d(leds_2d: list[LED2D], leds_3d: list[LED3D]) -> list[LED3D]:
 

@@ -3,7 +3,7 @@ from tempfile import TemporaryDirectory
 import pycolmap
 
 from marimapper.database_populator import populate_database
-from marimapper.led import LED3D, LED2D, get_view_ids, get_leds
+from marimapper.led import LED3D, LED2D, get_view_ids
 from marimapper.model import binary_to_led_map_3d
 from marimapper.utils import SupressLogging
 from multiprocessing import get_logger
