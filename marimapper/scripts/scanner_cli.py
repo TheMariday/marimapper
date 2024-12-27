@@ -7,7 +7,7 @@ from marimapper.utils import add_camera_args, add_backend_args
 from pathlib import Path
 
 logger = multiprocessing.log_to_stderr()
-logger.setLevel(level=logging.ERROR)
+logger.setLevel(level=logging.WARNING)
 
 
 def main():
@@ -36,6 +36,12 @@ def main():
         type=int,
         default=5,
         help="The max number of consecutive LEDs that can be estimated based on adjacent LEDs",
+    )
+
+    parser.add_argument(
+        "--disable_movement_check",
+        action="store_false",
+        help="Disables checking of movement when a scan completes",
     )
 
     args = parser.parse_args()
@@ -67,6 +73,7 @@ def main():
         args.start,
         args.end,
         args.max_fill,
+        args.disable_movement_check,
     )
 
     scanner.mainloop()

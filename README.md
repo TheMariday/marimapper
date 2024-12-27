@@ -36,7 +36,7 @@ If you have Python 3.12 installed, install 3.11 and add `--python /path/to/pytho
 
 [PIPx not working](https://github.com/TheMariday/marimapper/issues/42)? You can also download this repo and run `pip install .` from inside it!
 
-You can run the scripts anywhere by just typing them into a console, on windows append `.exe` to the script name.
+You can run the scripts anywhere by just typing them into a console
 
 ## Step 1: Test your camera
 
@@ -116,8 +116,6 @@ into the PixelBlaze editor and upload it as a new pattern.
 
 `--backend PixelBlaze --server 192.168.4.1` to enable this backend, adjusting the server IP where needed
 
-It might also need a port like `:8000`, not sure... Someone help me out here!
-
 Once you've completed your 3D map, upload it to pixelblaze using
 `marimapper_upload_to_pixelblaze --help`
 
@@ -188,6 +186,16 @@ Here is an example reconstruction of a test tube of LEDs I have
 - Use the `+` / `-` keys to increase / decrease point sizes
 - Use `1`, `2` & `3` keys to change colour scheme
 </details>
+
+# Not working?
+
+Make sure you've read this readme all the way through and do give those error messages a good read too.
+
+They should be able to tell you at least roughly what area is going wrong.
+
+If you want a lot more reading material, run `marimapper` with `-v` to put it into verbose mode.
+This will tell you pretty much everything marimapper is doing under the hood.
+Also good if you're just curious as to why *x* is taking so long!
 
 # Feedback
 

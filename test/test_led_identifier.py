@@ -12,8 +12,8 @@ def test_basic_image_loading():
     )
 
     detection = find_led_in_image(mock_camera.read())
-    assert detection.u() == pytest.approx(0.4029418361244019)
-    assert detection.v() == pytest.approx(0.4029538809144072)
+    assert detection.u() == pytest.approx(0.40294844632768356)
+    assert detection.v() == pytest.approx(0.40294844632768356)
 
 
 def test_none_found():

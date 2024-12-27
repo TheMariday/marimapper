@@ -1,10 +1,19 @@
-from multiprocessing import Process, Event, Queue, get_logger
-from marimapper.led import LED2D, rescale, recenter, LED3D, fill_gaps
+from multiprocessing import Process, Event, get_logger
+from marimapper.led import (
+    rescale,
+    recenter,
+    LED3D,
+    fill_gaps,
+    get_overlap_and_percentage,
+    LED2D,
+)
 from marimapper.sfm import sfm
+from marimapper.queues import Queue2D, Queue3D, DetectionControlEnum
 import open3d
 import numpy as np
 import math
 import time
+from typing import Union
 
 logger = get_logger()
 
@@ -40,21 +49,21 @@ def add_normals(leds: list[LED3D]):
 
 class SFM(Process):
 
-    def __init__(self, max_fill=5):
+    def __init__(
+        self, max_fill: int = 5, existing_leds: Union[list[LED2D], None] = None
+    ):
         super().__init__()
-        self._input_queue = Queue()
-        self._input_queue.cancel_join_thread()
-        self._output_queues: list[Queue] = []
+        self._input_queue: Queue2D = Queue2D()
+        self._output_queues: list[Queue3D] = []
         self._exit_event = Event()
         self.max_fill = max_fill
+        self.leds_2d = existing_leds if existing_leds is not None else []
+        self.daemon = True
 
-    def get_input_queue(self) -> Queue:
+    def get_input_queue(self) -> Queue2D:
         return self._input_queue
 
-    def add_detection(self, led: LED2D):
-        self._input_queue.put(led)
-
-    def add_output_queue(self, queue: Queue):
+    def add_output_queue(self, queue: Queue3D):
         self._output_queues.append(queue)
 
     def stop(self):
@@ -62,26 +71,64 @@ class SFM(Process):
 
     def run(self):
 
-        update_required = False
-
-        leds_2d = []
+        update_required = len(self.leds_2d) > 0
+        check_required = False
+        view_id = 0
 
         while not self._exit_event.is_set():
 
             while not self._input_queue.empty():
-                led: LED2D = self._input_queue.get()
-                if led.point is not None:
-                    leds_2d.append(led)
+                control, data = self._input_queue.get()
+                if control == DetectionControlEnum.DETECT:
+                    led2d = data
+                    self.leds_2d.append(led2d)
+                    update_required = True
+
+                if control == DetectionControlEnum.DONE:
+                    view_id = data
+                    update_required = True
+                    check_required = True
+
+                if control == DetectionControlEnum.DELETE:
+                    view_id = data
+                    self.leds_2d = [
+                        led for led in self.leds_2d if led.view_id != view_id
+                    ]
                     update_required = True
 
             if update_required:
                 update_required = False
 
-                leds_3d = sfm(leds_2d)
+                leds_3d = sfm(self.leds_2d)
 
                 if len(leds_3d) == 0:
                     logger.info("Failed to reconstruct any leds")
+                    check_required = False
                     continue
+
+                if check_required:
+                    check_required = False
+
+                    overlap, overlap_percentage = get_overlap_and_percentage(
+                        self.leds_2d, leds_3d, view_id
+                    )
+
+                    logger.debug(
+                        f"scan {view_id} has overlap of {overlap} or {overlap_percentage}%"
+                    )
+
+                    if overlap < 10:
+                        logger.error(
+                            f"Scan {view_id} has a very low overlap with the reconstructed model "
+                            f"(only {overlap} points) and therefore may be disregarded when reconstructing "
+                            "unless scans are added between this and the prior scan"
+                        )
+                    if overlap_percentage < 50:
+                        logger.warning(
+                            f"Scan {view_id} has a low overlap with the reconstructed model "
+                            f"(only {overlap_percentage}%) and therefore may be disregarded when reconstructing "
+                            "unless scans are added between this and the prior scan"
+                        )
 
                 rescale(leds_3d)
 
@@ -96,10 +143,3 @@ class SFM(Process):
 
             else:
                 time.sleep(1)
-
-        # clear the queues, don't ask why.
-        while not self._input_queue.empty():
-            self._input_queue.get()
-        for queue in self._output_queues:
-            while not queue.empty():
-                queue.get()

@@ -4,12 +4,12 @@ import typing
 from pathlib import Path
 
 
-def load_detections(filename: os.path, view_id) -> typing.Optional[list[LED2D]]:
+def load_detections(filename: Path, view_id) -> typing.Optional[list[LED2D]]:
 
     if not os.path.exists(filename):
         return None
 
-    if not filename.endswith(".csv"):
+    if not filename.suffix == ".csv":
         return None
 
     with open(filename, "r") as f:
@@ -38,11 +38,11 @@ def load_detections(filename: os.path, view_id) -> typing.Optional[list[LED2D]]:
     return leds
 
 
-def get_all_2d_led_maps(directory: os.path) -> list[LED2D]:
+def get_all_2d_led_maps(directory: Path) -> list[LED2D]:
     points = []
 
     for view_id, filename in enumerate(sorted(os.listdir(directory))):
-        full_path = os.path.join(directory, filename)
+        full_path = Path(directory, filename)
 
         detections = load_detections(full_path, view_id)  # this is wrong
 

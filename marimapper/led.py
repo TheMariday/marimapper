@@ -16,10 +16,9 @@ class View:
 
 
 class Point2D:
-    def __init__(self, u, v, contours=(), brightness=1.0):
-        self.position: np.array = np.array([u, v])
+    def __init__(self, u: float, v: float, contours=()):
+        self.position: np.ndarray = np.array([u, v])
         self.contours = contours
-        self.brightness: float = brightness
 
     def u(self):
         return self.position[0]
@@ -29,9 +28,7 @@ class Point2D:
 
 
 class LED2D:
-    def __init__(
-        self, led_id: int, view_id: int, point: typing.Optional[Point2D] = None
-    ):
+    def __init__(self, led_id: int, view_id: int, point: Point2D):
         self.led_id: int = led_id
         self.view_id: int = view_id
         self.point: Point2D = point
@@ -92,7 +89,7 @@ class LED3D:
 
 # returns none if there isn't that led in the list!
 def get_led(
-    leds: list[Union[Union[LED2D, LED3D]]], led_id: int
+    leds: list[Union[LED2D, LED3D]], led_id: int
 ) -> typing.Optional[Union[LED2D, LED3D]]:
     for led in leds:
         if led.led_id == led_id:
@@ -158,7 +155,7 @@ def find_inter_led_distance(leds: list[Union[LED2D, LED3D]]):
     return np.median(distances)
 
 
-def rescale(leds: list[LED3D], target_inter_distance=1.0) -> None:
+def rescale(leds: list[LED3D], target_inter_distance=1.0) -> int:
 
     inter_led_distance = find_inter_led_distance(leds)
     scale = (1.0 / inter_led_distance) * target_inter_distance
@@ -166,6 +163,8 @@ def rescale(leds: list[LED3D], target_inter_distance=1.0) -> None:
         led.point *= scale
         for view in led.views:
             view.position = view.position * scale
+
+    return scale
 
 
 def recenter(leds: list[LED3D]):
@@ -201,7 +200,12 @@ def fill_gap(start_led: LED3D, end_led: LED3D):
     return new_leds
 
 
-def fill_gaps(leds: list[LED3D], max_distance: float = 1.1, max_missing=5):
+def fill_gaps(
+    leds: list[LED3D],
+    min_distance: float = 0.9,
+    max_distance: float = 1.1,
+    max_missing=5,
+):
 
     new_leds = []
 
@@ -220,7 +224,7 @@ def fill_gaps(leds: list[LED3D], max_distance: float = 1.1, max_missing=5):
 
             distance_per_led = distance / (gap + 1)
 
-            if (distance_per_led < max_distance) and gap <= max_missing:
+            if (min_distance < distance_per_led < max_distance) and gap <= max_missing:
                 new_leds += fill_gap(led, next_led)
 
     new_led_count = len(new_leds)
@@ -272,3 +276,16 @@ def remove_duplicates(leds: list[LED3D]) -> list[LED3D]:
 
 def get_leds_with_views(leds: list[LED2D], view_ids) -> list[LED2D]:
     return [led for led in leds if led.view_id in view_ids]
+
+
+def get_overlap_and_percentage(leds_2d, leds_3d, view) -> tuple[int, int]:
+
+    if len(leds_2d) == 0 or len(leds_3d) == 0:
+        return 0, 0
+
+    leds_3d_ids = set([led.led_id for led in leds_3d])
+    view_ids = [led.led_id for led in get_leds_with_view(leds_2d, view)]
+    overlap_len = len(leds_3d_ids.intersection(view_ids))
+    overlap_percentage = int((overlap_len / len(view_ids)) * 100)
+
+    return overlap_len, overlap_percentage

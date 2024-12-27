@@ -1,4 +1,5 @@
 import tempfile
+from pathlib import Path
 from marimapper.file_tools import load_detections, get_all_2d_led_maps
 from marimapper.led import get_led
 
@@ -15,7 +16,7 @@ bananas,apples,grapes
     )
     temp_led_map_file.close()
 
-    led_map = load_detections(temp_led_map_file.name, 0)
+    led_map = load_detections(Path(temp_led_map_file.name), 0)
 
     assert led_map is not None
 
@@ -29,7 +30,7 @@ bananas,apples,grapes
 
 def test_invalid_path():
 
-    led_map = load_detections("doesnt-exist-i-hope", 0)
+    led_map = load_detections(Path("doesnt-exist-i-hope"), 0)
     assert led_map is None
 
 

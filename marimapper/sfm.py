@@ -1,10 +1,9 @@
-import os
-
+from pathlib import Path
 from tempfile import TemporaryDirectory
 import pycolmap
 
 from marimapper.database_populator import populate_database
-from marimapper.led import LED3D
+from marimapper.led import LED3D, LED2D, get_view_ids
 from marimapper.model import binary_to_led_map_3d
 from marimapper.utils import SupressLogging
 from multiprocessing import get_logger
@@ -12,12 +11,22 @@ from multiprocessing import get_logger
 logger = get_logger()
 
 
-def sfm(leds) -> list[LED3D]:
+def sfm(leds_2d: list[LED2D]) -> list[LED3D]:
+
+    # if no leds, don't bother
+    if len(leds_2d) == 0:
+        logger.debug("no leds :(")
+        return []
+
+    # also if we're just on 1 view, don't bother
+    if len(get_view_ids(leds_2d)) <= 1:
+        logger.debug("<= 1 view :(")
+        return []
 
     with TemporaryDirectory() as temp_dir:
-        database_path = os.path.join(temp_dir, "database.db")
+        database_path = Path(temp_dir, "database.db")
 
-        populate_database(database_path, leds)
+        populate_database(database_path, leds_2d)
 
         options = pycolmap.IncrementalPipelineOptions()
         options.triangulation.ignore_two_view_tracks = False  # used to be true
@@ -33,9 +42,24 @@ def sfm(leds) -> list[LED3D]:
                 options=options,
             )
 
-        if not os.path.exists(os.path.join(temp_dir, "0", "points3D.bin")):
-            return []
+        # NOTE!
+        # There might be more map folders than just "0", however this is the base section and only the one we're
+        # interested in at the moment. We could iterate through all avaliable maps
+        # However I think it might be misleading or confusing as they will appear with no relative transform.
+        # Because of this, lots of existing functionality like inter-led distance might break
+        # Leaving it out for now but perhaps something to come back to.
 
-        leds = binary_to_led_map_3d(temp_dir)
-        logger.debug(f"sfm managed to reconstruct {len(leds)} leds")
-        return leds
+        leds_3d = []
+        for map_id in range(0, 10):
+            if not Path(temp_dir, f"{map_id}", "points3D.bin").exists():
+                break
+
+            new_map = binary_to_led_map_3d(Path(temp_dir))
+
+            logger.debug(
+                f"sfm managed to reconstruct {len(new_map)} leds in map {map_id}"
+            )
+
+            leds_3d = new_map if len(new_map) > len(leds_3d) else leds_3d
+
+        return leds_3d

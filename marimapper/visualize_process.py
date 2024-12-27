@@ -1,6 +1,7 @@
 import numpy as np
 import open3d
-from multiprocessing import get_logger, Process, Event, Queue
+from multiprocessing import get_logger, Process, Event
+from marimapper.queues import Queue3D
 from marimapper.led import LED3D, View, get_next, get_distance
 import time
 
@@ -26,15 +27,15 @@ class VisualiseProcess(Process):
         logger.debug("Renderer3D initialising")
         super().__init__()
         self._vis = None
-        self._input_queue = Queue()
-        self._input_queue.cancel_join_thread()
+        self._input_queue = Queue3D()
         self._exit_event = Event()
         self.point_cloud = None
         self.line_set = None
         self.strip_set = None
+        self.daemon = True
         logger.debug("Renderer3D initialised")
 
-    def get_input_queue(self) -> Queue:
+    def get_input_queue(self) -> Queue3D:
         return self._input_queue
 
     def stop(self):
@@ -74,8 +75,8 @@ class VisualiseProcess(Process):
         view_ctl.set_up((0, 1, 0))
         view_ctl.set_lookat((0, 0, 0))
         view_ctl.set_zoom(0.3)
-        # set far distance to 200x the inter-led distance
-        view_ctl.set_constant_z_far(200)
+        # set far distance to 20000x the inter-led distance
+        view_ctl.set_constant_z_far(20000)
 
         render_options = self._vis.get_render_option()
         render_options.point_show_normal = True
@@ -123,7 +124,7 @@ class VisualiseProcess(Process):
         strips = []
         for led_index, led in enumerate(leds):
             next_led = get_next(led, leds)
-            if next_led is not None:
+            if next_led is not None and (next_led.led_id - led.led_id == 1):
                 if get_distance(led, next_led) < 1.50:  # + 50%
                     strips.append((led_index, leds.index(next_led)))
 
@@ -133,9 +134,11 @@ class VisualiseProcess(Process):
         )
 
         if first:
-            self._vis.add_geometry(self.point_cloud)
-            self._vis.add_geometry(self.line_set)
-            self._vis.add_geometry(self.strip_set)
+            # We only update the bounding box on the point cloud in case
+            # the camera has shot off into the distance
+            self._vis.add_geometry(self.point_cloud, reset_bounding_box=True)
+            self._vis.add_geometry(self.line_set, reset_bounding_box=False)
+            self._vis.add_geometry(self.strip_set, reset_bounding_box=False)
         else:
             self._vis.update_geometry(self.point_cloud)
             self._vis.update_geometry(self.line_set)
@@ -146,8 +149,8 @@ class VisualiseProcess(Process):
 
 def view_to_points_lines_colors(views):  # returns points and lines
 
-    all_points = []
-    all_lines = []
+    all_points: list[np.ndarray] = []
+    all_lines: list[np.ndarray] = []
 
     camera_scale = 2.0
 
