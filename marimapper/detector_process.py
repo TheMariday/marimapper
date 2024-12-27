@@ -8,22 +8,22 @@ from marimapper.detector import (
     enable_and_find_led,
     find_led,
 )
-from marimapper.led import get_distance, LED3D, get_max_led_id
+from marimapper.led import get_distance, get_color
 from marimapper.queues import (
     RequestDetectionsQueue,
     Queue2D,
     DetectionControlEnum,
-    Queue3D,
+    Queue3DInfo
 )
 from marimapper.utils import get_backend, backend_black
 
 logger = get_logger()
 
-
-def render_led_info(leds3d: list[LED3D], led_backend):
-    buffer = [[0, 0, 0] for _ in range(get_max_led_id(leds3d) + 1)]
-    for led3d in leds3d:
-        buffer[led3d.led_id] = led3d.get_color()
+def render_led_info(led_info: dict[int, int], led_backend):
+    buffer = [[0, 0, 0] for _ in range(max(led_info.keys()) + 1)]
+    for led_id in led_info:
+        info = led_info[led_id]
+        buffer[led_id] = [int(v/10) for v in get_color(info)]
 
     try:
         led_backend.set_leds(buffer)
@@ -52,7 +52,7 @@ class DetectorProcess(Process):
         self._output_queues: list[Queue2D] = []  # LED3D
         self._led_count: Queue = Queue()
         self._led_count.cancel_join_thread()
-        self._input_3d_queue: Queue3D = Queue3D()
+        self._input_3d_info_queue = Queue3DInfo()
         self._exit_event = Event()
 
         self._device = device
@@ -63,8 +63,8 @@ class DetectorProcess(Process):
         self._display = display
         self._check_movement = check_movement
 
-    def get_input_3d_queue(self):
-        return self._input_3d_queue
+    def get_input_3d_info_queue(self):
+        return self._input_3d_info_queue
 
     def get_request_detections_queue(self) -> RequestDetectionsQueue:
         return self._request_detections_queue
@@ -105,7 +105,7 @@ class DetectorProcess(Process):
 
                 success = backend_black(led_backend)
                 if not success:
-                    logger.debug("failed to blacken backend due to missing attribute")
+                    logger.error("failed to blacken backend due to missing attribute") # DO NOT COMMIT!
 
                 # scan start here
                 set_cam_dark(cam, self._dark_exposure)
@@ -179,12 +179,10 @@ class DetectorProcess(Process):
                     image = cam.read()
                     show_image(image)
 
-                l = None
-                while not self._input_3d_queue.empty():
-                    l = self._input_3d_queue.get()
+                if not self._input_3d_info_queue.empty():
+                    led_info: dict[int, int] = self._input_3d_info_queue.get()
 
-                if l is not None:
-                    success = render_led_info(l, led_backend)
+                    success = render_led_info(led_info, led_backend)
                     if not success:
                         logger.debug(
                             "failed to update colourful backend buffer due to a missing attribute"

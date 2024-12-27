@@ -1,3 +1,4 @@
+from copy import copy
 import numpy as np
 import typing
 import math
@@ -80,6 +81,19 @@ class Colors:
     PINK = [255, 0, 255]
     BLACK = [0, 0, 0]
 
+def get_color(info):
+
+    if info == LEDInfo.RECONSTRUCTED:
+        return Colors.GREEN
+    if info in [LEDInfo.INTERPOLATED, LEDInfo.MERGED]:
+        return Colors.AQUA
+    if info == LEDInfo.DETECTED:
+        return Colors.ORANGE
+    if info == LEDInfo.UNRECONSTRUCTABLE:
+        return Colors.RED
+
+    return Colors.BLUE
+
 
 class LED3D:
 
@@ -116,17 +130,7 @@ class LED3D:
     def get_color(self):
 
         info = self.get_info()
-
-        if info == LEDInfo.RECONSTRUCTED:
-            return Colors.GREEN
-        if info in [LEDInfo.INTERPOLATED, LEDInfo.MERGED]:
-            return Colors.AQUA
-        if info == LEDInfo.DETECTED:
-            return Colors.ORANGE
-        if info == LEDInfo.UNRECONSTRUCTABLE:
-            return Colors.RED
-
-        return Colors.BLUE
+        return get_color(info)
 
 
 # returns none if there isn't that led in the list!
@@ -338,3 +342,15 @@ def get_max_led_id(leds3d: list[LED3D]):
 
 def filter_reconstructed(leds3d: list[LED3D]) -> list[LED3D]:
     return [led for led in leds3d if led.has_position()]
+
+def combine_2d_3d(leds_2d: list[LED2D], leds_3d: list[LED3D]) -> list[LED3D]:
+
+    new_leds_3d = copy(leds_3d)
+    for led_2d in leds_2d:
+        if led_2d.led_id not in [o.led_id for o in new_leds_3d]:
+            new_leds_3d.append(LED3D(led_2d.led_id))
+
+        for led in get_leds(new_leds_3d, led_2d.led_id):
+            led.detections.append(led_2d)
+
+    return new_leds_3d

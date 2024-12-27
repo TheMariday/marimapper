@@ -6,9 +6,11 @@ from marimapper.led import (
     fill_gaps,
     get_overlap_and_percentage,
     LED2D,
+    combine_2d_3d
 )
-from marimapper.sfm import sfm, add_detections_to_leds3d
-from marimapper.queues import Queue2D, Queue3D, DetectionControlEnum
+from marimapper.sfm import sfm
+
+from marimapper.queues import Queue2D, Queue3D, DetectionControlEnum, Queue3DInfo
 import open3d
 import numpy as np
 import math
@@ -55,12 +57,16 @@ class SFM(Process):
         super().__init__()
         self._input_queue: Queue2D = Queue2D()
         self._output_queues: list[Queue3D] = []
+        self._output_info_queues: list[Queue3DInfo] = []
         self._exit_event = Event()
         self.max_fill = max_fill
         self.leds_2d = existing_leds if existing_leds is not None else []
 
     def get_input_queue(self) -> Queue2D:
         return self._input_queue
+
+    def add_output_info_queue(self, queue: Queue3DInfo):
+        self._output_info_queues.append(queue)
 
     def add_output_queue(self, queue: Queue3D):
         self._output_queues.append(queue)
@@ -72,8 +78,8 @@ class SFM(Process):
 
         update_required = len(self.leds_2d) > 0
         check_required = True
-        temp = True
         view_id = 0
+        update_info = True
 
         while not self._exit_event.is_set():
 
@@ -88,7 +94,7 @@ class SFM(Process):
                     view_id = data
                     update_required = True
                     check_required = True
-                    temp = True
+                    update_info = True
 
                 if control == DetectionControlEnum.DELETE:
                     view_id = data
@@ -137,9 +143,16 @@ class SFM(Process):
 
                 add_normals(leds_3d)
 
-                if temp:
-                    add_detections_to_leds3d(self.leds_2d, leds_3d)
-                    temp = False
+                if update_info:
+                    update_info = False
+                    led_info = {}
+
+                    for led in combine_2d_3d(self.leds_2d, leds_3d):
+                        led_info[led.led_id] = led.get_info()
+
+                    for queue in self._output_info_queues:
+                        queue.put(led_info)
+
 
                 for queue in self._output_queues:
                     queue.put(leds_3d)

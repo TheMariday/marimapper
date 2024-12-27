@@ -47,3 +47,11 @@ class Queue3D(BaseQueue):
 
     def get(self, timeout=None) -> list[LED3D]:
         return self._queue.get(timeout=timeout)
+
+class Queue3DInfo(BaseQueue):
+
+    def put(self, led_states: dict[int, int]) -> None:
+        self._queue.put(led_states)
+
+    def get(self, timeout=None) -> dict[int, int]:
+        return self._queue.get(timeout=timeout)
