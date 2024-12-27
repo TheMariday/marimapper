@@ -128,14 +128,18 @@ class DetectorProcess(Process):
                         if led_current is not None:
                             distance = get_distance(led_current, led_previous)
                             if distance > 0.01:  # 1% movement
+                                logger.error(
+                                    f"Camera movement of {int(distance*100)}% has been detected"
+                                )
                                 movement = True
                         else:
                             logger.error(
-                                f"went back to check led {led_previous.led_id} for movement, and led could no longer be found"
+                                f"Went back to check led {led_previous.led_id} for movement, and led could no longer be found"
                             )
                             movement = True
 
                     if movement:
+                        logger.error("Deleting scan due to camera movement")
                         self.put_in_all_output_queues(
                             DetectionControlEnum.DELETE, view_id
                         )

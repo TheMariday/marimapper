@@ -49,10 +49,15 @@ def sfm(leds_2d: list[LED2D]) -> list[LED3D]:
         # Because of this, lots of existing functionality like inter-led distance might break
         # Leaving it out for now but perhaps something to come back to.
 
-        if not Path(temp_dir, "0", "points3D.bin").exists():
-            return []
+        leds_3d = []
+        for map_id in range(0, 10):
+            if not Path(temp_dir, f"{map_id}", "points3D.bin").exists():
+                break
 
-        leds_3d = binary_to_led_map_3d(Path(temp_dir))
-        logger.debug(f"sfm managed to reconstruct {len(leds_3d)} leds")
+            new_map = binary_to_led_map_3d(Path(temp_dir))
+
+            print(f"sfm managed to reconstruct {len(new_map)} leds in map {map_id}")
+
+            leds_3d = new_map if len(new_map) > len(leds_3d) else leds_3d
 
         return leds_3d

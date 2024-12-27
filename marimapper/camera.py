@@ -62,31 +62,31 @@ class Camera:
         logger.debug(f"Setting autofocus to mode {mode} with focus {focus}")
 
         if not self.device.set(cv2.CAP_PROP_AUTOFOCUS, mode):
-            logger.error(f"Failed to set autofocus to {mode}")
+            logger.info(f"Failed to set autofocus to {mode}")
 
         if not self.device.set(cv2.CAP_PROP_FOCUS, focus):
-            logger.error(f"Failed to set focus to {focus}")
+            logger.info(f"Failed to set focus to {focus}")
 
     def set_exposure_mode(self, mode):
 
         logger.debug(f"Setting exposure to mode {mode}")
 
         if not self.device.set(cv2.CAP_PROP_AUTO_EXPOSURE, mode):
-            logger.error(f"Failed to put camera into manual exposure mode {mode}")
+            logger.info(f"Failed to put camera into manual exposure mode {mode}")
 
     def set_gain(self, gain):
 
         logger.debug(f"Setting gain to {gain}")
 
         if not self.device.set(cv2.CAP_PROP_GAIN, gain):
-            logger.error(f"failed to set camera gain to {gain}")
+            logger.info(f"failed to set camera gain to {gain}")
 
     def set_exposure(self, exposure):
 
         logger.debug(f"Setting exposure to {exposure}")
 
         if not self.device.set(cv2.CAP_PROP_EXPOSURE, exposure):
-            logger.error(f"Failed to set exposure to {exposure}")
+            logger.warning(f"Failed to set exposure to {exposure}")
 
     def eat(self, count=30):
         for _ in range(count):
