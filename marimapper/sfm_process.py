@@ -94,6 +94,7 @@ class SFM(Process):
                     self.leds_2d = [
                         led for led in self.leds_2d if led.view_id != view_id
                     ]
+                    update_required = True
 
             if update_required:
                 update_required = False
