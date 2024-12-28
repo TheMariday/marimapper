@@ -83,7 +83,7 @@ def main():
         args.end,
         args.max_fill,
         args.disable_movement_check,
-        args.fast
+        args.fast,
     )
 
     scanner.mainloop()

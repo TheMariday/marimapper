@@ -81,7 +81,7 @@ class DetectorProcess(Process):
         led_backend_server: str,
         display: bool = True,
         check_movement=True,
-        fast = True,
+        fast=True,
     ):
         super().__init__()
         self._request_detections_queue = RequestDetectionsQueue()  # {led_id, view_id}
@@ -153,7 +153,7 @@ class DetectorProcess(Process):
                     set_cam_default(cam)
                     continue
 
-                if self._fast: # This is nasty but I'd prefer this than dynamic imports
+                if self._fast:  # This is nasty but I'd prefer this than dynamic imports
                     leds = detect_leds_fast(
                         led_id_from,
                         led_id_to,
