@@ -8,6 +8,7 @@ from marimapper.detector import (
     enable_and_find_led,
     find_led,
 )
+from marimapper.detector_fast import detect_leds_fast
 from marimapper.led import get_distance, get_color, LEDInfo
 from marimapper.queues import (
     RequestDetectionsQueue,
@@ -80,6 +81,7 @@ class DetectorProcess(Process):
         led_backend_server: str,
         display: bool = True,
         check_movement=True,
+        fast = True,
     ):
         super().__init__()
         self._request_detections_queue = RequestDetectionsQueue()  # {led_id, view_id}
@@ -96,6 +98,7 @@ class DetectorProcess(Process):
         self._led_backend_server = led_backend_server
         self._display = display
         self._check_movement = check_movement
+        self._fast = fast
 
     def get_input_3d_info_queue(self):
         return self._input_3d_info_queue
@@ -150,17 +153,30 @@ class DetectorProcess(Process):
                     set_cam_default(cam)
                     continue
 
-                leds = detect_leds(
-                    led_id_from,
-                    led_id_to,
-                    cam,
-                    led_backend,
-                    view_id,
-                    timeout_controller,
-                    self._threshold,
-                    self._display,
-                    self._output_queues,
-                )
+                if self._fast: # This is nasty but I'd prefer this than dynamic imports
+                    leds = detect_leds_fast(
+                        led_id_from,
+                        led_id_to,
+                        cam,
+                        led_backend,
+                        view_id,
+                        timeout_controller,
+                        self._threshold,
+                        self._display,
+                        self._output_queues,
+                    )
+                else:
+                    leds = detect_leds(
+                        led_id_from,
+                        led_id_to,
+                        cam,
+                        led_backend,
+                        view_id,
+                        timeout_controller,
+                        self._threshold,
+                        self._display,
+                        self._output_queues,
+                    )
 
                 if leds is not None and len(leds) > 0:
 
@@ -192,7 +208,7 @@ class DetectorProcess(Process):
                             (
                                 DetectionControlEnum.DONE
                                 if not movement
-                                else DetectionControlEnum.Delete
+                                else DetectionControlEnum.DELETE
                             ),
                             view_id,
                         )

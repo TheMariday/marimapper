@@ -44,10 +44,19 @@ def main():
         help="Disables checking of movement when a scan completes",
     )
 
+    parser.add_argument(
+        "--fast",
+        action="store_true",
+        help="Runs marimapper in fast mode",
+    )
+
     args = parser.parse_args()
 
     if not os.path.isdir(args.dir):
         raise Exception(f"path {args.dir} does not exist")
+
+    if args.start > args.end:
+        raise Exception(f"Start point {args.start} is greater the end point {args.end}")
 
     if args.verbose:
         logger.setLevel(logging.DEBUG)
@@ -74,6 +83,7 @@ def main():
         args.end,
         args.max_fill,
         args.disable_movement_check,
+        args.fast
     )
 
     scanner.mainloop()

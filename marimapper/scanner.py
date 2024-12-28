@@ -30,12 +30,13 @@ class Scanner:
         led_end: int,
         max_fill: int,
         check_movement: bool,
+        fast: bool,
     ):
         logger.debug("initialising scanner")
         self.output_dir = output_dir
 
         self.detector = DetectorProcess(
-            device, exposure, threshold, backend, server, check_movement
+            device, exposure, threshold, backend, server, check_movement, fast
         )
 
         self.file_writer = FileWriterProcess(self.output_dir)
@@ -62,8 +63,9 @@ class Scanner:
         self.detector.start()
         self.file_writer.start()
 
+        # we add plus one here as I assume people want to include the last led they define
         self.led_id_range = range(
-            led_start, min(led_end, self.detector.get_led_count())
+            led_start, min(led_end + 1, self.detector.get_led_count())
         )
 
         logger.debug("scanner initialised")
