@@ -2,7 +2,7 @@ from marimapper.camera import Camera
 from marimapper.detector import show_image
 from marimapper.led import LED2D, Point2D
 from marimapper.timeout_controller import TimeoutController
-from marimapper.queues import Queue2D
+from marimapper.queues import Queue2D, DetectionControlEnum
 import logging
 from multiprocessing import get_logger
 import time
@@ -41,7 +41,7 @@ def detect_leds_fast(
     display: bool,
     output_queues: list[Queue2D],
 ):
-
+    threshold_float = threshold / 255.0
     # this isn't very smart if the led_id_from is non zero, oh well
     binary_length = get_binary_length(led_id_to)
 
@@ -59,7 +59,7 @@ def detect_leds_fast(
         ]
         led_backend.set_leds(buffer)
         # set backend
-        cam.eat()
+        cam.eat(count=15)
         image = cam.read()
         if display:
             show_image(image)
@@ -67,9 +67,12 @@ def detect_leds_fast(
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) / 255.0
         images.append(image)
 
-    backend_black(backend)
+    backend_black(led_backend)
 
     leds: list[LED2D] = []
+
+    img_height = images[0].shape[0]
+    img_width = images[0].shape[1]
 
     for led_id in range(1, led_id_to):
         mat = 1
@@ -87,13 +90,17 @@ def detect_leds_fast(
                 if led_binaries[led_id][i]
             ]
         )
-
-        if min_response > threshold / 255.0:
-            point = Point2D(mat_max_loc[1], mat_max_loc[0])
+        # print(led_id, min_response)
+        if min_response > 0.95:
+            point = Point2D(mat_max_loc[0] / img_height, mat_max_loc[1] / img_width)
             led = LED2D(led_id, view_id, point)
             leds.append(led)
+            # print(f"detected {led_id}")
             for queue in output_queues:
-                queue.put(led)
+                queue.put(DetectionControlEnum.DETECT, led)
+        else:
+            for queue in output_queues:
+                queue.put(DetectionControlEnum.SKIP, led_id)
 
     return leds
 
@@ -113,8 +120,5 @@ if __name__ == "__main__":
     timeout_controller = TimeoutController()
 
     leds = detect_leds_fast(0, 400, cam, backend, 0, timeout_controller, 128, True, [])
-
-    for led in leds:
-        print(led.point)
 
     time.sleep(1)
