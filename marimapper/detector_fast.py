@@ -59,7 +59,7 @@ def detect_leds_fast(
         ]
         led_backend.set_leds(buffer)
         # set backend
-        cam.eat(count=15)
+        cam.eat(count=10)
         image = cam.read()
         if display:
             show_image(image)
@@ -74,7 +74,7 @@ def detect_leds_fast(
     img_height = images[0].shape[0]
     img_width = images[0].shape[1]
 
-    for led_id in range(1, led_id_to):
+    for led_id in range(1, led_id_to): # this needs fixing
         mat = 1
         for binary_index in range(binary_length):
             if led_binaries[led_id][binary_index]:
@@ -90,12 +90,11 @@ def detect_leds_fast(
                 if led_binaries[led_id][i]
             ]
         )
-        # print(led_id, min_response)
+
         if min_response > 0.95:
-            point = Point2D(mat_max_loc[0] / img_height, mat_max_loc[1] / img_width)
+            point = Point2D(mat_max_loc[0] / img_width, mat_max_loc[1] / img_height)
             led = LED2D(led_id, view_id, point)
             leds.append(led)
-            # print(f"detected {led_id}")
             for queue in output_queues:
                 queue.put(DetectionControlEnum.DETECT, led)
         else:
