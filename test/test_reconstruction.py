@@ -47,7 +47,7 @@ def test_reconstruction():
     assert len(map_3d) == 21
 
     check_dimensions(
-        map_3d_filtered, max_error=0.01  # needs to have a max deviation of less than 1%
+        map_3d, max_error=0.01  # needs to have a max deviation of less than 1%
     )
 
 
