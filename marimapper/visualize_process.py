@@ -32,6 +32,7 @@ class VisualiseProcess(Process):
         self.point_cloud = None
         self.line_set = None
         self.strip_set = None
+        self.daemon = True
         logger.debug("Renderer3D initialised")
 
     def get_input_queue(self) -> Queue3D:
@@ -45,6 +46,7 @@ class VisualiseProcess(Process):
         initialised = False
 
         while not self._exit_event.is_set():
+
             if not self._input_queue.empty():
                 leds = filter_reconstructed(self._input_queue.get())
                 if len(leds) < 9:

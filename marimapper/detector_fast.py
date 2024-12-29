@@ -74,7 +74,7 @@ def detect_leds_fast(
     img_height = images[0].shape[0]
     img_width = images[0].shape[1]
 
-    for led_id in range(1, led_id_to): # this needs fixing
+    for led_id in range(1, led_id_to):  # this needs fixing
         mat = 1
         for binary_index in range(binary_length):
             if led_binaries[led_id][binary_index]:

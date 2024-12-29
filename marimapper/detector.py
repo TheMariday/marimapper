@@ -105,7 +105,12 @@ def set_cam_dark(cam: Camera, exposure: int) -> None:
     cam.set_autofocus(0, 0)
     cam.set_exposure_mode(0)
     cam.set_gain(0)
-    cam.set_exposure(exposure)
+    if not cam.set_exposure(exposure):
+        logger.warning(
+            f"failed to set exposure to {exposure}, your camera might not support exposure control, "
+            f"try darkening the scene and adjusting the threshold with --threshold "
+        )
+
     cam.eat()
 
 

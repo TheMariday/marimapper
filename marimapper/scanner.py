@@ -16,6 +16,24 @@ from marimapper.file_writer_process import FileWriterProcess
 logger = get_logger()
 
 
+def join_with_warning(process_to_join, process_name, timeout=10):
+    logger.debug(f"{process_name} stopping...")
+    process_to_join.join(
+        timeout=timeout
+    )  # Strangely the return code for join does not match the exitcode attribute
+
+    if process_to_join.exitcode is None:
+        logger.warning(f"{process_name} failed to stop, some data might be lost")
+        return
+    if process_to_join.exitcode != 0:
+        logger.warning(
+            f"{process_name} failed to stop with exit code {process_to_join.exitcode}, some data might be lost"
+        )
+        return
+
+    logger.debug(f"{process_name} stopped")
+
+
 class Scanner:
 
     def __init__(
@@ -70,6 +88,19 @@ class Scanner:
 
         logger.debug("scanner initialised")
 
+    def check_for_crash(self):
+        if not self.detector.is_alive():
+            raise Exception("LED Detector has stopped unexpectedly")
+
+        if not self.sfm.is_alive():
+            raise Exception("SFM has stopped unexpectedly")
+
+        if not self.renderer3d.is_alive():
+            raise Exception("Visualiser has stopped unexpectedly")
+
+        if not self.file_writer.is_alive():
+            raise Exception("File writer has stopped unexpectedly")
+
     def close(self):
         logger.debug("scanner closing")
 
@@ -77,6 +108,11 @@ class Scanner:
         self.sfm.stop()
         self.renderer3d.stop()
         self.file_writer.stop()
+
+        join_with_warning(self.detector, "detector")
+        join_with_warning(self.sfm, "SFM")
+        join_with_warning(self.file_writer, "File Writer")
+        join_with_warning(self.renderer3d, "Visualiser")
 
         logger.debug("scanner closed")
 
@@ -94,7 +130,7 @@ class Scanner:
                 control, data = self.detector_update_queue.get()
 
                 if control == DetectionControlEnum.FAIL:
-                    logger.error("scan failed")
+                    logger.error("Scan failed")
                     return False
 
                 if control in [DetectionControlEnum.DETECT, DetectionControlEnum.SKIP]:
@@ -118,8 +154,10 @@ class Scanner:
             start_scan = get_user_confirmation("Start scan? [y/n]: ")
 
             if not start_scan:
-                print("Exiting Marimapper")
+                print("Exiting Marimapper, please wait")
                 return
+
+            self.check_for_crash()
 
             if len(self.led_id_range) == 0:
                 print(

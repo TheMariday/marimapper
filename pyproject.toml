@@ -15,7 +15,7 @@ dependencies = [
     "pycolmap==0.6.1",
     "pyserial",          # required by fcmega
     "pixelblaze-client", # required by pixelblaze
-    "requests"           # required by wled
+    "requests"           # required by fcmega
 ]
 
 classifiers = [

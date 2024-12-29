@@ -118,6 +118,10 @@ class DetectorProcess(Process):
     def stop(self):
         self._exit_event.set()
 
+    def put_in_all_output_queues(self, control: DetectionControlEnum, data):
+        for queue in self._output_queues:
+            queue.put(control, data)
+
     def run(self):
 
         led_backend = get_backend(self._led_backend_name, self._led_backend_server)
@@ -127,6 +131,10 @@ class DetectorProcess(Process):
         cam = Camera(self._device)
 
         timeout_controller = TimeoutController()
+
+        # we quickly switch to dark mode here to throw any exceptions about the camera early
+        set_cam_dark(cam, self._dark_exposure)
+        set_cam_default(cam)
 
         while not self._exit_event.is_set():
 
@@ -196,6 +204,9 @@ class DetectorProcess(Process):
                         if led_current is not None:
                             distance = get_distance(led_current, led_first)
                             if distance > 0.01:  # 1% movement
+                                logger.error(
+                                    f"Camera movement of {int(distance*100)}% has been detected"
+                                )
                                 movement = True
                         else:
                             logger.error(

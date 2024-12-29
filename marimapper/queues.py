@@ -16,7 +16,6 @@ class BaseQueue:
 
     def __init__(self):
         self._queue: Queue = Queue()
-        self._queue.cancel_join_thread()
 
     def empty(self) -> bool:
         return self._queue.empty()
