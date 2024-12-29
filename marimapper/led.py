@@ -341,10 +341,6 @@ def get_max_led_id(leds3d: list[LED3D]):
     return max([led.led_id for led in leds3d])
 
 
-def filter_reconstructed(leds3d: list[LED3D]) -> list[LED3D]:
-    return [led for led in leds3d if led.has_position()]
-
-
 def combine_2d_3d(leds_2d: list[LED2D], leds_3d: list[LED3D]) -> list[LED3D]:
 
     new_leds_3d = copy(leds_3d)

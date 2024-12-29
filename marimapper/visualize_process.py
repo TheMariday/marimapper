@@ -2,7 +2,7 @@ import numpy as np
 import open3d
 from multiprocessing import get_logger, Process, Event
 from marimapper.queues import Queue3D
-from marimapper.led import LED3D, View, get_next, get_distance, filter_reconstructed
+from marimapper.led import LED3D, View, get_next, get_distance
 import time
 
 logger = get_logger()
@@ -48,7 +48,7 @@ class VisualiseProcess(Process):
         while not self._exit_event.is_set():
 
             if not self._input_queue.empty():
-                leds = filter_reconstructed(self._input_queue.get())
+                leds = self._input_queue.get()
                 if len(leds) < 9:
                     continue
 
