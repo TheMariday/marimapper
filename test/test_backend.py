@@ -107,6 +107,9 @@ def test_wled(monkeypatch):
     get_backend("wled")
     get_backend("wled", "1.2.3.4")
 
+    with pytest.raises(RuntimeError):
+        get_backend("wled", "bananas")
+
 
 def test_fcmega(monkeypatch):
 
@@ -154,7 +157,11 @@ def test_pixelblaze(monkeypatch):
 
     monkeypatch.setattr(pixelblaze, "Pixelblaze", PixelblazePatch)
 
+    get_backend("pixelblaze")
     get_backend("pixelblaze", "1.2.3.4")
+
+    with pytest.raises(RuntimeError):
+        get_backend("pixelblaze", "bananas")
 
 
 def test_invalid_backend():
