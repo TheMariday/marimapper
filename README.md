@@ -79,7 +79,7 @@ Wrong webcam? MariMapper tools use `--device 0` by default, use `--device 1` to 
 
 For the Marimapper to communicate with your leds, it requires a backend.
 
-The following backends are built-in:
+Please see below for documentation on how to run the following backends:
 
 <details>
 <summary>Fadecandy</summary>
@@ -115,7 +115,7 @@ Source code can be found [here](https://github.com/TheMariday/fcmega)
 <summary>PixelBlaze</summary>
 
 Using Pixelblaze as a backend requires you to upload the 
-[marimapper.epe](marimapper/backends/pixelblaze/marimapper.epe) 
+[marimapper.epe](https://github.com/TheMariday/marimapper/blob/main/marimapper/backends/pixelblaze/marimapper.epe) 
 into the PixelBlaze editor and upload it as a new pattern otherwise the backend will fail
 
 By default `--backend pixelblaze` will use the server address `4.3.2.1`
