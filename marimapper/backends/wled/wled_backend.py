@@ -1,9 +1,16 @@
 import requests
+from ipaddress import ip_address
 
 
 class Backend:
 
     def __init__(self, wled_base_url="4.3.2.1"):
+
+        try:
+            ip_address(wled_base_url)
+        except ValueError:
+            raise RuntimeError(f"WLED backend failed to start due as {wled_base_url} is not a valid IP address")
+
         self.state_endpoint = f"http://{wled_base_url}/json/state"
         self.info_endpoint = f"http://{wled_base_url}/json/info"
         self.reset_wled()

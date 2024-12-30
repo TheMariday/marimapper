@@ -79,7 +79,7 @@ Wrong webcam? MariMapper tools use `--device 0` by default, use `--device 1` to 
 
 For the Marimapper to communicate with your leds, it requires a backend.
 
-The following backends are built-in:
+Please see below for documentation on how to run the following backends:
 
 <details>
 <summary>Fadecandy</summary>
@@ -94,6 +94,10 @@ Use
 
 <details>
 <summary>WLED</summary>
+
+By default `--backend wled` will use the server address `4.3.2.1`
+
+If you want to change the server address, add `--server 1.2.3.4`
 
 More info can be found [here](https://kno.wled.ge/)
 
@@ -111,10 +115,12 @@ Source code can be found [here](https://github.com/TheMariday/fcmega)
 <summary>PixelBlaze</summary>
 
 Using Pixelblaze as a backend requires you to upload the 
-[marimapper.epe](marimapper/backends/pixelblaze/marimapper.epe) 
-into the PixelBlaze editor and upload it as a new pattern.
+[marimapper.epe](https://github.com/TheMariday/marimapper/blob/main/marimapper/backends/pixelblaze/marimapper.epe) 
+into the PixelBlaze editor and upload it as a new pattern otherwise the backend will fail
 
-`--backend PixelBlaze --server 192.168.4.1` to enable this backend, adjusting the server IP where needed
+By default `--backend pixelblaze` will use the server address `4.3.2.1`
+
+If you want to change the server address to `1.2.3.4`, add `--server 1.2.3.4`
 
 Once you've completed your 3D map, upload it to pixelblaze using
 `marimapper_upload_to_pixelblaze --help`
