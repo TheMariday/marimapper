@@ -3,7 +3,7 @@ import multiprocessing
 import os
 import argparse
 import logging
-from marimapper.utils import add_camera_args, add_backend_args
+from marimapper.utils import add_common_args, add_backend_args, get_marimapper_version
 from pathlib import Path
 
 logger = multiprocessing.log_to_stderr()
@@ -18,10 +18,8 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
-    add_camera_args(parser)
+    add_common_args(parser)
     add_backend_args(parser)
-
-    parser.add_argument("-v", "--verbose", action="store_true")
 
     parser.add_argument(
         "dir",
@@ -45,6 +43,10 @@ def main():
     )
 
     args = parser.parse_args()
+
+    if args.version:
+        print(f"Marimapper, version {get_marimapper_version()}")
+        quit()
 
     if not os.path.isdir(args.dir):
         raise Exception(f"path {args.dir} does not exist")
@@ -74,6 +76,7 @@ def main():
         args.end,
         args.max_fill,
         args.disable_movement_check,
+        args.ignore_camera_warnings_and_run_without_camera_exposure_control,
     )
 
     scanner.mainloop()

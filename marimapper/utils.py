@@ -3,9 +3,10 @@ import sys
 
 import importlib.util
 from inspect import signature
+import importlib.metadata
 
 
-def add_camera_args(parser):
+def add_common_args(parser):
     parser.add_argument(
         "--device",
         type=int,
@@ -26,6 +27,20 @@ def add_camera_args(parser):
         metavar="[0-255]",
         help="LED detection threshold, reducing this number will reduce false positives",
         default=128,
+    )
+
+    parser.add_argument(
+        "-V", "--version",
+        action="store_true",
+        help="Print version and exit",
+    )
+
+    parser.add_argument("-v", "--verbose", action="store_true")
+
+    parser.add_argument(
+        "--ignore_camera_warnings_and_run_without_camera_exposure_control",
+        action="store_true",
+        help="Camera doesn't support camera control but don't have any other options? I mean you can try...",
     )
 
 
@@ -180,3 +195,7 @@ class SupressLogging(object):
 
         self.outnull_file.close()
         self.errnull_file.close()
+
+def get_marimapper_version() -> str:
+
+    return importlib.metadata.version('marimapper')

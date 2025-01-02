@@ -81,7 +81,7 @@ class VisualiseProcess(Process):
         render_options = self._vis.get_render_option()
         render_options.point_show_normal = True
         render_options.point_color_option = (
-            open3d.visualization.PointColorOption.YCoordinate
+            open3d.visualization.PointColorOption.Color
         )
         render_options.background_color = [0.2, 0.2, 0.2]
 
@@ -134,6 +134,7 @@ class VisualiseProcess(Process):
         )
 
         if first:
+            self._vis.add_geometry(open3d.geometry.TriangleMesh.create_coordinate_frame())
             # We only update the bounding box on the point cloud in case
             # the camera has shot off into the distance
             self._vis.add_geometry(self.point_cloud, reset_bounding_box=True)
@@ -155,13 +156,13 @@ def view_to_points_lines_colors(views):  # returns points and lines
     camera_scale = 2.0
 
     camera_cone_points = np.array(
-        [[0, 0, 0], [-1, -1, 2], [1, -1, 2], [1, 1, 2], [-1, 1, 2], [0, -1.5, 2]]
+        [[0, 0, 0], [-1, -1, 2], [1, -1, 2], [1, 1, 2], [-1, 1, 2], [0, 1.5, 2]]
     )
 
     camera_cone_points *= camera_scale
 
     camera_cone_lines = np.array(
-        [[0, 1], [0, 2], [0, 3], [0, 4], [1, 2], [2, 3], [3, 4], [4, 1], [1, 5], [2, 5]]
+        [[0, 1], [0, 2], [0, 3], [0, 4], [1, 2], [2, 3], [3, 4], [4, 1], [3, 5], [4, 5]]
     )
 
     for i, view in enumerate(views):

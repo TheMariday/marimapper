@@ -47,17 +47,12 @@ You can run the scripts anywhere by just typing them into a console
 
 Run `marimapper_check_camera` to ensure your camera is compatible with MariMapper, or check the list below:
 
-<details>
-
-<summary>Working Cameras</summary>
-
 - HP 4310 (settings may not revert)
 - Logitech C920
 - Dell Latitude 5521 built-in
 - HP Envy x360 built-in 
-- If your camera works, please drop me a line, so I can add it to the list!
 
-</details>
+If your camera works, please drop me a line, so I can add it to the list!
 
 
 Test LED identification by turning down the lights and holding a torch or led up to the camera.
@@ -81,78 +76,13 @@ For the Marimapper to communicate with your leds, it requires a backend.
 
 Please see below for documentation on how to run the following backends:
 
-<details>
-<summary>Fadecandy</summary>
+- [FadeCandy](https://github.com/TheMariday/marimapper/tree/main/docs/backends/FadeCandy.md)
+- [WLED](https://github.com/TheMariday/marimapper/tree/main/docs/backends/WLED.md)
+- [FCMega](https://github.com/TheMariday/marimapper/tree/main/docs/backends/FCMEGA.md)
+- [PixelBlaze](https://github.com/TheMariday/marimapper/tree/main/docs/backends/PixelBlaze.md)
 
-To use the Fadecandy backend, please ensure that you are running the Fadecandy server
-A fork of the Fadecandy repo can be found [here](https://github.com/TheMariday/fadecandy)
-
-Use 
-`--backend fadecandy --server 127.0.0.1:7890` to enable this backend, adjusting the server IP and port where needed
-
-</details>
-
-<details>
-<summary>WLED</summary>
-
-By default `--backend wled` will use the server address `4.3.2.1`
-
-If you want to change the server address, add `--server 1.2.3.4`
-
-More info can be found [here](https://kno.wled.ge/)
-
-</details>
-
-<details>
-<summary>FCMega</summary>
-
-This is a custom driver I've written for the Teensy 4.1 to drive up to 9600 leds.
-Source code can be found [here](https://github.com/TheMariday/fcmega)
-
-</details>
-
-<details>
-<summary>PixelBlaze</summary>
-
-Using Pixelblaze as a backend requires you to upload the 
-[marimapper.epe](https://github.com/TheMariday/marimapper/blob/main/marimapper/backends/pixelblaze/marimapper.epe) 
-into the PixelBlaze editor and upload it as a new pattern otherwise the backend will fail
-
-By default `--backend pixelblaze` will use the server address `4.3.2.1`
-
-If you want to change the server address to `1.2.3.4`, add `--server 1.2.3.4`
-
-Once you've completed your 3D map, upload it to pixelblaze using
-`marimapper_upload_to_pixelblaze --help`
-
-</details>
-
-If your LED backend isn't supported, you need to write your own.
-Open a new python file called `my_backend.py` and copy the below stub into it.
-
-```python
-class Backend:
-
-    def __init__(self):
-        # connect to some device here!
-
-    def get_led_count(self) -> int:
-        # return the number of leds your system can control here
-
-    def set_led(self, led_index: int, on: bool) -> None:
-        # Write your code for controlling your LEDs here
-        # It should turn on or off the LED at the led_index depending on the "on" variable
-        # For example:
-        # if on:
-        #     some_led_library.set_led(led_index, (255, 255, 255))
-        # else:
-        #     some_led_library.set_led(led_index, (0, 0, 0))
-```
-
-If your backend needs any external libraries for example, `requests`, add them to marimapper with `pipx inject marimapper requests` 
-
-Fill out the blanks and check it by running `marimapper_check_backend --backend my_backend.py`
-
+If your LED backend isn't supported, you need to write your own, 
+[it's super simple](https://github.com/TheMariday/marimapper/tree/main/docs/backends/custom.md)!
 
 ## Step 3: [It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
 
@@ -182,16 +112,21 @@ Here is an example reconstruction of a test tube of LEDs I have
 
 ![](docs/images/live_example.png)
 
-<details>
-<summary>How to move the model around</summary>
+
+### How to move the model around
 
 - Click and drag to rotate the model around. 
 - Hold shift to roll the camera
 - Use the scroll wheel to zoom in / out
 - Use the `n` key to hide / show normals
 - Use the `+` / `-` keys to increase / decrease point sizes
-- Use `1`, `2` & `3` keys to change colour scheme
-</details>
+- Use `1`, `2`, `3` & `4` keys to change colour scheme
+
+### LED Colors:
+By default (`1`), the colors of the leds in the visualiser are as follows:
+
+- Green: Reconstructed
+- Blue: Interpolated
 
 # Not working?
 
