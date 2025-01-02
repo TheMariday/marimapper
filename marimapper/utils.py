@@ -30,7 +30,8 @@ def add_common_args(parser):
     )
 
     parser.add_argument(
-        "-V", "--version",
+        "-V",
+        "--version",
         action="store_true",
         help="Print version and exit",
     )
@@ -196,6 +197,7 @@ class SupressLogging(object):
         self.outnull_file.close()
         self.errnull_file.close()
 
+
 def get_marimapper_version() -> str:
 
-    return importlib.metadata.version('marimapper')
+    return importlib.metadata.version("marimapper")

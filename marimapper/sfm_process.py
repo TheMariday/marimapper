@@ -50,12 +50,16 @@ def add_normals(leds: list[LED3D]):
 class SFM(Process):
 
     def __init__(
-        self, max_fill: int = 5, existing_leds: Union[list[LED2D], None] = None
+        self,
+        max_fill: int = 5,
+        existing_leds: Union[list[LED2D], None] = None,
+        led_count: int = 0,
     ):
         super().__init__()
         self._input_queue: Queue2D = Queue2D()
         self._output_queues: list[Queue3D] = []
         self._exit_event = Event()
+        self._led_count = led_count
         self.max_fill = max_fill
         self.leds_2d = existing_leds if existing_leds is not None else []
         self.daemon = True
@@ -72,12 +76,13 @@ class SFM(Process):
     def run(self):
 
         update_required = len(self.leds_2d) > 0
-        check_required = False
-        view_id = 0
+        scan_complete = False
+        last_scan_complete_id = 0
 
         while not self._exit_event.is_set():
 
             while not self._input_queue.empty():
+
                 control, data = self._input_queue.get()
                 if control == DetectionControlEnum.DETECT:
                     led2d = data
@@ -85,9 +90,9 @@ class SFM(Process):
                     update_required = True
 
                 if control == DetectionControlEnum.DONE:
-                    view_id = data
                     update_required = True
-                    check_required = True
+                    scan_complete = True
+                    last_scan_complete_id = data
 
                 if control == DetectionControlEnum.DELETE:
                     view_id = data
@@ -103,32 +108,8 @@ class SFM(Process):
 
                 if len(leds_3d) == 0:
                     logger.info("Failed to reconstruct any leds")
-                    check_required = False
+                    scan_complete = False
                     continue
-
-                if check_required:
-                    check_required = False
-
-                    overlap, overlap_percentage = get_overlap_and_percentage(
-                        self.leds_2d, leds_3d, view_id
-                    )
-
-                    logger.debug(
-                        f"scan {view_id} has overlap of {overlap} or {overlap_percentage}%"
-                    )
-
-                    if overlap < 10:
-                        logger.error(
-                            f"Scan {view_id} has a very low overlap with the reconstructed model "
-                            f"(only {overlap} points) and therefore may be disregarded when reconstructing "
-                            "unless scans are added between this and the prior scan"
-                        )
-                    if overlap_percentage < 50:
-                        logger.warning(
-                            f"Scan {view_id} has a low overlap with the reconstructed model "
-                            f"(only {overlap_percentage}%) and therefore may be disregarded when reconstructing "
-                            "unless scans are added between this and the prior scan"
-                        )
 
                 rescale(leds_3d)
 
@@ -137,6 +118,32 @@ class SFM(Process):
                 recenter(leds_3d)
 
                 add_normals(leds_3d)
+
+                if scan_complete:
+                    scan_complete = False
+
+                    print(f"Reconstructed {len(leds_3d)} / {self._led_count}")
+
+                    overlap, overlap_percentage = get_overlap_and_percentage(
+                        self.leds_2d, leds_3d, last_scan_complete_id
+                    )
+
+                    logger.debug(
+                        f"scan {last_scan_complete_id} has overlap of {overlap} or {overlap_percentage}%"
+                    )
+
+                    if overlap < 10:
+                        logger.error(
+                            f"Scan {last_scan_complete_id} has a very low overlap with the reconstructed model "
+                            f"(only {overlap} points) and therefore may be disregarded when reconstructing "
+                            "unless scans are added between this and the prior scan"
+                        )
+                    if overlap_percentage < 50:
+                        logger.warning(
+                            f"Scan {last_scan_complete_id} has a low overlap with the reconstructed model "
+                            f"(only {overlap_percentage}%) and therefore may be disregarded when reconstructing "
+                            "unless scans are added between this and the prior scan"
+                        )
 
                 for queue in self._output_queues:
                     queue.put(leds_3d)

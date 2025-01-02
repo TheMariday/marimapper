@@ -80,9 +80,7 @@ class VisualiseProcess(Process):
 
         render_options = self._vis.get_render_option()
         render_options.point_show_normal = True
-        render_options.point_color_option = (
-            open3d.visualization.PointColorOption.Color
-        )
+        render_options.point_color_option = open3d.visualization.PointColorOption.Color
         render_options.background_color = [0.2, 0.2, 0.2]
 
         logger.debug("Renderer3D process initialised visualiser")
@@ -134,7 +132,9 @@ class VisualiseProcess(Process):
         )
 
         if first:
-            self._vis.add_geometry(open3d.geometry.TriangleMesh.create_coordinate_frame())
+            self._vis.add_geometry(
+                open3d.geometry.TriangleMesh.create_coordinate_frame()
+            )
             # We only update the bounding box on the point cloud in case
             # the camera has shot off into the distance
             self._vis.add_geometry(self.point_cloud, reset_bounding_box=True)

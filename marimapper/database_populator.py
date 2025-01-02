@@ -25,7 +25,10 @@ def populate_database(db_path: Path, leds: list[LED2D]):
                 map_features = np.pad(map_features, [(0, 0), (0, pad_needed), (0, 0)])
 
             # we flip this here so that the resulting 3D model is oriented with y+ up
-            map_features[view][led.led_id] = np.array((1 - led.point.position[0], 1-led.point.position[1])) * ARBITRARY_SCALE
+            map_features[view][led.led_id] = (
+                np.array((1 - led.point.position[0], 1 - led.point.position[1]))
+                * ARBITRARY_SCALE
+            )
 
     db = COLMAPDatabase.connect(db_path)
 
