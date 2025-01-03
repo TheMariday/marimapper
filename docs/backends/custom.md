@@ -1,3 +1,9 @@
+# Custom Backend Instructions
+
+Your backend isn't listed? You've your own LED driver? Well check you out clever-clogs!
+
+Luckily, writing your own custom backend is super simple with a dash of Python!
+
 Open a new python file called `my_backend.py` and copy the below stub into it.
 
 ```python
@@ -19,6 +25,11 @@ class Backend:
         #     some_led_library.set_led(led_index, (0, 0, 0))
 ```
 
-If your backend needs any external libraries for example, `requests`, add them to marimapper with `pipx inject marimapper requests` 
+Fill out the blanks and check it by running `marimapper_check_backend --backend my_backend.py` in the same directory
 
-Fill out the blanks and check it by running `marimapper_check_backend --backend my_backend.py`
+Once you've checked it works, you can run marimapper in the same directory with `marimapper --backend my_backend.py` and it will use your backend!
+
+If your backend needs any external libraries for example, `requests`, add them to marimapper with `pipx inject marimapper requests`
+
+If you think others would find your backend useful (behave), please drop me a Github Issue, 
+find me on Telegram or open a pull request so we can add it into marimapper!

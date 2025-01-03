@@ -80,9 +80,9 @@ class LED3D:
 
     def get_color(self):
         if self.has_state(LEDState.INTERPOLATED):
-            return 255, 0, 0
+            return 0, 255, 255
         if self.has_state(LEDState.MERGED):
-            return 255, 0, 255
+            return 0, 255, 255
 
         return 0, 255, 0
 

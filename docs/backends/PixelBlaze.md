@@ -1,11 +1,19 @@
+# PixelBlaze Backend Tutorial
 
-Using Pixelblaze as a backend requires you to upload the 
-[marimapper.epe](https://github.com/TheMariday/marimapper/blob/main/marimapper/backends/pixelblaze/marimapper.epe) 
-into the PixelBlaze editor and upload it as a new pattern otherwise the backend will fail
+To use PixelBlaze with marimapper you first need to upload a pattern file to your controller.
 
-By default `--backend pixelblaze` will use the server address `4.3.2.1`
+You can do this via the web UI by uploading [this file](https://github.com/TheMariday/marimapper/blob/main/marimapper/backends/pixelblaze/marimapper.epe)
+as a new pattern.
 
-If you want to change the server address to `1.2.3.4`, add `--server 1.2.3.4`
+Once this is done, run `marimapper_check_backend --backend pixelblaze` to test it. It should cause LED 0 to blink.
 
-Once you've completed your 3D map, upload it to pixelblaze using
-`marimapper_upload_to_pixelblaze --help`
+By default, marimapper tools will use the address `4.3.2.1`, but this can be changed by using the `--server` argument.
+
+Once you've checked your PixelBlaze setup is talking nicely with marimapper, you can go ahead and start mapping!
+
+Once you're done, you can upload your 3D map to pixelblaze by running `marimapper_upload_mapping_to_pixelblaze` 
+in the same folder as your `led_map_3d.csv`. 
+
+Don't forget to add the `--server` argument if you've needed to change it in the previous steps
+
+Now you've learnt the PixelBlaze specifics, shoo! Back to the main README.md with you!

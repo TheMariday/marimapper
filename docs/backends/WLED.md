@@ -1,6 +1,11 @@
+# WLED Backend Tutorial
 
-By default `--backend wled` will use the server address `4.3.2.1`
+WLED should work pretty much out of the box, test your backend with `marimapper_check_backend --backend wled`. It should cause LED 0 to blink.
 
-If you want to change the server address, add `--server 1.2.3.4`
+If you need to change the server address, use the `--server` argument
 
-More info can be found [here](https://kno.wled.ge/)
+Once you've checked your WLED setup is talking nicely with marimapper, you can go ahead and start mapping!
+
+More info about WLED can be found [here](https://kno.wled.ge/)
+
+Few, that was a short tutorial. Treat yourself to a biscuit for all your hard work!

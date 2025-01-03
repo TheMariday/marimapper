@@ -76,7 +76,7 @@ class SFM(Process):
     def run(self):
 
         update_required = len(self.leds_2d) > 0
-        scan_complete = False
+        scan_complete = len(self.leds_2d) > 0
         last_scan_complete_id = 0
 
         while not self._exit_event.is_set():
@@ -122,7 +122,7 @@ class SFM(Process):
                 if scan_complete:
                     scan_complete = False
 
-                    print(f"Reconstructed {len(leds_3d)} / {self._led_count}")
+                    print(f"Reconstructed {len(leds_3d)} / {self._led_count}\nStart scan? [y/n]: ",end="") # this is a really gross way to do this. Too bad!
 
                     overlap, overlap_percentage = get_overlap_and_percentage(
                         self.leds_2d, leds_3d, last_scan_complete_id
@@ -133,16 +133,16 @@ class SFM(Process):
                     )
 
                     if overlap < 10:
-                        logger.error(
+                        print(
                             f"Scan {last_scan_complete_id} has a very low overlap with the reconstructed model "
                             f"(only {overlap} points) and therefore may be disregarded when reconstructing "
-                            "unless scans are added between this and the prior scan"
+                            "unless scans are added between this and the prior scan\nStart scan? [y/n]: ",end="" # this is a really gross way to do this. Too bad!
                         )
                     if overlap_percentage < 50:
-                        logger.warning(
+                        print(
                             f"Scan {last_scan_complete_id} has a low overlap with the reconstructed model "
                             f"(only {overlap_percentage}%) and therefore may be disregarded when reconstructing "
-                            "unless scans are added between this and the prior scan"
+                            "unless scans are added between this and the prior scan\nStart scan? [y/n]: ",end="" # this is a really gross way to do this. Too bad!
                         )
 
                 for queue in self._output_queues:

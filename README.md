@@ -3,7 +3,6 @@
 [![Supported Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue)]()
 [![Windows](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml)
 [![Ubuntu](https://github.com/TheMariday/MariMapper/actions/workflows/test_ubuntu.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_ubuntu.yml)
-[![MacOS](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 
@@ -15,13 +14,7 @@
 Above example data folder can be found under [docs/highbeam_example/](docs/highbeam_example)
 
 > [!CAUTION]
-> [This tool does not support Python 3.12](https://github.com/TheMariday/marimapper/issues/27)
-
-> [!CAUTION]
-> Exposure control is [not supported on mac](https://github.com/TheMariday/marimapper/issues/51)
-> 
-> You can however adjust the exposure manually in third party tools or use the software that comes with your webcam
-
+> [This tool does not support Python 3.12](https://github.com/TheMariday/marimapper/issues/27) or [OS X](https://github.com/TheMariday/marimapper/issues/51)
 
 ## Step 0: Install
 
@@ -66,7 +59,7 @@ Wrong webcam? MariMapper tools use `--device 0` by default, use `--device 1` to 
 
 
 > [!TIP]
-> If your camera doesn't support exposure adjustment, or the image is still too bright, try dimming the lights and playing around with:
+> If the image is still too bright or uoi can't see a crosshair on your LED, try dimming the lights and playing around with:
 > 
 > - `--exposure` - The lower the darker, defaults to `-10`, my webcam only goes down to `-11`
 > - `--threshold` - The lower the more detections, ranges between `0-255`,  defaults to `128`
@@ -84,7 +77,16 @@ Please see below for documentation on how to run the following backends:
 If your LED backend isn't supported, you need to write your own, 
 [it's super simple](https://github.com/TheMariday/marimapper/tree/main/docs/backends/custom.md)!
 
-## Step 3: [It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
+## Step 3: Setup your scene
+
+🪨 Make sure that your camera is stable and won't move, try mounting it on a tripod if you can
+
+💡 Make sure there are no light sources in your cameras view, tape up power leds and notification lights
+
+✋ Make sure you can move your camera around without changing the layout of your leds, 
+even a small nudge can throw off the reconstructor!
+
+## Step 4: [It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
 
 In a new folder, run `marimapper --backend fadecandy`
 
