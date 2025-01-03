@@ -49,7 +49,7 @@ def add_normals(leds: list[LED3D]):
 
 
 def print_without_hiding_scan_message(message: str):
-    print(f"{message}\nStart scan? [y/n]: ", end="")
+    print(f"\r{message}\nStart scan? [y/n]: ", end="")
 
 
 class SFM(Process):
