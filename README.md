@@ -59,7 +59,7 @@ Wrong webcam? MariMapper tools use `--device 0` by default, use `--device 1` to 
 
 
 > [!TIP]
-> If the image is still too bright or uoi can't see a crosshair on your LED, try dimming the lights and playing around with:
+> If the image is still too bright or you can't see a crosshair on your LED, try dimming the lights and playing around with:
 > 
 > - `--exposure` - The lower the darker, defaults to `-10`, my webcam only goes down to `-11`
 > - `--threshold` - The lower the more detections, ranges between `0-255`,  defaults to `128`
