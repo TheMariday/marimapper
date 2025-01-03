@@ -44,7 +44,9 @@ def get_all_2d_led_maps(directory: Path) -> list[LED2D]:
     for view_id, filename in enumerate(sorted(os.listdir(directory))):
         full_path = Path(directory, filename)
 
-        detections = load_detections(full_path, view_id)  # this is wrong
+        detections = load_detections(
+            full_path, view_id
+        )  # this is wrong < WHY DID I WRITE THIS???? IS IT NOT???
 
         if detections is not None:
             points.extend(detections)
