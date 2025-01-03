@@ -6,6 +6,7 @@ from marimapper.led import (
     fill_gaps,
     get_overlap_and_percentage,
     LED2D,
+    last_view,
 )
 from marimapper.sfm import sfm
 from marimapper.queues import Queue2D, Queue3D, DetectionControlEnum
@@ -47,6 +48,10 @@ def add_normals(leds: list[LED3D]):
                 led.point.normal *= -1
 
 
+def print_without_hiding_scan_message(message: str):
+    print(f"{message}\nStart scan? [y/n]: ", end="")
+
+
 class SFM(Process):
 
     def __init__(
@@ -62,6 +67,7 @@ class SFM(Process):
         self._led_count = led_count
         self.max_fill = max_fill
         self.leds_2d = existing_leds if existing_leds is not None else []
+        self.leds_3d: list[LED3D] = []
         self.daemon = True
 
     def get_input_queue(self) -> Queue2D:
@@ -75,11 +81,13 @@ class SFM(Process):
 
     def run(self):
 
-        update_required = len(self.leds_2d) > 0
-        scan_complete = len(self.leds_2d) > 0
-        last_scan_complete_id = 0
+        needs_initial_reconstruction = len(self.leds_2d) > 0
 
         while not self._exit_event.is_set():
+
+            update_sfm = False
+            print_overlap = False
+            print_reconstructed = False
 
             while not self._input_queue.empty():
 
@@ -87,66 +95,67 @@ class SFM(Process):
                 if control == DetectionControlEnum.DETECT:
                     led2d = data
                     self.leds_2d.append(led2d)
-                    update_required = True
+                    update_sfm = True
+                    print_reconstructed = False
 
                 if control == DetectionControlEnum.DONE:
-                    update_required = True
-                    scan_complete = True
-                    last_scan_complete_id = data
+                    print_overlap = True
+                    print_reconstructed = True
 
                 if control == DetectionControlEnum.DELETE:
                     view_id = data
                     self.leds_2d = [
                         led for led in self.leds_2d if led.view_id != view_id
                     ]
-                    update_required = True
+                    update_sfm = True
 
-            if update_required:
-                update_required = False
+            if (update_sfm or needs_initial_reconstruction) and len(self.leds_2d) > 0:
 
-                leds_3d = sfm(self.leds_2d)
+                self.leds_3d = sfm(self.leds_2d)
 
-                if len(leds_3d) == 0:
-                    logger.info("Failed to reconstruct any leds")
-                    scan_complete = False
-                    continue
+                if len(self.leds_3d) > 0:
+                    rescale(self.leds_3d)
 
-                rescale(leds_3d)
+                    fill_gaps(self.leds_3d, max_missing=self.max_fill)
 
-                fill_gaps(leds_3d, max_missing=self.max_fill)
+                    recenter(self.leds_3d)
 
-                recenter(leds_3d)
+                    add_normals(self.leds_3d)
 
-                add_normals(leds_3d)
+                    for queue in self._output_queues:
+                        queue.put(self.leds_3d)
 
-                if scan_complete:
-                    scan_complete = False
+            if (print_reconstructed or needs_initial_reconstruction) and len(
+                self.leds_3d
+            ) > 0:
 
-                    print(f"Reconstructed {len(leds_3d)} / {self._led_count}\nStart scan? [y/n]: ",end="") # this is a really gross way to do this. Too bad!
+                print_without_hiding_scan_message(
+                    f"Reconstructed {len(self.leds_3d)} / {self._led_count}"
+                )
 
-                    overlap, overlap_percentage = get_overlap_and_percentage(
-                        self.leds_2d, leds_3d, last_scan_complete_id
+            needs_initial_reconstruction = False
+
+            if print_overlap and len(self.leds_3d) > 0:
+                last_view_id = last_view(self.leds_2d)
+                overlap, overlap_percentage = get_overlap_and_percentage(
+                    self.leds_2d, self.leds_3d, last_view_id
+                )
+
+                logger.debug(
+                    f"Scan {last_view_id} has overlap of {overlap} or {overlap_percentage}%"
+                )
+
+                if overlap < 10:
+                    print_without_hiding_scan_message(
+                        f"Warning! Scan {last_view_id} has a very low overlap with the reconstructed model "
+                        f"(only {overlap} points) and therefore may be disregarded when reconstructing "
+                        "unless scans are added between this and the prior scan"
+                    )
+                if overlap_percentage < 50:
+                    print_without_hiding_scan_message(
+                        f"Warning! Scan {last_view_id} has a low overlap with the reconstructed model "
+                        f"(only {overlap_percentage}%) and therefore may be disregarded when reconstructing "
+                        "unless scans are added between this and the prior scan"
                     )
 
-                    logger.debug(
-                        f"scan {last_scan_complete_id} has overlap of {overlap} or {overlap_percentage}%"
-                    )
-
-                    if overlap < 10:
-                        print(
-                            f"Scan {last_scan_complete_id} has a very low overlap with the reconstructed model "
-                            f"(only {overlap} points) and therefore may be disregarded when reconstructing "
-                            "unless scans are added between this and the prior scan\nStart scan? [y/n]: ",end="" # this is a really gross way to do this. Too bad!
-                        )
-                    if overlap_percentage < 50:
-                        print(
-                            f"Scan {last_scan_complete_id} has a low overlap with the reconstructed model "
-                            f"(only {overlap_percentage}%) and therefore may be disregarded when reconstructing "
-                            "unless scans are added between this and the prior scan\nStart scan? [y/n]: ",end="" # this is a really gross way to do this. Too bad!
-                        )
-
-                for queue in self._output_queues:
-                    queue.put(leds_3d)
-
-            else:
-                time.sleep(1)
+            time.sleep(1)

@@ -64,14 +64,18 @@ class VisualiseProcess(Process):
     def initialise_visualiser__(self):
         logger.debug("Renderer3D process initialising visualiser")
 
-        self._vis = open3d.visualization.Visualizer() # This needs to be updated to O3DVisualizer
+        self._vis = (
+            open3d.visualization.Visualizer()
+        )  # This needs to be updated to O3DVisualizer
         self._vis.create_window(
             window_name="MariMapper",
             width=640,
             height=640,
         )
 
-        view_ctl = self._vis.get_view_control() # I'm not sure the camera controls work anymore, bar the z dist
+        view_ctl = (
+            self._vis.get_view_control()
+        )  # I'm not sure the camera controls work anymore, bar the z dist
         view_ctl.set_up((0, 1, 0))
         view_ctl.set_lookat((0, 0, 0))
         view_ctl.set_zoom(0.3)
