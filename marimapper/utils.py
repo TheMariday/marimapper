@@ -136,6 +136,11 @@ def get_backend(backend_name, server=""):
         else:
             return pixelblaze_backend.Backend()
 
+    if backend_name.lower() == "artnet":
+        from marimapper.backends.artnet import artnet_backend
+
+        return artnet_backend.Backend()
+
     if os.path.isfile(backend_name) and backend_name.endswith(".py"):
         return load_custom_backend(backend_name, server)
 
