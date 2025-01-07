@@ -76,7 +76,6 @@ def main():
         args.end,
         args.max_fill,
         args.disable_movement_check,
-        args.ignore_camera_warnings_and_run_without_camera_exposure_control,
     )
 
     scanner.mainloop()

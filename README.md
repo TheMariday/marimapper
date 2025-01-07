@@ -3,6 +3,7 @@
 [![Supported Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue)]()
 [![Windows](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml)
 [![Ubuntu](https://github.com/TheMariday/MariMapper/actions/workflows/test_ubuntu.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_ubuntu.yml)
+[![MacOS](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 
@@ -14,7 +15,13 @@
 Above example data folder can be found under [docs/highbeam_example/](docs/highbeam_example)
 
 > [!CAUTION]
-> [This tool does not support Python 3.12](https://github.com/TheMariday/marimapper/issues/27) or [OS X](https://github.com/TheMariday/marimapper/issues/51)
+> [This tool does not support Python 3.12](https://github.com/TheMariday/marimapper/issues/27)
+
+> [!CAUTION]
+> Exposure control is [not supported on mac](https://github.com/TheMariday/marimapper/issues/51)
+> 
+> You can however adjust the exposure manually in third party tools or use the software that comes with your webcam
+
 
 ## Step 0: Install
 

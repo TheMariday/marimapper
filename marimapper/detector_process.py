@@ -26,7 +26,6 @@ class DetectorProcess(Process):
         led_backend_server: str,
         display: bool = True,
         check_movement=True,
-        ignore_camera_errors=False,
     ):
         super().__init__()
         self._request_detections_queue = RequestDetectionsQueue()  # {led_id, view_id}
@@ -42,7 +41,6 @@ class DetectorProcess(Process):
         self._led_backend_server = led_backend_server
         self._display = display
         self._check_movement = check_movement
-        self._ignore_camera_errors = ignore_camera_errors
         self.daemon = True
 
     def get_request_detections_queue(self) -> RequestDetectionsQueue:
@@ -75,17 +73,7 @@ class DetectorProcess(Process):
         timeout_controller = TimeoutController()
 
         # we quickly switch to dark mode here to throw any exceptions about the camera early
-
-        camera_control_success = set_cam_dark(cam, self._dark_exposure)
-
-        if (not camera_control_success) and (not self._ignore_camera_errors):
-            logger.error(
-                "Failed to set camera dark, if you don't have any other options, "
-                "you can ignore this error with --ignore_camera_warnings_and_run_without_camera_exposure_control "
-                "if you really have to"
-            )
-            quit()
-
+        set_cam_dark(cam, self._dark_exposure)
         set_cam_default(cam)
 
         while not self._exit_event.is_set():
