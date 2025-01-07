@@ -120,7 +120,7 @@ def find_led(
 
     image = cam.read()
     if dark_frame is not None:
-        image = cv2.absdiff(image, dark_frame)
+        cv2.subtract(image, dark_frame, image)
     results = find_led_in_image(image, threshold)
 
     if display:
