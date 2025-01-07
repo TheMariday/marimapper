@@ -38,12 +38,6 @@ def add_common_args(parser):
 
     parser.add_argument("-v", "--verbose", action="store_true")
 
-    parser.add_argument(
-        "--ignore_camera_warnings_and_run_without_camera_exposure_control",
-        action="store_true",
-        help="Camera doesn't support camera control but don't have any other options? I mean you can try...",
-    )
-
 
 def add_backend_args(parser):
     parser.add_argument(
