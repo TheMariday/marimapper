@@ -53,14 +53,22 @@ class Scanner:
         self.output_dir = output_dir
 
         self.detector = DetectorProcess(
-            device, exposure, threshold, backend, server, check_movement
+            device=device,
+            dark_exposure=exposure,
+            threshold=threshold,
+            led_backend_name=backend,
+            led_backend_server=server,
+            display=True,
+            check_movement=check_movement,
         )
 
         self.file_writer = FileWriterProcess(self.output_dir)
 
         existing_leds = get_all_2d_led_maps(self.output_dir)
 
-        self.sfm = SFM(max_fill, existing_leds)
+        led_count = led_end - led_start
+
+        self.sfm = SFM(max_fill, existing_leds, led_count)
 
         self.current_view = last_view(existing_leds) + 1
 

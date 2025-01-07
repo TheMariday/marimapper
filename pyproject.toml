@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "marimapper"
-version = "V2.3.1"
+version = "V2.4"
 
 dependencies = [
     "numpy<1.25.0,>=1.17.3",
@@ -53,7 +53,7 @@ Repository = "https://github.com/themariday/marimapper.git"
 marimapper = "marimapper.scripts.scanner_cli:main"
 marimapper_check_camera = "marimapper.scripts.check_camera_cli:main"
 marimapper_check_backend ="marimapper.scripts.check_backend_cli:main"
-marimapper_upload_to_pixelblaze = "marimapper.scripts.upload_map_to_pixelblaze_cli:main"
+marimapper_upload_mapping_to_pixelblaze = "marimapper.scripts.upload_map_to_pixelblaze_cli:main"
 
 
 [tool.coverage.run]

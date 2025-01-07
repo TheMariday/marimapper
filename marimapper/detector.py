@@ -100,7 +100,7 @@ def set_cam_default(cam: Camera) -> None:
     cam.eat()
 
 
-def set_cam_dark(cam: Camera, exposure: int) -> None:
+def set_cam_dark(cam: Camera, exposure: int) -> bool:
     logger.info("setting cam to dark mode")
     cam.set_autofocus(0, 0)
     cam.set_exposure_mode(0)
@@ -111,7 +111,10 @@ def set_cam_dark(cam: Camera, exposure: int) -> None:
             f"try darkening the scene and adjusting the threshold with --threshold "
         )
 
+    exposure_success = cam.set_exposure(exposure)
     cam.eat()
+
+    return exposure_success
 
 
 def find_led(

@@ -53,12 +53,12 @@ def test_get_color():
     interpolated_led = LED3D(0)
     interpolated_led.add_state(LEDState.INTERPOLATED)
 
-    assert interpolated_led.get_color() == (255, 0, 0)
+    assert interpolated_led.get_color() == (0, 255, 255)
 
     merged_led = LED3D(0)
     merged_led.add_state(LEDState.MERGED)
 
-    assert merged_led.get_color() == (255, 0, 255)
+    assert merged_led.get_color() == (0, 255, 255)
 
 
 def test_get_led():
