@@ -1,16 +1,29 @@
 from multiprocessing import get_logger
 import pixelblaze
-
+from ipaddress import ip_address
 logger = get_logger()
 
 
 class Backend:
 
     def __init__(self, pixelblaze_ip="4.3.2.1"):
+
+        try:
+            ip_address(pixelblaze_ip)
+        except ValueError:
+            raise RuntimeError(f"Pixelblaze backend failed to start due as {pixelblaze_ip} is not a valid IP address")
+
         self.pb = pixelblaze.Pixelblaze(pixelblaze_ip)
-        self.pb.setActivePatternByName(
-            "marimapper"
-        )  # Need to install marimapper.js to your pixelblaze
+        try:
+            self.pb.setActivePatternByName(
+                "marimapper"
+            )  # Need to install marimapper.js to your pixelblaze
+        except TypeError as e:
+            if "'NoneType' has no len()" in str(e):
+                raise RuntimeError("Pixelblaze may have failed to find the effect 'marimapper'. "
+                                   "Have you uploaded marimapper.epe to your controller?")
+            else:
+                raise e
 
     def get_led_count(self):
         pixel_count = self.pb.getPixelCount()

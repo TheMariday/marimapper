@@ -129,7 +129,6 @@ class LED3D:
         return LEDInfo.NONE
 
     def get_color(self):
-
         info = self.get_info()
         return get_color(info)
 
@@ -332,7 +331,10 @@ def get_overlap_and_percentage(leds_2d, leds_3d, view) -> tuple[int, int]:
     leds_3d_ids = set([led.led_id for led in leds_3d])
     view_ids = [led.led_id for led in get_leds_with_view(leds_2d, view)]
     overlap_len = len(leds_3d_ids.intersection(view_ids))
-    overlap_percentage = int((overlap_len / len(view_ids)) * 100)
+    if len(view_ids) > 0:
+        overlap_percentage = int((overlap_len / len(view_ids)) * 100)
+    else:
+        overlap_percentage = 0
 
     return overlap_len, overlap_percentage
 

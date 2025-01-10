@@ -68,14 +68,18 @@ class VisualiseProcess(Process):
     def initialise_visualiser__(self):
         logger.debug("Renderer3D process initialising visualiser")
 
-        self._vis = open3d.visualization.Visualizer()
+        self._vis = (
+            open3d.visualization.Visualizer()
+        )  # This needs to be updated to O3DVisualizer
         self._vis.create_window(
             window_name="MariMapper",
             width=640,
             height=640,
         )
 
-        view_ctl = self._vis.get_view_control()
+        view_ctl = (
+            self._vis.get_view_control()
+        )  # I'm not sure the camera controls work anymore, bar the z dist
         view_ctl.set_up((0, 1, 0))
         view_ctl.set_lookat((0, 0, 0))
         view_ctl.set_zoom(0.3)
@@ -134,6 +138,9 @@ class VisualiseProcess(Process):
         )
 
         if first:
+            self._vis.add_geometry(
+                open3d.geometry.TriangleMesh.create_coordinate_frame()
+            )
             # We only update the bounding box on the point cloud in case
             # the camera has shot off into the distance
             self._vis.add_geometry(self.point_cloud, reset_bounding_box=True)
@@ -155,13 +162,13 @@ def view_to_points_lines_colors(views):  # returns points and lines
     camera_scale = 2.0
 
     camera_cone_points = np.array(
-        [[0, 0, 0], [-1, -1, 2], [1, -1, 2], [1, 1, 2], [-1, 1, 2], [0, -1.5, 2]]
+        [[0, 0, 0], [-1, -1, 2], [1, -1, 2], [1, 1, 2], [-1, 1, 2], [0, 1.5, 2]]
     )
 
     camera_cone_points *= camera_scale
 
     camera_cone_lines = np.array(
-        [[0, 1], [0, 2], [0, 3], [0, 4], [1, 2], [2, 3], [3, 4], [4, 1], [1, 5], [2, 5]]
+        [[0, 1], [0, 2], [0, 3], [0, 4], [1, 2], [2, 3], [3, 4], [4, 1], [3, 5], [4, 5]]
     )
 
     for i, view in enumerate(views):

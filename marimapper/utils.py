@@ -3,9 +3,10 @@ import sys
 
 import importlib.util
 from inspect import signature
+import importlib.metadata
 
 
-def add_camera_args(parser):
+def add_common_args(parser):
     parser.add_argument(
         "--device",
         type=int,
@@ -27,6 +28,15 @@ def add_camera_args(parser):
         help="LED detection threshold, reducing this number will reduce false positives",
         default=128,
     )
+
+    parser.add_argument(
+        "-V",
+        "--version",
+        action="store_true",
+        help="Print version and exit",
+    )
+
+    parser.add_argument("-v", "--verbose", action="store_true")
 
 
 def add_backend_args(parser):
@@ -51,7 +61,7 @@ def add_backend_args(parser):
     parser.add_argument(
         "--server",
         type=str,
-        help="Some backends require a server, for example 172.0.0.1:7890",
+        help="Some backends require a server, for example 172.0.0.1",
     )
 
 
@@ -131,7 +141,10 @@ def get_backend(backend_name, server=""):
     if backend_name.lower() == "pixelblaze":
         from marimapper.backends.pixelblaze import pixelblaze_backend
 
-        return pixelblaze_backend.Backend(server)
+        if server:
+            return pixelblaze_backend.Backend(server)
+        else:
+            return pixelblaze_backend.Backend()
 
     if os.path.isfile(backend_name) and backend_name.endswith(".py"):
         return load_custom_backend(backend_name, server)
@@ -186,3 +199,8 @@ def backend_black(backend):
         return True
     except AttributeError:
         return False
+
+
+def get_marimapper_version() -> str:
+
+    return importlib.metadata.version("marimapper")
