@@ -61,7 +61,7 @@ class Scanner:
             led_backend_server=server,
             display=True,
             check_movement=check_movement,
-            fast=fast
+            fast=fast,
         )
 
         self.file_writer = FileWriterProcess(self.output_dir)

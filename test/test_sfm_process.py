@@ -24,7 +24,7 @@ def test_sfm_process_basic():
     timeout = time.time() + 5
 
     while sfm.is_alive():
-        assert time.time() < timeout  # if this asserts, sfm has failed to stop
+        assert time.time() < timeout, "sfm has failed to stop"
 
 
 def test_sfm_process_exit():

@@ -41,7 +41,7 @@ def detect_leds_fast(
     display: bool,
     output_queues: list[Queue2D],
 ):
-    threshold_float = threshold / 255.0
+    # threshold_float = threshold / 255.0
     # this isn't very smart if the led_id_from is non zero, oh well
     binary_length = get_binary_length(led_id_to)
 

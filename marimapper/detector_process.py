@@ -210,7 +210,7 @@ class DetectorProcess(Process):
                                 movement = True
                         else:
                             logger.error(
-                                f"Went back to check led {led_previous.led_id} for movement, and led could no longer be found"
+                                f"Went back to check led {led_first.led_id} for movement, and led could no longer be found"
                             )
                             movement = True
 
