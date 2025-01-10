@@ -29,7 +29,11 @@ Fill out the blanks and check it by running `marimapper_check_backend --backend 
 
 Once you've checked it works, you can run marimapper in the same directory with `marimapper --backend my_backend.py` and it will use your backend!
 
-If your backend needs any external libraries for example, `requests`, add them to marimapper with `pipx inject marimapper requests`
+But my backend requires a library! Like `requests`! What do?
+
+Pip: `pip install requests`
+PipX:`pipx inject marimapper requests`
+UV: `uv tool install marimapper --with requests`
 
 If you think others would find your backend useful (behave), please drop me a Github Issue, 
 find me on Telegram or open a pull request so we can add it into marimapper!

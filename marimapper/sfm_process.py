@@ -141,9 +141,6 @@ class SFM(Process):
                     for queue in self._output_info_queues:
                         queue.put(led_info)
 
-                for queue in self._output_queues:
-                    queue.put(self.leds_3d)
-
             if (print_reconstructed or needs_initial_reconstruction) and len(
                 self.leds_3d
             ) > 0:
