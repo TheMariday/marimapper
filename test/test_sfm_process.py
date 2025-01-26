@@ -42,11 +42,3 @@ def test_sfm_process_exit():
 
     assert True
 
-
-if __name__ == "__main__":
-    from multiprocessing import get_logger
-    import logging
-
-    logger = get_logger()
-    logger.setLevel(logging.DEBUG)
-    test_sfm_process_basic()

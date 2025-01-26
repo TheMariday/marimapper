@@ -201,6 +201,6 @@ def backend_black(backend):
         return False
 
 
-def get_marimapper_version() -> str:
+def get_marimapper_version() -> str: # pragma: no cover
 
-    return importlib.metadata.version("marimapper")
+    return importlib.metadata.version("marimapper") # pragma: no cover
