@@ -27,12 +27,13 @@ bananas,apples,grapes
     assert get_led(led_map, 2).point.position[0] == 0
     assert get_led(led_map, 2).point.position[1] == 0
 
+
 def test_missing_headers():
     temp_led_map_file = tempfile.NamedTemporaryFile(delete=False, suffix=".csv")
     temp_led_map_file.write(
         b"""index,v,u
 0,0.379490,0.407710"""
-)
+    )
 
     temp_led_map_file.close()
 
@@ -73,6 +74,6 @@ def test_get_all_maps():
 
     all_maps = get_all_2d_led_maps(Path(directory.name))
 
-    assert len(all_maps) == 1, 'expected 1 map'
+    assert len(all_maps) == 1, "expected 1 map"
 
     directory.cleanup()

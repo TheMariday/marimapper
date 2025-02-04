@@ -41,4 +41,3 @@ def test_sfm_process_exit():
     del sfm
 
     assert True
-

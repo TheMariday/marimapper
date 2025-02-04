@@ -1,6 +1,7 @@
 from marimapper import utils
 import argparse
 
+
 def test_add_common_args():
     parser = argparse.ArgumentParser()
     utils.add_common_args(parser)
@@ -11,6 +12,7 @@ def test_add_common_args():
     assert args.threshold == 128
     assert args.version == False
     assert args.verbose == False
+
 
 def test_add_backend_args():
 
