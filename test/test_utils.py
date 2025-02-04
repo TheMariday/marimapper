@@ -10,8 +10,8 @@ def test_add_common_args():
     assert args.device == 0
     assert args.exposure == -10
     assert args.threshold == 128
-    assert args.version == False
-    assert args.verbose == False
+    assert not args.version
+    assert not args.verbose
 
 
 def test_add_backend_args():
