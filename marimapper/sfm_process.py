@@ -7,9 +7,11 @@ from marimapper.led import (
     get_overlap_and_percentage,
     LED2D,
     last_view,
+    combine_2d_3d,
 )
 from marimapper.sfm import sfm
-from marimapper.queues import Queue2D, Queue3D, DetectionControlEnum
+
+from marimapper.queues import Queue2D, Queue3D, DetectionControlEnum, Queue3DInfo
 import open3d
 import numpy as np
 import math
@@ -63,6 +65,7 @@ class SFM(Process):
         super().__init__()
         self._input_queue: Queue2D = Queue2D()
         self._output_queues: list[Queue3D] = []
+        self._output_info_queues: list[Queue3DInfo] = []
         self._exit_event = Event()
         self._led_count = led_count
         self.max_fill = max_fill
@@ -73,6 +76,9 @@ class SFM(Process):
     def get_input_queue(self) -> Queue2D:
         return self._input_queue
 
+    def add_output_info_queue(self, queue: Queue3DInfo):
+        self._output_info_queues.append(queue)
+
     def add_output_queue(self, queue: Queue3D):
         self._output_queues.append(queue)
 
@@ -82,7 +88,7 @@ class SFM(Process):
     def run(self):
 
         needs_initial_reconstruction = len(self.leds_2d) > 0
-
+        update_info = True
         while not self._exit_event.is_set():
 
             update_sfm = False
@@ -101,7 +107,7 @@ class SFM(Process):
                 if control == DetectionControlEnum.DONE:
                     print_overlap = True
                     print_reconstructed = True
-
+                    update_info = True
                 if control == DetectionControlEnum.DELETE:
                     view_id = data
                     self.leds_2d = [
@@ -124,6 +130,16 @@ class SFM(Process):
 
                     for queue in self._output_queues:
                         queue.put(self.leds_3d)
+
+                if update_info:
+                    update_info = False
+                    led_info = {}
+
+                    for led in combine_2d_3d(self.leds_2d, self.leds_3d):
+                        led_info[led.led_id] = led.get_info()
+
+                    for queue in self._output_info_queues:
+                        queue.put(led_info)
 
             if (print_reconstructed or needs_initial_reconstruction) and len(
                 self.leds_3d

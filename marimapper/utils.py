@@ -192,6 +192,15 @@ class SupressLogging(object):
         self.errnull_file.close()
 
 
-def get_marimapper_version() -> str:
+def backend_black(backend):
+    buffer = [[0, 0, 0] for _ in range(backend.get_led_count())]
+    try:
+        backend.set_leds(buffer)
+        return True
+    except AttributeError:
+        return False
 
-    return importlib.metadata.version("marimapper")
+
+def get_marimapper_version() -> str:  # pragma: no cover
+
+    return importlib.metadata.version("marimapper")  # pragma: no cover

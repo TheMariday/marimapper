@@ -152,9 +152,6 @@ def test_pixelblaze(monkeypatch):
         def setActivePatternByName(self, _):
             pass
 
-        def getPixelCount(self):
-            return 1
-
     monkeypatch.setattr(pixelblaze, "Pixelblaze", PixelblazePatch)
 
     get_backend("pixelblaze")

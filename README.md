@@ -25,18 +25,22 @@ Above example data folder can be found under [docs/highbeam_example/](docs/highb
 
 ## Step 0: Install
 
-```shell
-pip --version # Ensure that it is //not// python 3.12, see above
-pip install pipx
-pipx ensurepath
-pipx install "git+https://github.com/themariday/marimapper"
-```
+If you're on Windows, first install UV with
 
-If you have Python 3.12 installed, install 3.11 and add `--python /path/to/python3.11` to the above `pipx install` command 
+`powershell -c "irm https://astral.sh/uv/install.ps1 | iex"` 
 
-[PIPx not working](https://github.com/TheMariday/marimapper/issues/42)? You can also download this repo and run `pip install .` from inside it!
+Or if you're using Linux or Mac
 
-You can run the scripts anywhere by just typing them into a console
+`curl -LsSf https://astral.sh/uv/install.sh | sh`
+
+Once UV is installed, install marimapper with
+
+`uv tool install marimapper --from git+https://github.com/TheMariday/marimapper`
+
+You can run the scripts anywhere by just typing them into a console.
+
+
+If you don't want to use UV, then Marimapper also supports PipX and pip
 
 ## Step 1: Test your camera
 
