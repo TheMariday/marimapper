@@ -1,4 +1,5 @@
 from multiprocessing import get_logger, Process, Queue, Event
+import time
 from marimapper.detector import (
     show_image,
     set_cam_default,
@@ -159,6 +160,7 @@ class DetectorProcess(Process):
                 if self._display:
                     image = cam.read()
                     show_image(image)
+                    time.sleep(1 / 60)
 
         logger.info("resetting cam!")
         set_cam_default(cam)

@@ -60,6 +60,7 @@ class VisualiseProcess(Process):
 
             self._vis.poll_events()
             self._vis.update_renderer()
+            time.sleep(1 / 60)
 
     def initialise_visualiser__(self):
         logger.debug("Renderer3D process initialising visualiser")
