@@ -9,6 +9,7 @@ from marimapper.led import (
     last_view,
 )
 from marimapper.sfm import sfm
+from marimapper.database_populator import camera_models, camera_model_radial
 from marimapper.queues import Queue2D, Queue3D, DetectionControlEnum
 import open3d
 import numpy as np
@@ -59,12 +60,23 @@ class SFM(Process):
         max_fill: int = 5,
         existing_leds: Union[list[LED2D], None] = None,
         led_count: int = 0,
+        camera_model_name: str = camera_model_radial.__name__,
+        camera_fov: int = 60,
     ):
         super().__init__()
         self._input_queue: Queue2D = Queue2D()
         self._output_queues: list[Queue3D] = []
         self._exit_event = Event()
         self._led_count = led_count
+
+        assert camera_model_name in [
+            m.__name__ for m in camera_models
+        ], f"Cannot find camera model {camera_model_name}"
+
+        self._camera_model = next(
+            m for m in camera_models if m.__name__ == camera_model_name
+        )
+        self._camera_fov = camera_fov
         self.max_fill = max_fill
         self.leds_2d = existing_leds if existing_leds is not None else []
         self.leds_3d: list[LED3D] = []
@@ -111,7 +123,11 @@ class SFM(Process):
 
             if (update_sfm or needs_initial_reconstruction) and len(self.leds_2d) > 0:
 
-                self.leds_3d = sfm(self.leds_2d)
+                self.leds_3d = sfm(
+                    self.leds_2d,
+                    camera_model=self._camera_model,
+                    camera_fov=self._camera_fov,
+                )
 
                 if len(self.leds_3d) > 0:
                     rescale(self.leds_3d)
