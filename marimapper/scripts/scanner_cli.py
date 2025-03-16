@@ -44,12 +44,6 @@ def main():
     )
 
     parser.add_argument(
-        "--fast",
-        action="store_true",
-        help="Runs marimapper in fast mode",
-    )
-
-    parser.add_argument(
         "--camera_model",
         type=str,
         choices=[model.__name__ for model in camera_models],
@@ -103,7 +97,6 @@ def main():
         args.disable_movement_check,
         args.camera_fov,
         args.camera_model,
-        args.fast,
     )
 
     scanner.mainloop()

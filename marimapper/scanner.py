@@ -48,7 +48,6 @@ class Scanner:
         led_end: int,
         max_fill: int,
         check_movement: bool,
-        fast: bool,
         camera_fov: int,
         camera_model_name: str,
     ):
@@ -63,7 +62,6 @@ class Scanner:
             led_backend_server=server,
             display=True,
             check_movement=check_movement,
-            fast=fast,
         )
 
         self.file_writer = FileWriterProcess(self.output_dir)

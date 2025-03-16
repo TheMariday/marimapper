@@ -82,7 +82,7 @@ class Colors:
     BLACK = [0, 0, 0]
 
 
-def get_color(info):
+def get_color(info: LEDInfo):
 
     if info == LEDInfo.RECONSTRUCTED:
         return Colors.GREEN

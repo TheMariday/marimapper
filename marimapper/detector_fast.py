@@ -1,3 +1,12 @@
+"""
+I've left this file in here unused because, well, it kind of works but I can't in good consciousness
+offer it as an option as even I can't get much use out of it.
+It works in ideal scenarios but little else beside.
+If it works, then it would reduce the complexity from O(n) to O(logn) which is insane.
+Howeverrrr, it's not great, even in ideal environments.
+Keep it simple, keep it reliable.
+"""
+
 from marimapper.camera import Camera
 from marimapper.detector import show_image
 from marimapper.led import LED2D, Point2D

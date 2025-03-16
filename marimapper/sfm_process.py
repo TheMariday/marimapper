@@ -10,10 +10,8 @@ from marimapper.led import (
     combine_2d_3d,
 )
 from marimapper.sfm import sfm
-
-from marimapper.queues import Queue2D, Queue3D, DetectionControlEnum, Queue3DInfo
 from marimapper.database_populator import camera_models, camera_model_radial
-from marimapper.queues import Queue2D, Queue3D, DetectionControlEnum
+from marimapper.queues import Queue2D, Queue3D, DetectionControlEnum, Queue3DInfo
 import open3d
 import numpy as np
 import math

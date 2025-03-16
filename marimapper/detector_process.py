@@ -1,4 +1,5 @@
 from multiprocessing import get_logger, Process, Queue, Event
+import time
 from marimapper.detector import (
     show_image,
     set_cam_default,
@@ -8,7 +9,6 @@ from marimapper.detector import (
     enable_and_find_led,
     find_led,
 )
-from marimapper.detector_fast import detect_leds_fast
 from marimapper.led import get_distance, get_color, LEDInfo
 from marimapper.queues import (
     RequestDetectionsQueue,
@@ -17,12 +17,11 @@ from marimapper.queues import (
     Queue3DInfo,
 )
 from marimapper.utils import get_backend, backend_black
-import time
 
 logger = get_logger()
 
 
-def render_led_info(led_info: dict[int, int], led_backend):
+def render_led_info(led_info: dict[int, LEDInfo], led_backend):
     buffer = [[0, 0, 0] for _ in range(max(led_info.keys()) + 1)]
     for led_id in led_info:
         info = led_info[led_id]
@@ -81,7 +80,6 @@ class DetectorProcess(Process):
         led_backend_server: str,
         display: bool = True,
         check_movement=True,
-        fast=True,
     ):
         super().__init__()
         self._request_detections_queue = RequestDetectionsQueue()  # {led_id, view_id}
@@ -98,7 +96,6 @@ class DetectorProcess(Process):
         self._led_backend_server = led_backend_server
         self._display = display
         self._check_movement = check_movement
-        self._fast = fast
 
     def get_input_3d_info_queue(self):
         return self._input_3d_info_queue
@@ -161,30 +158,17 @@ class DetectorProcess(Process):
                     set_cam_default(cam)
                     continue
 
-                if self._fast:  # This is nasty but I'd prefer this than dynamic imports
-                    leds = detect_leds_fast(
-                        led_id_from,
-                        led_id_to,
-                        cam,
-                        led_backend,
-                        view_id,
-                        timeout_controller,
-                        self._threshold,
-                        self._display,
-                        self._output_queues,
-                    )
-                else:
-                    leds = detect_leds(
-                        led_id_from,
-                        led_id_to,
-                        cam,
-                        led_backend,
-                        view_id,
-                        timeout_controller,
-                        self._threshold,
-                        self._display,
-                        self._output_queues,
-                    )
+                leds = detect_leds(
+                    led_id_from,
+                    led_id_to,
+                    cam,
+                    led_backend,
+                    view_id,
+                    timeout_controller,
+                    self._threshold,
+                    self._display,
+                    self._output_queues,
+                )
 
                 if leds is not None and len(leds) > 0:
 
