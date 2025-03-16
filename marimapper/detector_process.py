@@ -173,7 +173,7 @@ class DetectorProcess(Process):
                 if leds is not None and len(leds) > 0:
 
                     movement = False
-                    if self._check_movement and not self._fast:
+                    if self._check_movement:
                         led_first = leds[0]
 
                         led_current = enable_and_find_led(
