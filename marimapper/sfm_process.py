@@ -12,6 +12,8 @@ from marimapper.led import (
 from marimapper.sfm import sfm
 
 from marimapper.queues import Queue2D, Queue3D, DetectionControlEnum, Queue3DInfo
+from marimapper.database_populator import camera_models, camera_model_radial
+from marimapper.queues import Queue2D, Queue3D, DetectionControlEnum
 import open3d
 import numpy as np
 import math
@@ -61,6 +63,8 @@ class SFM(Process):
         max_fill: int = 5,
         existing_leds: Union[list[LED2D], None] = None,
         led_count: int = 0,
+        camera_model_name: str = camera_model_radial.__name__,
+        camera_fov: int = 60,
     ):
         super().__init__()
         self._input_queue: Queue2D = Queue2D()
@@ -68,6 +72,15 @@ class SFM(Process):
         self._output_info_queues: list[Queue3DInfo] = []
         self._exit_event = Event()
         self._led_count = led_count
+
+        assert camera_model_name in [
+            m.__name__ for m in camera_models
+        ], f"Cannot find camera model {camera_model_name}"
+
+        self._camera_model = next(
+            m for m in camera_models if m.__name__ == camera_model_name
+        )
+        self._camera_fov = camera_fov
         self.max_fill = max_fill
         self.leds_2d = existing_leds if existing_leds is not None else []
         self.leds_3d: list[LED3D] = []
@@ -115,9 +128,19 @@ class SFM(Process):
                     ]
                     update_sfm = True
 
+            start_time = 0
+            end_sfm_time = 0
+            end_post_process_time = 0
+
             if (update_sfm or needs_initial_reconstruction) and len(self.leds_2d) > 0:
 
-                self.leds_3d = sfm(self.leds_2d)
+                start_time = time.time()
+                self.leds_3d = sfm(
+                    self.leds_2d,
+                    camera_model=self._camera_model,
+                    camera_fov=self._camera_fov,
+                )
+                end_sfm_time = time.time()
 
                 if len(self.leds_3d) > 0:
                     rescale(self.leds_3d)
@@ -141,12 +164,18 @@ class SFM(Process):
                     for queue in self._output_info_queues:
                         queue.put(led_info)
 
+                end_post_process_time = time.time()
+
             if (print_reconstructed or needs_initial_reconstruction) and len(
                 self.leds_3d
             ) > 0:
 
+                sfm_time = end_sfm_time - start_time
+                post_time = end_post_process_time - end_sfm_time
+
                 print_without_hiding_scan_message(
-                    f"Reconstructed {len(self.leds_3d)} / {self._led_count}"
+                    f"Reconstructed {len(self.leds_3d)} / {self._led_count} in {sfm_time:.2f} seconds "
+                    f"(post process took {post_time:.2f} seconds)"
                 )
 
             needs_initial_reconstruction = False
