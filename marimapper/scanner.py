@@ -48,6 +48,8 @@ class Scanner:
         led_end: int,
         max_fill: int,
         check_movement: bool,
+        camera_fov: int,
+        camera_model_name: str,
     ):
         logger.debug("initialising scanner")
         self.output_dir = output_dir
@@ -68,7 +70,13 @@ class Scanner:
 
         led_count = led_end - led_start
 
-        self.sfm = SFM(max_fill, existing_leds, led_count)
+        self.sfm = SFM(
+            max_fill,
+            existing_leds,
+            led_count,
+            camera_model_name=camera_model_name,
+            camera_fov=camera_fov,
+        )
 
         self.current_view = last_view(existing_leds) + 1
 

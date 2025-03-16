@@ -4,6 +4,7 @@ import os
 import argparse
 import logging
 from marimapper.utils import add_common_args, add_backend_args, get_marimapper_version
+from marimapper.database_populator import camera_models, camera_model_radial
 from pathlib import Path
 
 logger = multiprocessing.log_to_stderr()
@@ -42,6 +43,21 @@ def main():
         help="Disables checking of movement when a scan completes",
     )
 
+    parser.add_argument(
+        "--camera_model",
+        type=str,
+        choices=[model.__name__ for model in camera_models],
+        default=camera_model_radial.__name__,
+        help="Sets the camera model, choose camera_model_opencv_full for higher accuracy",
+    )
+
+    parser.add_argument(
+        "--camera_fov",
+        type=int,
+        default=60,
+        help="The initial camera field of view in degrees, change this if your camera FOV is wildly different",
+    )
+
     args = parser.parse_args()
 
     if args.version:
@@ -76,6 +92,8 @@ def main():
         args.end,
         args.max_fill,
         args.disable_movement_check,
+        args.camera_fov,
+        args.camera_model,
     )
 
     scanner.mainloop()
