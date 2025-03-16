@@ -47,7 +47,12 @@ camera_models = [
     camera_model_opencv_full,
 ]
 
-camera_model_type = Union[*camera_models]
+camera_model_type = Union[
+    camera_model_pinhole,
+    camera_model_radial,
+    camera_model_opencv,
+    camera_model_opencv_full,
+]
 
 
 def populate_database(
