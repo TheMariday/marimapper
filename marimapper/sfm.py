@@ -25,6 +25,8 @@ def sfm(
         logger.debug("no leds :(")
         return []
 
+    logger.debug("Reconstructing science...")
+
     # also if we're just on 1 view, don't bother
     if len(get_view_ids(leds_2d)) <= 1:
         logger.debug("<= 1 view :(")

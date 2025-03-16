@@ -121,13 +121,19 @@ class SFM(Process):
                     ]
                     update_sfm = True
 
+            start_time = 0
+            end_sfm_time = 0
+            end_post_process_time = 0
+
             if (update_sfm or needs_initial_reconstruction) and len(self.leds_2d) > 0:
 
+                start_time = time.time()
                 self.leds_3d = sfm(
                     self.leds_2d,
                     camera_model=self._camera_model,
                     camera_fov=self._camera_fov,
                 )
+                end_sfm_time = time.time()
 
                 if len(self.leds_3d) > 0:
                     rescale(self.leds_3d)
@@ -141,12 +147,18 @@ class SFM(Process):
                     for queue in self._output_queues:
                         queue.put(self.leds_3d)
 
+                end_post_process_time = time.time()
+
             if (print_reconstructed or needs_initial_reconstruction) and len(
                 self.leds_3d
             ) > 0:
 
+                sfm_time = end_sfm_time - start_time
+                post_time = end_post_process_time - end_sfm_time
+
                 print_without_hiding_scan_message(
-                    f"Reconstructed {len(self.leds_3d)} / {self._led_count}"
+                    f"Reconstructed {len(self.leds_3d)} / {self._led_count} in {sfm_time:.2f} seconds "
+                    f"(post process took {post_time:.2f} seconds)"
                 )
 
             needs_initial_reconstruction = False
