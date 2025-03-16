@@ -9,7 +9,7 @@ def test_sfm_process_basic():
 
     leds = get_all_2d_led_maps(get_test_dir("MariMapper-Test-Data/9_point_box"))
 
-    sfm = SFM(existing_leds=leds)
+    sfm = SFM(existing_leds=leds, max_fill=0)
 
     output_queue = Queue3D()
 
@@ -24,7 +24,7 @@ def test_sfm_process_basic():
     timeout = time.time() + 5
 
     while sfm.is_alive():
-        assert time.time() < timeout  # if this asserts, sfm has failed to stop
+        assert time.time() < timeout, "sfm has failed to stop"
 
 
 def test_sfm_process_exit():

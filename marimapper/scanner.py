@@ -90,13 +90,15 @@ class Scanner:
 
         self.sfm.add_output_queue(self.renderer3d.get_input_queue())
         self.sfm.add_output_queue(self.file_writer.get_3d_input_queue())
+        self.sfm.add_output_info_queue(self.detector.get_input_3d_info_queue())
         self.sfm.start()
         self.renderer3d.start()
         self.detector.start()
         self.file_writer.start()
 
+        # we add plus one here as I assume people want to include the last led they define
         self.led_id_range = range(
-            led_start, min(led_end, self.detector.get_led_count())
+            led_start, min(led_end + 1, self.detector.get_led_count())
         )
 
         logger.debug("scanner initialised")

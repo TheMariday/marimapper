@@ -25,3 +25,6 @@ class Backend:
     def set_led(self, led_index: int, on: bool):
 
         self.leds[led_index] = (100, 100, 100) if on else (0, 0, 0)
+
+    def set_leds(self, buffer: list[list[int]]):
+        self.leds = buffer
