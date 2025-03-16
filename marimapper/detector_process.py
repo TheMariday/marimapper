@@ -231,6 +231,7 @@ class DetectorProcess(Process):
                 if self._display:
                     image = cam.read()
                     show_image(image)
+                    time.sleep(1 / 60)
 
                 if not self._input_3d_info_queue.empty():
                     led_info: dict[int, LEDInfo] = self._input_3d_info_queue.get()

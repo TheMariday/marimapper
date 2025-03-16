@@ -62,6 +62,7 @@ class VisualiseProcess(Process):
             if initialised:
                 self._vis.poll_events()
                 self._vis.update_renderer()
+                time.sleep(1 / 60)
             else:
                 time.sleep(1)
 

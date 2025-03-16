@@ -11,6 +11,22 @@ ARBITRARY_SCALE = 2000
 logger = get_logger()
 
 
+class CameraModel:
+
+    SimplePinhole = 0  # f, cx, cy
+    Pinhole = 1
+    SimpleRadial = 2  # f, cx, cy k
+    Radial = 3
+    OpenCV = 4  # fx, fy, cx, cy, k1, k2, p1, p2
+    OpenCVFisheye = 5
+    FullOpenCV = 6
+    FOV = 7
+    SimpleRadialFisheye = 8
+    RadialFisheye = 9
+    ThinPrismFisheye = 10
+    RadTanThinPrismFisheye = 11
+
+
 def populate_database(db_path: Path, leds: list[LED2D]):
     logger.debug(f"Populating sfm database with {len(leds)} leds, path: {db_path}")
     views = get_view_ids(leds)
@@ -41,14 +57,15 @@ def populate_database(db_path: Path, leds: list[LED2D]):
     height = ARBITRARY_SCALE
     fov = 60  # degrees, this gets optimised so doesn't //really// matter that much
 
-    SIMPLE_PINHOLE = 0
-
     cx = width / 2
     cy = height / 2
     f = (width / 2.0) / tan(radians(fov / 2.0))
 
     camera_id = db.add_camera(
-        model=SIMPLE_PINHOLE, width=width, height=height, params=(f, cx, cy)
+        model=CameraModel.SimpleRadial,
+        width=width,
+        height=height,
+        params=(f, cx, cy, 0),
     )
 
     # Create dummy images_all_the_same.
