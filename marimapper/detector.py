@@ -119,10 +119,12 @@ def set_cam_dark(cam: Camera, exposure: int) -> bool:
 
 
 def find_led(
-    cam: Camera, threshold: int = 128, display: bool = True
+    cam: Camera, threshold: int = 128, display: bool = True, dark_frame=None
 ) -> Optional[Point2D]:
 
     image = cam.read()
+    if dark_frame is not None:
+        cv2.subtract(image, dark_frame, image)
     results = find_led_in_image(image, threshold)
 
     if display:
@@ -142,8 +144,10 @@ def enable_and_find_led(
     display: bool = False,
 ) -> Optional[LED2D]:
 
+    dark_frame = cam.read()
+
     # First wait for no leds to be visible
-    while find_led(cam, threshold, display) is not None:
+    while find_led(cam, threshold, display, dark_frame=dark_frame) is not None:
         pass
 
     # Set the led to on and start the clock
@@ -156,7 +160,7 @@ def enable_and_find_led(
     while (
         point is None and time.time() < response_time_start + timeout_controller.timeout
     ):
-        point = find_led(cam, threshold, display)
+        point = find_led(cam, threshold, display, dark_frame)
 
     led_backend.set_led(led_id, False)
 
@@ -165,7 +169,7 @@ def enable_and_find_led(
 
     timeout_controller.add_response_time(time.time() - response_time_start)
 
-    while find_led(cam, threshold, display) is not None:
+    while find_led(cam, threshold, display, dark_frame=dark_frame) is not None:
         pass
 
     return LED2D(led_id, view_id, point)
