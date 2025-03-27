@@ -1,7 +1,6 @@
 import pytest
 import tempfile
-
-from marimapper.utils import get_backend
+from pathlib import Path
 
 
 def test_basic_usage():
@@ -21,8 +20,10 @@ class Backend:
         pass
 """
     )
+    from marimapper.backends.custom.custom_backend import load_custom_backend
+
     temp_backend_file.close()
-    backend = get_backend(temp_backend_file.name)
+    backend = load_custom_backend(Path(temp_backend_file.name))
 
     assert backend.get_led_count() == 1
 
@@ -45,8 +46,10 @@ class Backend:
     )
     temp_backend_file.close()
 
+    from marimapper.backends.custom.custom_backend import load_custom_backend
+
     with pytest.raises(RuntimeError):
-        get_backend(temp_backend_file.name)
+        load_custom_backend(Path(temp_backend_file.name))
 
 
 def test_invalid_backend_due_to_missing_function_arguments():
@@ -67,8 +70,10 @@ class Backend:
     )
     temp_backend_file.close()
 
+    from marimapper.backends.custom.custom_backend import load_custom_backend
+
     with pytest.raises(RuntimeError):
-        get_backend(temp_backend_file.name)
+        load_custom_backend(Path(temp_backend_file.name))
 
 
 def test_fadecandy(monkeypatch):
@@ -84,8 +89,9 @@ def test_fadecandy(monkeypatch):
 
     monkeypatch.setattr(opc, "Client", get_client_patch)
 
-    get_backend("fadecandy")
-    get_backend("fadecandy", "1.2.3.4")
+    from marimapper.backends.fadecandy import fadecandy_backend
+
+    fadecandy_backend.Backend("1.2.3.4")
 
 
 def test_wled(monkeypatch):
@@ -104,11 +110,12 @@ def test_wled(monkeypatch):
     monkeypatch.setattr(requests, "post", return_response_patch)
     monkeypatch.setattr(requests, "get", return_response_patch)
 
-    get_backend("wled")
-    get_backend("wled", "1.2.3.4")
+    from marimapper.backends.wled import wled_backend
+
+    wled_backend.Backend("1.2.3.4")
 
     with pytest.raises(RuntimeError):
-        get_backend("wled", "bananas")
+        wled_backend.Backend("bananas")
 
 
 def test_fcmega(monkeypatch):
@@ -136,7 +143,9 @@ def test_fcmega(monkeypatch):
     monkeypatch.setattr(serial, "Serial", SerialPatch)
     monkeypatch.setattr(serial.tools.list_ports, "comports", comports_patch)
 
-    get_backend("fcmega")
+    from marimapper.backends.fcmega import fcmega_backend
+
+    fcmega_backend.Backend()
 
 
 # py_mini_racer uses import pkg_resources which is depreciated
@@ -154,20 +163,16 @@ def test_pixelblaze(monkeypatch):
 
     monkeypatch.setattr(pixelblaze, "Pixelblaze", PixelblazePatch)
 
-    get_backend("pixelblaze")
-    get_backend("pixelblaze", "1.2.3.4")
+    from marimapper.backends.pixelblaze import pixelblaze_backend
+
+    pixelblaze_backend.Backend("1.2.3.4")
 
     with pytest.raises(RuntimeError):
-        get_backend("pixelblaze", "bananas")
-
-
-def test_invalid_backend():
-
-    with pytest.raises(RuntimeError):
-        get_backend("invalid_backend")
+        pixelblaze_backend.Backend("bananas")
 
 
 def test_dummy_backend():
+    from marimapper.backends.dummy import dummy_backend
 
-    dummy = get_backend("dummy")
+    dummy = dummy_backend.Backend()
     assert dummy.get_led_count() == 0

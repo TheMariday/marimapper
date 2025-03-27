@@ -1,10 +1,20 @@
 import requests
 from ipaddress import ip_address
+from functools import partial
+import argparse
+
+
+def wled_backend_factory(argparse_args: argparse.Namespace):
+    return partial(Backend, argparse_args.base_url)
+
+
+def wled_backend_set_args(parser):
+    parser.add_argument('--base_url', default="4.3.2.1")
 
 
 class Backend:
 
-    def __init__(self, wled_base_url="4.3.2.1"):
+    def __init__(self, wled_base_url):
 
         try:
             ip_address(wled_base_url)

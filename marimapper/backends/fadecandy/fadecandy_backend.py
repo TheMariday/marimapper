@@ -1,10 +1,19 @@
+import argparse
 from marimapper.backends.fadecandy import opc
+from functools import partial
+
+
+def fadecandy_backend_factory(argparse_args: argparse.Namespace):
+    return partial(Backend, argparse_args.uri)
+
+
+def fadecandy_backend_set_args(parser):
+    parser.add_argument('--uri', default="localhost:7890")
 
 
 class Backend:
 
-    def __init__(self, uri="localhost:7890"):
-
+    def __init__(self, uri: str):
         self.client = opc.Client(uri)
         self.buffer = [(0, 0, 0) for _ in range(self.get_led_count())]
         self.client.put_pixels(self.buffer)

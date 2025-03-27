@@ -1,11 +1,7 @@
-from marimapper.scanner import Scanner
 import multiprocessing
-import os
 import argparse
 import logging
-from marimapper.utils import add_common_args, add_backend_args, get_marimapper_version
-from marimapper.database_populator import camera_models, camera_model_radial
-from pathlib import Path
+from marimapper.scripts.launcher import add_scanner_args, add_backend_subparsers
 
 logger = multiprocessing.log_to_stderr()
 logger.setLevel(level=logging.WARNING)
@@ -17,90 +13,29 @@ def main():
     parser = argparse.ArgumentParser(
         description="Captures LED flashes to file",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        prog="marimapper",
     )
 
-    add_common_args(parser)
-    add_backend_args(parser)
+    add_backend_subparsers(parser)
+    add_scanner_args(parser)
 
-    parser.add_argument(
-        "dir",
-        nargs="?",
-        type=Path,
-        default=os.getcwd(),
-        help="the location for your maps, defaults to the current working directory",
-    )
+    def splash(_):
 
-    parser.add_argument(
-        "--max_fill",
-        type=int,
-        default=5,
-        help="The max number of consecutive LEDs that can be estimated based on adjacent LEDs",
-    )
+        print(
+            """
+        Welcome to Marimapper! Please select a backend from {custom,none,fadecandy,fcmega,pixelblaze,wled}
+        For example:
+        marimapper fadecandy
+        Show help with
+        marimapper fadecandy --help
+        """
+        )
 
-    parser.add_argument(
-        "--disable_movement_check",
-        action="store_false",
-        help="Disables checking of movement when a scan completes",
-    )
-
-    parser.add_argument(
-        "--camera_model",
-        type=str,
-        choices=[model.__name__ for model in camera_models],
-        default=camera_model_radial.__name__,
-        help="Sets the camera model, choose camera_model_opencv_full for higher accuracy",
-    )
-
-    parser.add_argument(
-        "--camera_fov",
-        type=int,
-        default=60,
-        help="The initial camera field of view in degrees, change this if your camera FOV is wildly different",
-    )
+    parser.set_defaults(func=splash)
 
     args = parser.parse_args()
 
-    if args.version:
-        print(f"Marimapper, version {get_marimapper_version()}")
-        quit()
-
-    if not os.path.isdir(args.dir):
-        raise Exception(f"path {args.dir} does not exist")
-
-    if args.start > args.end:
-        raise Exception(f"Start point {args.start} is greater the end point {args.end}")
-
-    if args.verbose:
-        logger.setLevel(logging.DEBUG)
-
-    # This is to do with an issue with open3d bug in estimate normals
-    # https://github.com/isl-org/Open3D/issues/1428
-    # if left to its default fork start method, add_normals in sfm_process will fail
-    # add_normals is also in the wrong file, it should be in sfm.py, but this causes a dependancy crash
-    # I think there is something very wrong with open3d.geometry.PointCloud.estimate_normals()
-    # See https://github.com/TheMariday/marimapper/issues/46
-    # I would prefer not to call this here as it means that any process being called after this will have a different
-    # spawn method, however it makes tests more robust in isolation
-    # This is only an issue on Linux, as on Windows and Mac, the default start method is spawn
-    multiprocessing.set_start_method("spawn")
-
-    scanner = Scanner(
-        args.dir,
-        args.device,
-        args.exposure,
-        args.threshold,
-        args.backend,
-        args.server,
-        args.start,
-        args.end,
-        args.max_fill,
-        args.disable_movement_check,
-        args.camera_fov,
-        args.camera_model,
-    )
-
-    scanner.mainloop()
-    scanner.close()
+    args.func(args)
 
 
 if __name__ == "__main__":
