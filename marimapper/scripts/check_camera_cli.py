@@ -1,7 +1,11 @@
 import argparse
 
 from marimapper.detector import find_led, set_cam_dark
-from marimapper.scripts.arg_tools import add_camera_args, add_common_args
+from marimapper.scripts.arg_tools import (
+    add_camera_args,
+    add_common_args,
+    parse_common_args,
+)
 from marimapper.camera import Camera
 from multiprocessing import log_to_stderr
 import logging
@@ -15,6 +19,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Tests your webcam and LED detection algorithms",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        usage=argparse.SUPPRESS,
     )
 
     add_common_args(parser)
@@ -22,8 +27,7 @@ def main():
 
     args = parser.parse_args()
 
-    if args.verbose:
-        logger.setLevel(logging.DEBUG)
+    parse_common_args(args, logger)
 
     cam = Camera(args.device)
 

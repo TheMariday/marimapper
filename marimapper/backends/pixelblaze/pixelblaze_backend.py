@@ -17,7 +17,7 @@ def pixelblaze_backend_set_args(parser):
 
 class Backend:
 
-    def __init__(self, pixelblaze_ip):
+    def __init__(self, pixelblaze_ip: str):
 
         try:
             ip_address(pixelblaze_ip)

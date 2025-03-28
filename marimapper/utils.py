@@ -1,12 +1,6 @@
 import os
 import sys
 
-import importlib.util
-import importlib.metadata
-import logging
-
-logger = logging.getLogger()
-
 
 def get_user_confirmation(prompt):  # pragma: no coverage
 
@@ -55,17 +49,3 @@ class SupressLogging(object):
 
         self.outnull_file.close()
         self.errnull_file.close()
-
-
-def backend_black(backend):
-    buffer = [[0, 0, 0] for _ in range(backend.get_led_count())]
-    try:
-        backend.set_leds(buffer)
-        return True
-    except AttributeError:
-        return False
-
-
-def get_marimapper_version() -> str:  # pragma: no cover
-
-    return importlib.metadata.version("marimapper")  # pragma: no cover

@@ -16,10 +16,18 @@ from marimapper.queues import (
     DetectionControlEnum,
     Queue3DInfo,
 )
-from marimapper.utils import backend_black
 from functools import partial
 
 logger = get_logger()
+
+
+def backend_black(backend):
+    buffer = [[0, 0, 0] for _ in range(backend.get_led_count())]
+    try:
+        backend.set_leds(buffer)
+        return True
+    except AttributeError:
+        return False
 
 
 def render_led_info(led_info: dict[int, LEDInfo], led_backend):

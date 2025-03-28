@@ -12,15 +12,15 @@ from marimapper.backends.backend_utils import backend_factories
 from marimapper.scanner import Scanner
 import os
 
-logger = multiprocessing.log_to_stderr()
-logger.setLevel(level=logging.WARNING)
-
 
 def main():
-    logger.info("Starting MariMapper")
+
+    logger = multiprocessing.log_to_stderr()
+    logger.setLevel(level=logging.WARNING)
 
     parser = argparse.ArgumentParser(
-        description="Captures LED flashes to file",
+        description="Marimapper! Scan LEDs in 3D space using your webcam",
+        usage=argparse.SUPPRESS,
     )
 
     add_common_args(parser)
@@ -36,7 +36,7 @@ def main():
 
     args = parser.parse_args()
 
-    parse_common_args(args)
+    parse_common_args(args, logger)
 
     if not os.path.isdir(args.dir):
         raise Exception(f"path {args.dir} does not exist")

@@ -1,6 +1,5 @@
 import logging
-
-from marimapper.utils import get_marimapper_version
+import importlib.metadata
 from marimapper.database_populator import camera_models, camera_model_radial
 from marimapper.backends.backend_utils import backend_arg_setters
 
@@ -31,12 +30,12 @@ def add_camera_args(parser):
         type=int,
         choices=range(0, 255),
         metavar="[0-255]",
-        help="LED detection threshold, reducing this number will reduce false positives",
+        help="LED detection threshold, reducing this number will reduce false positive detections",
         default=128,
     )
 
 
-def add_common_args(parser):
+def add_common_args(parser) -> None:
 
     parser.add_argument(
         "-V",
@@ -48,13 +47,12 @@ def add_common_args(parser):
     parser.add_argument("-v", "--verbose", action="store_true")
 
 
-def add_scanner_args(parser):
+def add_scanner_args(parser) -> None:
 
     scanner_options = parser.add_argument_group("scanner options")
 
     scanner_options.add_argument(
-        "dir",
-        nargs="?",
+        "--dir",
         type=Path,
         default=os.getcwd(),
         help="the location for your maps, defaults to the current working directory",
@@ -67,7 +65,7 @@ def add_scanner_args(parser):
     scanner_options.add_argument(
         "--end",
         type=int,
-        help="Index of the last led you want to scan up to the backends limit",
+        help="Index of the last led you want to scan up to the backend's limit",
         default=10000,
     )
 
@@ -89,26 +87,28 @@ def add_scanner_args(parser):
         type=str,
         choices=[model.__name__ for model in camera_models],
         default=camera_model_radial.__name__,
-        help="Sets the camera model, choose camera_model_opencv_full for higher accuracy",
+        help="Sets the camera model used for reconstruction, choose camera_model_opencv_full for higher accuracy",
     )
 
 
-def parse_common_args(args: argparse.Namespace):
-    logger = logging.getLogger()
+def parse_common_args(args: argparse.Namespace, logger: logging.Logger) -> None:
     if args.verbose:
         logger.setLevel(logging.DEBUG)
     if args.version:
-        print(f"Marimapper camera checker, version {get_marimapper_version()}")
+        version = importlib.metadata.version("marimapper")
+        print(f"Marimapper version: {version}")
         quit()
 
     if not hasattr(args, "backend"):
         args.backend = "dummy"
 
 
-def add_all_backend_parsers(parser):
+def add_all_backend_parsers(parser, required=False) -> list[argparse.ArgumentParser]:
     backend_subparsers = []
 
-    backend_subparser = parser.add_subparsers(help="backend", required=True)
+    backend_subparser = parser.add_subparsers(
+        help="Backend to use to control the LEDs", required=required
+    )
 
     for backend_name, backend_arg_setter in backend_arg_setters.items():
         backend_parser = backend_subparser.add_parser(backend_name)
