@@ -88,6 +88,13 @@ Please see below for documentation on how to run the following backends:
 If your LED backend isn't supported, you need to write your own, 
 [it's super simple](https://github.com/TheMariday/marimapper/tree/main/docs/backends/custom.md)!
 
+
+> [!TIP]
+> use `marimapper wled --help` for any backend to show a full list of additional arguments 
+> such as server, channel, etc! 
+> 
+> Some not even in this doc...
+
 ## Step 3: Setup your scene
 
 🪨 Make sure that your camera is stable and won't move, try mounting it on a tripod if you can
@@ -99,7 +106,7 @@ even a small nudge can throw off the reconstructor!
 
 ## Step 4: [It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
 
-In a new folder, run `marimapper --backend fadecandy`
+In a new folder, run `marimapper fadecandy`
 
 and change `fadecandy` to whatever backend you're using and use `--help` to show more options
 

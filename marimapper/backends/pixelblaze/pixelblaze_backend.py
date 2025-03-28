@@ -1,12 +1,23 @@
 from multiprocessing import get_logger
 import pixelblaze
 from ipaddress import ip_address
+from functools import partial
+import argparse
+
 logger = get_logger()
+
+
+def pixelblaze_backend_factory(argparse_args: argparse.Namespace):
+    return partial(Backend, argparse_args.ip)
+
+
+def pixelblaze_backend_set_args(parser):
+    parser.add_argument('--server', default="4.3.2.1")
 
 
 class Backend:
 
-    def __init__(self, pixelblaze_ip="4.3.2.1"):
+    def __init__(self, pixelblaze_ip: str):
 
         try:
             ip_address(pixelblaze_ip)

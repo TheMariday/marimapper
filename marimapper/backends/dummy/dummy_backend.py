@@ -1,3 +1,15 @@
+import argparse
+from functools import partial
+
+
+def dummy_backend_factory(args: argparse.Namespace):
+    return partial(Backend)
+
+
+def dummy_backend_set_args(parser):
+    pass
+
+
 class Backend:
 
     def __init__(self):

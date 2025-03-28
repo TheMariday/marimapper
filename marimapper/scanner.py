@@ -6,12 +6,23 @@ from tqdm import tqdm
 from pathlib import Path
 from marimapper.detector_process import DetectorProcess
 from marimapper.queues import Queue2D, DetectionControlEnum
-from multiprocessing import get_logger
+from multiprocessing import get_logger, set_start_method
 from marimapper.file_tools import get_all_2d_led_maps
 from marimapper.utils import get_user_confirmation
 from marimapper.visualize_process import VisualiseProcess
 from marimapper.led import last_view
 from marimapper.file_writer_process import FileWriterProcess
+from functools import partial
+
+# This is to do with an issue with open3d bug in estimate normals
+# https://github.com/isl-org/Open3D/issues/1428
+# if left to its default fork start method, add_normals in sfm_process will fail
+# add_normals is also in the wrong file, it should be in sfm.py, but this causes a dependancy crash
+# I think there is something very wrong with open3d.geometry.PointCloud.estimate_normals()
+# See https://github.com/TheMariday/marimapper/issues/46
+# I would prefer not to call this here as it means that any process being called after this will have a different
+# spawn method, however it makes tests more robust in isolation
+# This is only an issue on Linux, as on Windows and Mac, the default start method is spawn
 
 logger = get_logger()
 
@@ -42,8 +53,7 @@ class Scanner:
         device: str,
         exposure: int,
         threshold: int,
-        backend: str,
-        server: str,
+        backend_factory: partial,
         led_start: int,
         led_end: int,
         max_fill: int,
@@ -52,14 +62,14 @@ class Scanner:
         camera_model_name: str,
     ):
         logger.debug("initialising scanner")
+        set_start_method("spawn")  # VERY important, see top of file
         self.output_dir = output_dir
 
         self.detector = DetectorProcess(
             device=device,
             dark_exposure=exposure,
             threshold=threshold,
-            led_backend_name=backend,
-            led_backend_server=server,
+            backend_factory=backend_factory,
             display=True,
             check_movement=check_movement,
         )
@@ -175,9 +185,7 @@ class Scanner:
             self.check_for_crash()
 
             if len(self.led_id_range) == 0:
-                print(
-                    "LED range is zero, have you chosen a backend with 'marimapper --backend'?"
-                )
+                print("LED range is zero, are you using a dummy backend?")
                 continue
 
             self.detector.detect(

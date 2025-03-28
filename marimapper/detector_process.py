@@ -16,9 +16,18 @@ from marimapper.queues import (
     DetectionControlEnum,
     Queue3DInfo,
 )
-from marimapper.utils import get_backend, backend_black
+from functools import partial
 
 logger = get_logger()
+
+
+def backend_black(backend):
+    buffer = [[0, 0, 0] for _ in range(backend.get_led_count())]
+    try:
+        backend.set_leds(buffer)
+        return True
+    except AttributeError:
+        return False
 
 
 def render_led_info(led_info: dict[int, LEDInfo], led_backend):
@@ -76,8 +85,7 @@ class DetectorProcess(Process):
         device: str,
         dark_exposure: int,
         threshold: int,
-        led_backend_name: str,
-        led_backend_server: str,
+        backend_factory: partial,
         display: bool = True,
         check_movement=True,
     ):
@@ -92,8 +100,7 @@ class DetectorProcess(Process):
         self._device = device
         self._dark_exposure = dark_exposure
         self._threshold = threshold
-        self._led_backend_name = led_backend_name
-        self._led_backend_server = led_backend_server
+        self._led_backend_factory = backend_factory
         self._display = display
         self._check_movement = check_movement
 
@@ -121,7 +128,7 @@ class DetectorProcess(Process):
 
     def run(self):
 
-        led_backend = get_backend(self._led_backend_name, self._led_backend_server)
+        led_backend = self._led_backend_factory()
 
         self._led_count.put(led_backend.get_led_count())
 
