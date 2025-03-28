@@ -1,7 +1,7 @@
 import argparse
 
 from marimapper.detector import find_led, set_cam_dark
-from marimapper.utils import add_common_args, get_marimapper_version
+from marimapper.scripts.arg_tools import add_camera_args, add_common_args
 from marimapper.camera import Camera
 from multiprocessing import log_to_stderr
 import logging
@@ -18,15 +18,12 @@ def main():
     )
 
     add_common_args(parser)
+    add_camera_args(parser)
 
     args = parser.parse_args()
 
     if args.verbose:
         logger.setLevel(logging.DEBUG)
-
-    if args.version:
-        print(f"Marimapper camera checker, version {get_marimapper_version()}")
-        quit()
 
     cam = Camera(args.device)
 

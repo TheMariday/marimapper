@@ -25,9 +25,9 @@ class Backend:
         #     some_led_library.set_led(led_index, (0, 0, 0))
 ```
 
-Fill out the blanks and check it by running `marimapper_check_backend --backend my_backend.py` in the same directory
+Fill out the blanks and check it by running `marimapper_check_backend custom my_backend.py` in the same directory
 
-Once you've checked it works, you can run marimapper in the same directory with `marimapper --backend my_backend.py` and it will use your backend!
+Once you've checked it works, you can run marimapper in the same directory with `marimapper custom --file my_backend.py` and it will use your backend!
 
 But my backend requires a library! Like `requests`! What do?
 

@@ -185,9 +185,7 @@ class Scanner:
             self.check_for_crash()
 
             if len(self.led_id_range) == 0:
-                print(
-                    "LED range is zero, have you chosen a backend with 'marimapper --backend'?"
-                )
+                print("LED range is zero, are you using a dummy backend?")
                 continue
 
             self.detector.detect(

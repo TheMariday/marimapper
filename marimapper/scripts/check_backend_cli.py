@@ -1,21 +1,22 @@
 import argparse
 import time
 from multiprocessing import log_to_stderr
-from marimapper import utils
 import logging
+from marimapper.backends.backend_utils import backend_factories
+from marimapper.scripts.arg_tools import add_all_backend_parsers
+from marimapper.scripts.arg_tools import parse_common_args, add_common_args
 
 logger = log_to_stderr()
 logger.setLevel(level=logging.INFO)
 
 
 def main():
-
     parser = argparse.ArgumentParser(
         description="Tests a particular backend by making a reference led blink",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
-    utils.add_backend_args(parser)
+    for backend_parser in add_all_backend_parsers(parser):
+        add_common_args(backend_parser)
 
     parser.add_argument(
         "--reference_led",
@@ -26,12 +27,13 @@ def main():
 
     args = parser.parse_args()
 
-    if args.verbose:
-        logger.setLevel(logging.DEBUG)
+    parse_common_args(args)
 
     logger.info(f"Loading {args.backend} backend")
 
-    led_backend = utils.get_backend(args.backend, args.server)
+    backend_factory = backend_factories[args.backend](args)
+
+    led_backend = backend_factory()
 
     logger.info("Press ctrl-c to cancel")
 

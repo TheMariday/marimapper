@@ -1,6 +1,6 @@
 # WLED Backend Tutorial
 
-WLED should work pretty much out of the box, test your backend with `marimapper_check_backend --backend wled`. It should cause LED 0 to blink.
+WLED should work pretty much out of the box, test your backend with `marimapper_check_backend wled`. It should cause LED 0 to blink.
 
 If you need to change the server address, use the `--server` argument
 

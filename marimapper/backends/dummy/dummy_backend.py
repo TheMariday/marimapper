@@ -1,7 +1,8 @@
+import argparse
 from functools import partial
 
 
-def dummy_backend_factory():
+def dummy_backend_factory(args: argparse.Namespace):
     return partial(Backend)
 
 

@@ -99,7 +99,7 @@ even a small nudge can throw off the reconstructor!
 
 ## Step 4: [It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
 
-In a new folder, run `marimapper --backend fadecandy`
+In a new folder, run `marimapper fadecandy`
 
 and change `fadecandy` to whatever backend you're using and use `--help` to show more options
 

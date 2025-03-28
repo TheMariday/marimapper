@@ -5,7 +5,7 @@ To use PixelBlaze with marimapper you first need to upload a pattern file to you
 You can do this via the web UI by uploading [this file](https://github.com/TheMariday/marimapper/blob/main/marimapper/backends/pixelblaze/marimapper.epe)
 as a new pattern.
 
-Once this is done, run `marimapper_check_backend --backend pixelblaze` to test it. It should cause LED 0 to blink.
+Once this is done, run `marimapper_check_backend pixelblaze` to test it. It should cause LED 0 to blink.
 
 By default, marimapper tools will use the address `4.3.2.1`, but this can be changed by using the `--server` argument.
 
