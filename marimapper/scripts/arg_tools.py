@@ -111,7 +111,11 @@ def add_all_backend_parsers(parser, required=False) -> list[argparse.ArgumentPar
     )
 
     for backend_name, backend_arg_setter in backend_arg_setters.items():
-        backend_parser = backend_subparser.add_parser(backend_name)
+        backend_parser = backend_subparser.add_parser(
+            backend_name,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            usage=argparse.SUPPRESS,
+        )
         backend_parser.set_defaults(backend=backend_name)
         backend_parser_group = backend_parser.add_argument_group(
             f"{backend_name} options"
