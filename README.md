@@ -84,6 +84,7 @@ Please see below for documentation on how to run the following backends:
 - [WLED](https://github.com/TheMariday/marimapper/tree/main/docs/backends/WLED.md)
 - [FCMega](https://github.com/TheMariday/marimapper/tree/main/docs/backends/FCMEGA.md)
 - [PixelBlaze](https://github.com/TheMariday/marimapper/tree/main/docs/backends/PixelBlaze.md)
+- [ArtNet](https://github.com/TheMariday/marimapper/tree/main/docs/backends/ArtNet.md)
 
 If your LED backend isn't supported, you need to write your own, 
 [it's super simple](https://github.com/TheMariday/marimapper/tree/main/docs/backends/custom.md)!

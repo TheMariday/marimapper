@@ -1,6 +1,27 @@
 import socket
 from time import sleep
 import enum
+from functools import partial
+import argparse
+
+
+def artnet_set_args(parser):
+    parser.add_argument("--fixture_count", default=160, help="The Fixture count")
+    parser.add_argument("--base_universe", default=0, help="The base universe")
+    parser.add_argument("--channels_per_fixture", default=4, help="The channels per fixture")
+    parser.add_argument("--server", default="255.255.255.255", help="The server address")
+    parser.add_argument("--broadcast", action="store_true", help="Whether to broadcast")
+
+
+def artnet_backend_factory(args: argparse.Namespace):
+    return partial(
+        Backend,
+        args.fixture_count,
+        args.base_universe,
+        args.channels_per_fixture,
+        args.server,
+        args.broadcast,
+    )
 
 
 class OpCode(enum.Enum):
@@ -20,28 +41,32 @@ class Backend:
     https://art-net.org.uk/art-net-specification/
     """
 
-    # You might need to change these for your setup. Ideally these should be configurable.
-    FIXTURE_COUNT = 160
-    BASE_UNIVERSE = 0
-    CHANNELS_PER_FIXTURE = 4  # RGBW, four channels per LED.
-    ADDRESS = "255.255.255.255"
-    BROADCAST = True
-
     # Art-Net implementation constants
     UDP_PORT = 6454
     ARTNET_VERSION = 14
 
-    def __init__(self):
+    def __init__(
+        self,
+        fixture_count: int,
+        base_universe: int,
+        channels_per_fixture: int,
+        server_address: str,
+        broadcast: bool,
+    ):
+        self.fixture_count = fixture_count
+        self.base_universe = base_universe
+        self.channels_per_fixture = channels_per_fixture
+        self.server_address = server_address
         self.sequence = 0
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        if self.BROADCAST:
+        if broadcast:
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
     def get_led_count(self):
-        return self.FIXTURE_COUNT
+        return self.fixture_count
 
     def send_packet(self, packet: bytearray):
-        self.sock.sendto(packet, (self.ADDRESS, self.UDP_PORT))
+        self.sock.sendto(packet, (self.server_address, self.UDP_PORT))
 
     def artnet_header(self, opcode: OpCode) -> bytearray:
         packet = bytearray("Art-Net\0", "utf8")  # Header
@@ -59,7 +84,7 @@ class Backend:
         # The Art-Net spec defines a more complex split of net/subnet/universe, but that only
         # starts to be a problem with huge setups, so we're merging all that into one universe ID
         # for the moment.
-        universe += self.BASE_UNIVERSE
+        universe += self.base_universe
         packet.extend(universe.to_bytes(2, byteorder="little"))
 
         length = len(channels)
@@ -79,14 +104,14 @@ class Backend:
 
     def set_led(self, led_index: int, on: bool) -> None:
         # Calculate how many universes we need to cover all the LEDs
-        universe_count = (self.get_led_count() * self.CHANNELS_PER_FIXTURE) // 512 + 1
+        universe_count = (self.get_led_count() * self.channels_per_fixture) // 512 + 1
 
         # Generate a zeroed list of all channels we need to send
         channels = [0] * (512 * universe_count)
 
         # Set the brightness for the selected fixture
-        fixture_base_channel = led_index * self.CHANNELS_PER_FIXTURE
-        for c in range(0, self.CHANNELS_PER_FIXTURE):
+        fixture_base_channel = led_index * self.channels_per_fixture
+        for c in range(0, self.channels_per_fixture):
             channels[fixture_base_channel + c] = 255 if on else 0
 
         # Split the channels into universes

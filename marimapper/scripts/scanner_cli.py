@@ -20,6 +20,7 @@ def main():
 
     parser = argparse.ArgumentParser(
         description="Marimapper! Scan LEDs in 3D space using your webcam",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         usage=argparse.SUPPRESS,
     )
 
