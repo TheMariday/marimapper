@@ -8,7 +8,7 @@ def fadecandy_backend_factory(argparse_args: argparse.Namespace):
 
 
 def fadecandy_backend_set_args(parser):
-    parser.add_argument('--server', default="localhost:7890")
+    parser.add_argument("--server", default="localhost:7890")
 
 
 class Backend:

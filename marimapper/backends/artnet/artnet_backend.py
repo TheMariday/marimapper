@@ -8,8 +8,12 @@ import argparse
 def artnet_set_args(parser):
     parser.add_argument("--fixture_count", default=160, help="The Fixture count")
     parser.add_argument("--base_universe", default=0, help="The base universe")
-    parser.add_argument("--channels_per_fixture", default=4, help="The channels per fixture")
-    parser.add_argument("--server", default="255.255.255.255", help="The server address")
+    parser.add_argument(
+        "--channels_per_fixture", default=4, help="The channels per fixture"
+    )
+    parser.add_argument(
+        "--server", default="255.255.255.255", help="The server address"
+    )
     parser.add_argument("--broadcast", action="store_true", help="Whether to broadcast")
 
 

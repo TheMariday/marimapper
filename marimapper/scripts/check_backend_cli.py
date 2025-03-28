@@ -17,7 +17,7 @@ def main():
         usage=argparse.SUPPRESS,
     )
 
-    for backend_parser in add_all_backend_parsers(parser, required=True):
+    for backend_parser in add_all_backend_parsers(parser, required=True) + [parser]:
         add_common_args(backend_parser)
         backend_parser.add_argument(
             "--reference_led",

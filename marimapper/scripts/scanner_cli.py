@@ -24,13 +24,7 @@ def main():
         usage=argparse.SUPPRESS,
     )
 
-    add_common_args(parser)
-    add_camera_args(parser)
-    add_scanner_args(parser)
-
-    all_backend_parsers = add_all_backend_parsers(parser)
-
-    for backend_parser in all_backend_parsers:
+    for backend_parser in add_all_backend_parsers(parser) + [parser]:
         add_common_args(backend_parser)
         add_camera_args(backend_parser)
         add_scanner_args(backend_parser)

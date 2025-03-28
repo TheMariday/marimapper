@@ -12,7 +12,7 @@ def pixelblaze_backend_factory(argparse_args: argparse.Namespace):
 
 
 def pixelblaze_backend_set_args(parser):
-    parser.add_argument('--server', default="4.3.2.1")
+    parser.add_argument("--server", default="4.3.2.1")
 
 
 class Backend:
@@ -22,7 +22,9 @@ class Backend:
         try:
             ip_address(pixelblaze_ip)
         except ValueError:
-            raise RuntimeError(f"Pixelblaze backend failed to start due as {pixelblaze_ip} is not a valid IP address")
+            raise RuntimeError(
+                f"Pixelblaze backend failed to start due as {pixelblaze_ip} is not a valid IP address"
+            )
 
         self.pb = pixelblaze.Pixelblaze(pixelblaze_ip)
         try:
@@ -31,8 +33,10 @@ class Backend:
             )  # Need to install marimapper.js to your pixelblaze
         except TypeError as e:
             if "'NoneType' has no len()" in str(e):
-                raise RuntimeError("Pixelblaze may have failed to find the effect 'marimapper'. "
-                                   "Have you uploaded marimapper.epe to your controller?")
+                raise RuntimeError(
+                    "Pixelblaze may have failed to find the effect 'marimapper'. "
+                    "Have you uploaded marimapper.epe to your controller?"
+                )
             else:
                 raise e
 
