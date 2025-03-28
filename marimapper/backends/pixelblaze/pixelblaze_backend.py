@@ -12,7 +12,7 @@ def pixelblaze_backend_factory(argparse_args: argparse.Namespace):
 
 
 def pixelblaze_backend_set_args(parser):
-    parser.add_argument('--ip', default="4.3.2.1")
+    parser.add_argument('--server', default="4.3.2.1")
 
 
 class Backend:

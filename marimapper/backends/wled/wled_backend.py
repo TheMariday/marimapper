@@ -9,7 +9,7 @@ def wled_backend_factory(argparse_args: argparse.Namespace):
 
 
 def wled_backend_set_args(parser):
-    parser.add_argument('--base_url', default="4.3.2.1")
+    parser.add_argument('--server', default="4.3.2.1")
 
 
 class Backend:
