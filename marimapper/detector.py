@@ -12,6 +12,14 @@ from marimapper.led import Point2D, LED2D
 logger = get_logger()
 
 
+def contour_brightness(image: np.ndarray, contour: np.ndarray) -> int:
+    """Calculate the sum of all pixels within a contour."""
+    mask = np.zeros(image.shape, dtype=np.uint8)
+    cv2.drawContours(mask, [contour], -1, 255, -1)
+    masked_image = cv2.bitwise_and(image, image, mask=mask)
+    return cv2.sumElems(masked_image)
+
+
 def find_led_in_image(image: np.ndarray, threshold: int = 128) -> Optional[Point2D]:
 
     if len(image.shape) > 2:
@@ -21,21 +29,12 @@ def find_led_in_image(image: np.ndarray, threshold: int = 128) -> Optional[Point
 
     contours, _ = cv2.findContours(image_thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    led_response_count = len(contours)
-
-    img_height = image.shape[0]
-    img_width = image.shape[1]
-
-    if led_response_count == 0:
+    if len(contours) == 0:
         return None
 
-    _, _, _, max_loc = cv2.minMaxLoc(image)
-
-    brightest_contour = [
-        contour
-        for contour in contours
-        if cv2.pointPolygonTest(contour, max_loc, False) != -1.0
-    ][0]
+    brightest_contour = sorted(
+        contours, key=lambda c: contour_brightness(image, c), reverse=True
+    )[0]
 
     moments = cv2.moments(brightest_contour)
 
@@ -46,6 +45,8 @@ def find_led_in_image(image: np.ndarray, threshold: int = 128) -> Optional[Point
     # Am I going to find out why, no, no I am not
     if center_u == 0 or center_v == 0:
         return None
+
+    img_height, img_width = image.shape
 
     center_u = center_u / img_width
     v_offset = (img_width - img_height) / 2.0
@@ -100,7 +101,7 @@ def set_cam_default(cam: Camera) -> None:
     cam.eat()
 
 
-def set_cam_dark(cam: Camera, exposure: int) -> None:
+def set_cam_dark(cam: Camera, exposure: int) -> bool:
     logger.info("setting cam to dark mode")
     cam.set_autofocus(0, 0)
     cam.set_exposure_mode(0)
@@ -111,7 +112,10 @@ def set_cam_dark(cam: Camera, exposure: int) -> None:
             f"try darkening the scene and adjusting the threshold with --threshold "
         )
 
+    exposure_success = cam.set_exposure(exposure)
     cam.eat()
+
+    return exposure_success
 
 
 def find_led(

@@ -2,6 +2,15 @@ import time
 import threading
 
 from marimapper.backends.fcmega.fcmega import FCMega
+from functools import partial
+
+
+def fcmega_backend_factory():
+    return partial(Backend)
+
+
+def fcmega_backend_set_args(parser):
+    pass
 
 
 class Backend:
@@ -25,3 +34,6 @@ class Backend:
     def set_led(self, led_index: int, on: bool):
 
         self.leds[led_index] = (100, 100, 100) if on else (0, 0, 0)
+
+    def set_leds(self, buffer: list[list[int]]):
+        self.leds = buffer

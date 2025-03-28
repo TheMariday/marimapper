@@ -1,4 +1,5 @@
 from multiprocessing import get_logger, Process, Queue, Event
+import time
 from marimapper.detector import (
     show_image,
     set_cam_default,
@@ -8,11 +9,73 @@ from marimapper.detector import (
     enable_and_find_led,
     find_led,
 )
-from marimapper.led import get_distance
-from marimapper.queues import RequestDetectionsQueue, Queue2D, DetectionControlEnum
-from marimapper.utils import get_backend
+from marimapper.led import get_distance, get_color, LEDInfo
+from marimapper.queues import (
+    RequestDetectionsQueue,
+    Queue2D,
+    DetectionControlEnum,
+    Queue3DInfo,
+)
+from functools import partial
 
 logger = get_logger()
+
+
+def backend_black(backend):
+    buffer = [[0, 0, 0] for _ in range(backend.get_led_count())]
+    try:
+        backend.set_leds(buffer)
+        return True
+    except AttributeError:
+        return False
+
+
+def render_led_info(led_info: dict[int, LEDInfo], led_backend):
+    buffer = [[0, 0, 0] for _ in range(max(led_info.keys()) + 1)]
+    for led_id in led_info:
+        info = led_info[led_id]
+        buffer[led_id] = [int(v / 10) for v in get_color(info)]
+
+    try:
+        led_backend.set_leds(buffer)
+        return True
+    except AttributeError:
+        logger.debug(
+            "tried to set a colourful backend buffer that doesn't have a set_leds method :("
+        )
+        return False
+
+
+def detect_leds(
+    led_id_from: int,
+    led_id_to: int,
+    cam: Camera,
+    led_backend,
+    view_id: int,
+    timeout_controller: TimeoutController,
+    threshold: int,
+    display: bool,
+    output_queues: list[Queue2D],
+):
+    leds = []
+    for led_id in range(led_id_from, led_id_to):
+        led = enable_and_find_led(
+            cam,
+            led_backend,
+            led_id,
+            view_id,
+            timeout_controller,
+            threshold,
+            display,
+        )
+
+        for queue in output_queues:
+            if led is not None:
+                queue.put(DetectionControlEnum.DETECT, led)
+                leds.append(led)
+            else:
+                queue.put(DetectionControlEnum.SKIP, led_id)
+    return leds
 
 
 class DetectorProcess(Process):
@@ -22,8 +85,7 @@ class DetectorProcess(Process):
         device: str,
         dark_exposure: int,
         threshold: int,
-        led_backend_name: str,
-        led_backend_server: str,
+        backend_factory: partial,
         display: bool = True,
         check_movement=True,
     ):
@@ -32,16 +94,18 @@ class DetectorProcess(Process):
         self._output_queues: list[Queue2D] = []  # LED3D
         self._led_count: Queue = Queue()
         self._led_count.cancel_join_thread()
+        self._input_3d_info_queue = Queue3DInfo()
         self._exit_event = Event()
 
         self._device = device
         self._dark_exposure = dark_exposure
         self._threshold = threshold
-        self._led_backend_name = led_backend_name
-        self._led_backend_server = led_backend_server
+        self._led_backend_factory = backend_factory
         self._display = display
         self._check_movement = check_movement
-        self.daemon = True
+
+    def get_input_3d_info_queue(self):
+        return self._input_3d_info_queue
 
     def get_request_detections_queue(self) -> RequestDetectionsQueue:
         return self._request_detections_queue
@@ -64,7 +128,7 @@ class DetectorProcess(Process):
 
     def run(self):
 
-        led_backend = get_backend(self._led_backend_name, self._led_backend_server)
+        led_backend = self._led_backend_factory()
 
         self._led_count.put(led_backend.get_led_count())
 
@@ -84,6 +148,10 @@ class DetectorProcess(Process):
                     self._request_detections_queue.get_id_from_id_to_view()
                 )
 
+                success = backend_black(led_backend)
+                if not success:
+                    logger.debug("failed to blacken backend due to missing attribute")
+
                 # scan start here
                 set_cam_dark(cam, self._dark_exposure)
 
@@ -92,45 +160,40 @@ class DetectorProcess(Process):
                     logger.error(
                         "Detector process can detect an LED when no LEDs should be visible"
                     )
-                    self.put_in_all_output_queues(DetectionControlEnum.FAIL, None)
+                    for queue in self._output_queues:
+                        queue.put(DetectionControlEnum.FAIL, None)
                     set_cam_default(cam)
                     continue
 
-                leds = []
-                for led_id in range(led_id_from, led_id_to):
-                    led = enable_and_find_led(
-                        cam,
-                        led_backend,
-                        led_id,
-                        view_id,
-                        timeout_controller,
-                        self._threshold,
-                        self._display,
-                    )
+                leds = detect_leds(
+                    led_id_from,
+                    led_id_to,
+                    cam,
+                    led_backend,
+                    view_id,
+                    timeout_controller,
+                    self._threshold,
+                    self._display,
+                    self._output_queues,
+                )
 
-                    if led is not None:
-                        self.put_in_all_output_queues(DetectionControlEnum.DETECT, led)
-                        leds.append(led)
-                    else:
-                        self.put_in_all_output_queues(DetectionControlEnum.SKIP, led_id)
-
-                if leds:
+                if leds is not None and len(leds) > 0:
 
                     movement = False
                     if self._check_movement:
-                        led_previous = leds[0]
+                        led_first = leds[0]
 
                         led_current = enable_and_find_led(
                             cam,
                             led_backend,
-                            led_previous.led_id,
+                            led_first.led_id,
                             view_id,
                             timeout_controller,
                             self._threshold,
                             self._display,
                         )
                         if led_current is not None:
-                            distance = get_distance(led_current, led_previous)
+                            distance = get_distance(led_current, led_first)
                             if distance > 0.01:  # 1% movement
                                 logger.error(
                                     f"Camera movement of {int(distance*100)}% has been detected"
@@ -138,18 +201,18 @@ class DetectorProcess(Process):
                                 movement = True
                         else:
                             logger.error(
-                                f"Went back to check led {led_previous.led_id} for movement, and led could no longer be found"
+                                f"Went back to check led {led_first.led_id} for movement, and led could no longer be found"
                             )
                             movement = True
 
-                    if movement:
-                        logger.error("Deleting scan due to camera movement")
-                        self.put_in_all_output_queues(
-                            DetectionControlEnum.DELETE, view_id
-                        )
-                    else:
-                        self.put_in_all_output_queues(
-                            DetectionControlEnum.DONE, view_id
+                    for queue in self._output_queues:
+                        queue.put(
+                            (
+                                DetectionControlEnum.DONE
+                                if not movement
+                                else DetectionControlEnum.DELETE
+                            ),
+                            view_id,
                         )
 
                 # and lets reset everything back to normal
@@ -159,6 +222,18 @@ class DetectorProcess(Process):
                 if self._display:
                     image = cam.read()
                     show_image(image)
+                    time.sleep(1 / 60)
 
-        logger.info("resetting cam!")
+                if not self._input_3d_info_queue.empty():
+                    led_info: dict[int, LEDInfo] = self._input_3d_info_queue.get()
+
+                    success = render_led_info(led_info, led_backend)
+                    if not success:
+                        logger.debug(
+                            "failed to update colourful backend buffer due to a missing attribute"
+                        )
+
+        logger.info("detector closing, resetting camera and backend")
         set_cam_default(cam)
+        backend_black(led_backend)
+        time.sleep(1)  # wait a moment for the backend to update before closing

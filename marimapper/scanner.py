@@ -6,12 +6,23 @@ from tqdm import tqdm
 from pathlib import Path
 from marimapper.detector_process import DetectorProcess
 from marimapper.queues import Queue2D, DetectionControlEnum
-from multiprocessing import get_logger
+from multiprocessing import get_logger, set_start_method
 from marimapper.file_tools import get_all_2d_led_maps
 from marimapper.utils import get_user_confirmation
 from marimapper.visualize_process import VisualiseProcess
 from marimapper.led import last_view
 from marimapper.file_writer_process import FileWriterProcess
+from functools import partial
+
+# This is to do with an issue with open3d bug in estimate normals
+# https://github.com/isl-org/Open3D/issues/1428
+# if left to its default fork start method, add_normals in sfm_process will fail
+# add_normals is also in the wrong file, it should be in sfm.py, but this causes a dependancy crash
+# I think there is something very wrong with open3d.geometry.PointCloud.estimate_normals()
+# See https://github.com/TheMariday/marimapper/issues/46
+# I would prefer not to call this here as it means that any process being called after this will have a different
+# spawn method, however it makes tests more robust in isolation
+# This is only an issue on Linux, as on Windows and Mac, the default start method is spawn
 
 logger = get_logger()
 
@@ -42,25 +53,40 @@ class Scanner:
         device: str,
         exposure: int,
         threshold: int,
-        backend: str,
-        server: str,
+        backend_factory: partial,
         led_start: int,
         led_end: int,
         max_fill: int,
         check_movement: bool,
+        camera_fov: int,
+        camera_model_name: str,
     ):
         logger.debug("initialising scanner")
+        set_start_method("spawn")  # VERY important, see top of file
         self.output_dir = output_dir
 
         self.detector = DetectorProcess(
-            device, exposure, threshold, backend, server, check_movement
+            device=device,
+            dark_exposure=exposure,
+            threshold=threshold,
+            backend_factory=backend_factory,
+            display=True,
+            check_movement=check_movement,
         )
 
         self.file_writer = FileWriterProcess(self.output_dir)
 
         existing_leds = get_all_2d_led_maps(self.output_dir)
 
-        self.sfm = SFM(max_fill, existing_leds)
+        led_count = led_end - led_start
+
+        self.sfm = SFM(
+            max_fill,
+            existing_leds,
+            led_count,
+            camera_model_name=camera_model_name,
+            camera_fov=camera_fov,
+        )
 
         self.current_view = last_view(existing_leds) + 1
 
@@ -74,13 +100,15 @@ class Scanner:
 
         self.sfm.add_output_queue(self.renderer3d.get_input_queue())
         self.sfm.add_output_queue(self.file_writer.get_3d_input_queue())
+        self.sfm.add_output_info_queue(self.detector.get_input_3d_info_queue())
         self.sfm.start()
         self.renderer3d.start()
         self.detector.start()
         self.file_writer.start()
 
+        # we add plus one here as I assume people want to include the last led they define
         self.led_id_range = range(
-            led_start, min(led_end, self.detector.get_led_count())
+            led_start, min(led_end + 1, self.detector.get_led_count())
         )
 
         logger.debug("scanner initialised")
@@ -157,9 +185,7 @@ class Scanner:
             self.check_for_crash()
 
             if len(self.led_id_range) == 0:
-                print(
-                    "LED range is zero, have you chosen a backend with 'marimapper --backend'?"
-                )
+                print("LED range is zero, are you using a dummy backend?")
                 continue
 
             self.detector.detect(

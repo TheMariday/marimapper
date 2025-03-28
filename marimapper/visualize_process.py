@@ -43,35 +43,44 @@ class VisualiseProcess(Process):
 
     def run(self):
         logger.debug("Renderer3D process starting")
-
-        # wait for data to arrive sensibly
-        while self._input_queue.empty():
-            if self._exit_event.is_set():
-                return
-            time.sleep(0.1)
-
-        self.initialise_visualiser__()
-        self.reload_geometry__(True)
+        initialised = False
 
         while not self._exit_event.is_set():
 
             if not self._input_queue.empty():
-                self.reload_geometry__()
+                leds = self._input_queue.get()
+                if len(leds) < 9:
+                    continue
 
-            self._vis.poll_events()
-            self._vis.update_renderer()
+                if not initialised:
+                    self.initialise_visualiser__()
+                    self.reload_geometry__(leds, True)
+                    initialised = True
+                else:
+                    self.reload_geometry__(leds)
+
+            if initialised:
+                self._vis.poll_events()
+                self._vis.update_renderer()
+                time.sleep(1 / 60)
+            else:
+                time.sleep(1)
 
     def initialise_visualiser__(self):
         logger.debug("Renderer3D process initialising visualiser")
 
-        self._vis = open3d.visualization.Visualizer()
+        self._vis = (
+            open3d.visualization.Visualizer()
+        )  # This needs to be updated to O3DVisualizer
         self._vis.create_window(
             window_name="MariMapper",
             width=640,
             height=640,
         )
 
-        view_ctl = self._vis.get_view_control()
+        view_ctl = (
+            self._vis.get_view_control()
+        )  # I'm not sure the camera controls work anymore, bar the z dist
         view_ctl.set_up((0, 1, 0))
         view_ctl.set_lookat((0, 0, 0))
         view_ctl.set_zoom(0.3)
@@ -80,18 +89,14 @@ class VisualiseProcess(Process):
 
         render_options = self._vis.get_render_option()
         render_options.point_show_normal = True
-        render_options.point_color_option = (
-            open3d.visualization.PointColorOption.YCoordinate
-        )
+        render_options.point_color_option = open3d.visualization.PointColorOption.Color
         render_options.background_color = [0.2, 0.2, 0.2]
 
         logger.debug("Renderer3D process initialised visualiser")
 
-    def reload_geometry__(self, first=False):
+    def reload_geometry__(self, leds: list[LED3D], first=False):
 
         logger.debug("Renderer3D process reloading geometry")
-
-        leds = self._input_queue.get()
 
         logger.debug(f"Fetched led map with size {len(leds)}")
         all_views = get_all_views(leds)
@@ -134,6 +139,9 @@ class VisualiseProcess(Process):
         )
 
         if first:
+            self._vis.add_geometry(
+                open3d.geometry.TriangleMesh.create_coordinate_frame()
+            )
             # We only update the bounding box on the point cloud in case
             # the camera has shot off into the distance
             self._vis.add_geometry(self.point_cloud, reset_bounding_box=True)
@@ -155,13 +163,13 @@ def view_to_points_lines_colors(views):  # returns points and lines
     camera_scale = 2.0
 
     camera_cone_points = np.array(
-        [[0, 0, 0], [-1, -1, 2], [1, -1, 2], [1, 1, 2], [-1, 1, 2], [0, -1.5, 2]]
+        [[0, 0, 0], [-1, -1, 2], [1, -1, 2], [1, 1, 2], [-1, 1, 2], [0, 1.5, 2]]
     )
 
     camera_cone_points *= camera_scale
 
     camera_cone_lines = np.array(
-        [[0, 1], [0, 2], [0, 3], [0, 4], [1, 2], [2, 3], [3, 4], [4, 1], [1, 5], [2, 5]]
+        [[0, 1], [0, 2], [0, 3], [0, 4], [1, 2], [2, 3], [3, 4], [4, 1], [3, 5], [4, 5]]
     )
 
     for i, view in enumerate(views):

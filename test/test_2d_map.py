@@ -28,10 +28,24 @@ bananas,apples,grapes
     assert get_led(led_map, 2).point.position[1] == 0
 
 
+def test_missing_headers():
+    temp_led_map_file = tempfile.NamedTemporaryFile(delete=False, suffix=".csv")
+    temp_led_map_file.write(
+        b"""index,v,u
+0,0.379490,0.407710"""
+    )
+
+    temp_led_map_file.close()
+
+    led_map = load_detections(Path(temp_led_map_file.name), 0)
+
+    assert led_map is None, "led map successfully loaded without correct headers"
+
+
 def test_invalid_path():
 
     led_map = load_detections(Path("doesnt-exist-i-hope"), 0)
-    assert led_map is None
+    assert led_map is None, "led map successfully loaded from invalid file"
 
 
 def test_get_all_maps():
@@ -58,8 +72,8 @@ def test_get_all_maps():
     )
     temp_led_map_file_invalid.close()
 
-    all_maps = get_all_2d_led_maps(directory.name)
+    all_maps = get_all_2d_led_maps(Path(directory.name))
 
-    assert len(all_maps) == 1
+    assert len(all_maps) == 1, "expected 1 map"
 
     directory.cleanup()

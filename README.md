@@ -25,18 +25,22 @@ Above example data folder can be found under [docs/highbeam_example/](docs/highb
 
 ## Step 0: Install
 
-```shell
-pip --version # Ensure that it is //not// python 3.12, see above
-pip install pipx
-pipx ensurepath
-pipx install "git+https://github.com/themariday/marimapper"
-```
+If you're on Windows, first install UV with
 
-If you have Python 3.12 installed, install 3.11 and add `--python /path/to/python3.11` to the above `pipx install` command 
+`powershell -c "irm https://astral.sh/uv/install.ps1 | iex"` 
 
-[PIPx not working](https://github.com/TheMariday/marimapper/issues/42)? You can also download this repo and run `pip install .` from inside it!
+Or if you're using Linux or Mac
 
-You can run the scripts anywhere by just typing them into a console
+`curl -LsSf https://astral.sh/uv/install.sh | sh`
+
+Once UV is installed, install marimapper with
+
+`uv tool install marimapper --from git+https://github.com/TheMariday/marimapper`
+
+You can run the scripts anywhere by just typing them into a console.
+
+
+If you don't want to use UV, then Marimapper also supports PipX and pip
 
 ## Step 1: Test your camera
 
@@ -47,17 +51,12 @@ You can run the scripts anywhere by just typing them into a console
 
 Run `marimapper_check_camera` to ensure your camera is compatible with MariMapper, or check the list below:
 
-<details>
-
-<summary>Working Cameras</summary>
-
 - HP 4310 (settings may not revert)
 - Logitech C920
 - Dell Latitude 5521 built-in
 - HP Envy x360 built-in 
-- If your camera works, please drop me a line, so I can add it to the list!
 
-</details>
+If your camera works, please drop me a line, so I can add it to the list!
 
 
 Test LED identification by turning down the lights and holding a torch or led up to the camera.
@@ -71,7 +70,7 @@ Wrong webcam? MariMapper tools use `--device 0` by default, use `--device 1` to 
 
 
 > [!TIP]
-> If your camera doesn't support exposure adjustment, or the image is still too bright, try dimming the lights and playing around with:
+> If the image is still too bright or you can't see a crosshair on your LED, try dimming the lights and playing around with:
 > 
 > - `--exposure` - The lower the darker, defaults to `-10`, my webcam only goes down to `-11`
 > - `--threshold` - The lower the more detections, ranges between `0-255`,  defaults to `128`
@@ -81,82 +80,33 @@ For the Marimapper to communicate with your leds, it requires a backend.
 
 Please see below for documentation on how to run the following backends:
 
-<details>
-<summary>Fadecandy</summary>
+- [FadeCandy](https://github.com/TheMariday/marimapper/tree/main/docs/backends/FadeCandy.md)
+- [WLED](https://github.com/TheMariday/marimapper/tree/main/docs/backends/WLED.md)
+- [FCMega](https://github.com/TheMariday/marimapper/tree/main/docs/backends/FCMEGA.md)
+- [PixelBlaze](https://github.com/TheMariday/marimapper/tree/main/docs/backends/PixelBlaze.md)
 
-To use the Fadecandy backend, please ensure that you are running the Fadecandy server
-A fork of the Fadecandy repo can be found [here](https://github.com/TheMariday/fadecandy)
-
-Use 
-`--backend fadecandy --server 127.0.0.1:7890` to enable this backend, adjusting the server IP and port where needed
-
-</details>
-
-<details>
-<summary>WLED</summary>
-
-By default `--backend wled` will use the server address `4.3.2.1`
-
-If you want to change the server address, add `--server 1.2.3.4`
-
-More info can be found [here](https://kno.wled.ge/)
-
-</details>
-
-<details>
-<summary>FCMega</summary>
-
-This is a custom driver I've written for the Teensy 4.1 to drive up to 9600 leds.
-Source code can be found [here](https://github.com/TheMariday/fcmega)
-
-</details>
-
-<details>
-<summary>PixelBlaze</summary>
-
-Using Pixelblaze as a backend requires you to upload the 
-[marimapper.epe](https://github.com/TheMariday/marimapper/blob/main/marimapper/backends/pixelblaze/marimapper.epe) 
-into the PixelBlaze editor and upload it as a new pattern otherwise the backend will fail
-
-By default `--backend pixelblaze` will use the server address `4.3.2.1`
-
-If you want to change the server address to `1.2.3.4`, add `--server 1.2.3.4`
-
-Once you've completed your 3D map, upload it to pixelblaze using
-`marimapper_upload_to_pixelblaze --help`
-
-</details>
-
-If your LED backend isn't supported, you need to write your own.
-Open a new python file called `my_backend.py` and copy the below stub into it.
-
-```python
-class Backend:
-
-    def __init__(self):
-        # connect to some device here!
-
-    def get_led_count(self) -> int:
-        # return the number of leds your system can control here
-
-    def set_led(self, led_index: int, on: bool) -> None:
-        # Write your code for controlling your LEDs here
-        # It should turn on or off the LED at the led_index depending on the "on" variable
-        # For example:
-        # if on:
-        #     some_led_library.set_led(led_index, (255, 255, 255))
-        # else:
-        #     some_led_library.set_led(led_index, (0, 0, 0))
-```
-
-If your backend needs any external libraries for example, `requests`, add them to marimapper with `pipx inject marimapper requests` 
-
-Fill out the blanks and check it by running `marimapper_check_backend --backend my_backend.py`
+If your LED backend isn't supported, you need to write your own, 
+[it's super simple](https://github.com/TheMariday/marimapper/tree/main/docs/backends/custom.md)!
 
 
-## Step 3: [It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
+> [!TIP]
+> use `marimapper wled --help` for any backend to show a full list of additional arguments 
+> such as server, channel, etc! 
+> 
+> Some not even in this doc...
 
-In a new folder, run `marimapper --backend fadecandy`
+## Step 3: Setup your scene
+
+🪨 Make sure that your camera is stable and won't move, try mounting it on a tripod if you can
+
+💡 Make sure there are no light sources in your cameras view, tape up power leds and notification lights
+
+✋ Make sure you can move your camera around without changing the layout of your leds, 
+even a small nudge can throw off the reconstructor!
+
+## Step 4: [It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
+
+In a new folder, run `marimapper fadecandy`
 
 and change `fadecandy` to whatever backend you're using and use `--help` to show more options
 
@@ -182,16 +132,21 @@ Here is an example reconstruction of a test tube of LEDs I have
 
 ![](docs/images/live_example.png)
 
-<details>
-<summary>How to move the model around</summary>
+
+### How to move the model around
 
 - Click and drag to rotate the model around. 
 - Hold shift to roll the camera
 - Use the scroll wheel to zoom in / out
 - Use the `n` key to hide / show normals
 - Use the `+` / `-` keys to increase / decrease point sizes
-- Use `1`, `2` & `3` keys to change colour scheme
-</details>
+- Use `1`, `2`, `3` & `4` keys to change colour scheme
+
+### LED Colors:
+By default (`1`), the colors of the leds in the visualiser are as follows:
+
+- Green: Reconstructed
+- Blue: Interpolated
 
 # Not working?
 
