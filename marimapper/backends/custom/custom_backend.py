@@ -11,7 +11,9 @@ def custom_backend_factory(args: argparse.Namespace):
 
 
 def custom_backend_set_args(parser):
-    parser.add_argument('file', type=Path, default=Path("my_backend.py"), help="The backend file ")
+    parser.add_argument(
+        "file", type=Path, default=Path("my_backend.py"), help="The backend file"
+    )
 
 
 def load_custom_backend(backend_file: Path):

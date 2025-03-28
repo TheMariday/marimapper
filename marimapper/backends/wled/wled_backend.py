@@ -9,7 +9,7 @@ def wled_backend_factory(argparse_args: argparse.Namespace):
 
 
 def wled_backend_set_args(parser):
-    parser.add_argument('--server', default="4.3.2.1")
+    parser.add_argument("--server", default="4.3.2.1")
 
 
 class Backend:
@@ -19,7 +19,9 @@ class Backend:
         try:
             ip_address(wled_base_url)
         except ValueError:
-            raise RuntimeError(f"WLED backend failed to start due as {wled_base_url} is not a valid IP address")
+            raise RuntimeError(
+                f"WLED backend failed to start due as {wled_base_url} is not a valid IP address"
+            )
 
         self.state_endpoint = f"http://{wled_base_url}/json/state"
         self.info_endpoint = f"http://{wled_base_url}/json/info"

@@ -80,10 +80,11 @@ For the Marimapper to communicate with your leds, it requires a backend.
 
 Please see below for documentation on how to run the following backends:
 
-- [FadeCandy](https://github.com/TheMariday/marimapper/tree/main/docs/backends/FadeCandy.md)
-- [WLED](https://github.com/TheMariday/marimapper/tree/main/docs/backends/WLED.md)
-- [FCMega](https://github.com/TheMariday/marimapper/tree/main/docs/backends/FCMEGA.md)
-- [PixelBlaze](https://github.com/TheMariday/marimapper/tree/main/docs/backends/PixelBlaze.md)
+- 🟢 [FadeCandy](https://github.com/TheMariday/marimapper/tree/main/docs/backends/FadeCandy.md) - Tested
+- 🟢 [FCMega](https://github.com/TheMariday/marimapper/tree/main/docs/backends/FCMEGA.md) - Tested
+- 🟠 [WLED](https://github.com/TheMariday/marimapper/tree/main/docs/backends/WLED.md) - Community tested
+- 🟠 [PixelBlaze](https://github.com/TheMariday/marimapper/tree/main/docs/backends/PixelBlaze.md) - Community tested
+- 🔴 [ArtNet](https://github.com/TheMariday/marimapper/tree/main/docs/backends/ArtNet.md) - Experimental
 
 If your LED backend isn't supported, you need to write your own, 
 [it's super simple](https://github.com/TheMariday/marimapper/tree/main/docs/backends/custom.md)!
@@ -97,11 +98,9 @@ If your LED backend isn't supported, you need to write your own,
 
 ## Step 3: Setup your scene
 
-🪨 Make sure that your camera is stable and won't move, try mounting it on a tripod if you can
-
-💡 Make sure there are no light sources in your cameras view, tape up power leds and notification lights
-
-✋ Make sure you can move your camera around without changing the layout of your leds, 
+- 🪨 Make sure that your camera is stable and won't move, try mounting it on a tripod if you can
+- 💡 Make sure there are no light sources in your cameras view, tape up power leds and notification lights
+- ✋ Make sure you can move your camera around without changing the layout of your leds, 
 even a small nudge can throw off the reconstructor!
 
 ## Step 4: [It's time to thunderize!](https://youtu.be/-5KJiHc3Nuc?t=121)
@@ -168,6 +167,8 @@ You can also raise issues [on this repo's issues page](https://github.com/TheMar
 If you implement a backend that you think others might use, 
 please raise a [pull request](https://github.com/TheMariday/marimapper/pulls) 
 or just drop me a message on [Telegram](https://t.me/themariday)!
+
+You can find a guide on how to write backends [here](marimapper\backends\backend_writing_guide.md)
 
 # Licensing
 
