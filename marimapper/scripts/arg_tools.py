@@ -107,8 +107,7 @@ def add_all_backend_parsers(parser, required=False) -> list[argparse.ArgumentPar
     backend_subparsers = []
 
     backend_subparser = parser.add_subparsers(
-        help="Backend to use to control the LEDs",
-        required=required,
+        help="Backend to use to control the LEDs", required=required
     )
 
     for backend_name, backend_arg_setter in backend_arg_setters.items():
