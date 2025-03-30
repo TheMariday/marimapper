@@ -30,7 +30,7 @@ def add_camera_args(parser):
         type=int,
         choices=range(0, 255),
         metavar="[0-255]",
-        help="LED detection threshold, reducing this number will reduce false positive detections",
+        help="LED detection threshold, increasing this number will reduce false positive detections",
         default=128,
     )
 

@@ -5,7 +5,7 @@ from marimapper.backends.fcmega.fcmega import FCMega
 from functools import partial
 
 
-def fcmega_backend_factory():
+def fcmega_backend_factory(args):
     return partial(Backend)
 
 
