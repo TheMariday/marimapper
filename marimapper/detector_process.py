@@ -200,10 +200,10 @@ class DetectorProcess(Process):
                                 )
                                 movement = True
                         else:
-                            logger.error(
-                                f"Went back to check led {led_first.led_id} for movement, and led could no longer be found"
-                            )
-                            movement = True
+                            logger.warning(
+                                f"Went back to check led {led_first.led_id} for movement, and led could no longer be found. Cannot perform movement check"
+                            )  # this is failing unexpectedly, needs test
+                            movement = False
 
                     for queue in self._output_queues:
                         queue.put(
