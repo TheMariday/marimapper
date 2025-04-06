@@ -201,7 +201,8 @@ class DetectorProcess(Process):
                                 movement = True
                         else:
                             logger.warning(
-                                f"Went back to check led {led_first.led_id} for movement, and led could no longer be found. Cannot perform movement check"
+                                f"Went back to check led {led_first.led_id} for movement, "
+                                f"and led could no longer be found. Cannot perform movement check"
                             )  # this is failing unexpectedly, needs test
                             movement = False
 
