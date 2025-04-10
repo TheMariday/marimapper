@@ -8,7 +8,7 @@
 
 
 
-### Marimapper uses your webcam to map addressable LEDs to 3D space!
+### Marimapper can use your webcam to map addressable LEDs to 3D space!
 
 ![](docs/images/reconstruct_with_normals_and_strips.png)
 
