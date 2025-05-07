@@ -19,6 +19,8 @@ def test_sfm_process_basic():
 
     sfm.add_output_queue(output_queue)
     sfm.start()
+    time.sleep(2)
+    sfm.stop()
     #
     # map_3d = output_queue.get(timeout=5)
     #

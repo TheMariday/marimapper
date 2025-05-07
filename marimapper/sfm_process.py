@@ -64,6 +64,7 @@ class SFM(Process):
         camera_model_name: str = camera_model_radial.__name__,
         camera_fov: int = 60,
     ):
+        print("initing sfm")
         super().__init__()
         self._input_queue: Queue2D = Queue2D()
         self._output_queues: list[Queue3D] = []
@@ -83,6 +84,7 @@ class SFM(Process):
         self.leds_2d = existing_leds if existing_leds is not None else []
         self.leds_3d: list[LED3D] = []
         self.daemon = True
+        print("finished init sfm")
 
     def get_input_queue(self) -> Queue2D:
         return self._input_queue
@@ -97,7 +99,7 @@ class SFM(Process):
         self._exit_event.set()
 
     def run(self):
-
+        print("sfm running")
         needs_initial_reconstruction = len(self.leds_2d) > 0
         update_info = True
         while not self._exit_event.is_set():
