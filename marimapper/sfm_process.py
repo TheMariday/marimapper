@@ -9,7 +9,7 @@ from marimapper.led import (
     last_view,
     combine_2d_3d,
 )
-# from marimapper.sfm import sfm
+from marimapper.sfm import sfm
 from marimapper.database_populator import camera_models, camera_model_radial
 from marimapper.queues import Queue2D, Queue3D, DetectionControlEnum, Queue3DInfo
 import open3d
@@ -137,11 +137,11 @@ class SFM(Process):
             if (update_sfm or needs_initial_reconstruction) and len(self.leds_2d) > 0:
                 print("update time baby!")
                 start_time = time.time()
-                # self.leds_3d = sfm(
-                #     self.leds_2d,
-                #     camera_model=self._camera_model,
-                #     camera_fov=self._camera_fov,
-                # )
+                self.leds_3d = sfm(
+                    self.leds_2d,
+                    camera_model=self._camera_model,
+                    camera_fov=self._camera_fov,
+                )
                 end_sfm_time = time.time()
                 print(f"sfm complete with time of {end_sfm_time - start_time}")
                 print(f"len of leds {len(self.leds_3d)}")
