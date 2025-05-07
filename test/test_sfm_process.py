@@ -7,9 +7,9 @@ import time
 
 # @pytest.mark.skip("This test is flakey, needs a re-write")
 def test_sfm_process_basic():
-
+    print("starting test sfm process basic")
     leds = get_all_2d_led_maps(get_test_dir("MariMapper-Test-Data/9_point_box"))
-
+    print("maps got")
     assert len(leds) == 117, "failed to load all leds"
 
     sfm = SFM(existing_leds=leds, max_fill=0)
