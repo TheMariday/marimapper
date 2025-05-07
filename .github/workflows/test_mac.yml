@@ -37,4 +37,4 @@ jobs:
 
     - name: Pytest
       run: |
-        pytest .
+        pytest . -s
