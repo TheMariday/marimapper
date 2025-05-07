@@ -18,7 +18,6 @@ def get_user_confirmation(prompt):  # pragma: no coverage
 
 class SupressLogging(object):
     def __enter__(self):
-        return self
         self.outnull_file = open(os.devnull, "w")
         self.errnull_file = open(os.devnull, "w")
 
@@ -39,7 +38,6 @@ class SupressLogging(object):
         return self
 
     def __exit__(self, *_):
-        return self
         sys.stdout = self.old_stdout
         sys.stderr = self.old_stderr
 
