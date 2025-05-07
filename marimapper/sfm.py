@@ -39,6 +39,9 @@ def sfm(
 
         populate_database(database_path, leds_2d, camera_model, camera_fov)
 
+        print(f"database_path: {database_path}")
+        print(f"temp_dir: {temp_dir}")
+
         options = pycolmap.IncrementalPipelineOptions()
         options.triangulation.ignore_two_view_tracks = False  # used to be true
         options.min_num_matches = 9  # default 15
