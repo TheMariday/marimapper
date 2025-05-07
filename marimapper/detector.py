@@ -57,7 +57,7 @@ def find_led_in_image(image: np.ndarray, threshold: int = 128) -> Optional[Point
 
 def draw_led_detections(image: cv2.Mat, led_detection: Optional[Point2D]) -> np.ndarray:
     render_image = (
-        image if len(image.shape) == 3 else cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+        image.copy() if len(image.shape) == 3 else cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     )
 
     if led_detection is None:

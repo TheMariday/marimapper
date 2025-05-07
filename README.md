@@ -1,6 +1,6 @@
 ![logo.png](docs/images/logo.png)
 
-[![Supported Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue)]()
+[![Supported Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)]()
 [![Windows](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml)
 [![Ubuntu](https://github.com/TheMariday/MariMapper/actions/workflows/test_ubuntu.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_ubuntu.yml)
 [![MacOS](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml)
@@ -13,9 +13,6 @@
 ![](docs/images/reconstruct_with_normals_and_strips.png)
 
 Above example data folder can be found under [docs/highbeam_example/](docs/highbeam_example)
-
-> [!CAUTION]
-> [This tool does not support Python 3.12](https://github.com/TheMariday/marimapper/issues/27)
 
 > [!CAUTION]
 > Exposure control is [not supported on mac](https://github.com/TheMariday/marimapper/issues/51)
