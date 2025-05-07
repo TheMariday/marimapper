@@ -8,7 +8,6 @@ name = "marimapper"
 version = "V3.2.2"
 
 dependencies = [
-    "pytest",
     "numpy",
     "opencv-python",
     "tqdm",
@@ -39,6 +38,7 @@ license = {file = "LICENSE"}
 
 [project.optional-dependencies]
 develop = [
+    "pytest",
     "pytest-cov",
     "black",
     "flake8",

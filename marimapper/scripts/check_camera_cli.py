@@ -1,8 +1,6 @@
 import argparse
 
-import cv2
-
-from marimapper.detector import find_led, set_cam_dark, find_led_in_image, show_image, draw_led_detections
+from marimapper.detector import find_led, set_cam_dark
 from marimapper.scripts.arg_tools import (
     add_camera_args,
     add_common_args,
@@ -38,30 +36,9 @@ def main():
     logger.info(
         "Camera connected! Hold an LED up to the camera to check LED identification"
     )
-    import numpy as np
-    image_last = cam.read()
-    kernel = np.ones((3, 3), np.uint8)
 
     while True:
-
-        image = cam.read()
-
-        # image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-        image_new = cv2.subtract(image, image_last)
-        results = find_led_in_image(image_new, args.threshold)
-        image_last = cv2.dilate( image.copy(), kernel)
-
-        cv2.imshow("image_last", image_last)
-
-        rendered_image = draw_led_detections(image_new, results)
-        if results:
-            cv2.imshow("image_new_results", rendered_image)
-        else:
-            cv2.imshow("image_new_no_results", rendered_image)
-
-        cv2.waitKey(1)
-
+        find_led(cam, args.threshold)
 
 
 if __name__ == "__main__":
