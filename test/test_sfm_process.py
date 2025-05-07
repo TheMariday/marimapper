@@ -3,7 +3,6 @@ from marimapper.file_tools import get_all_2d_led_maps
 from marimapper.queues import Queue3D
 from utils import get_test_dir
 import time
-import pytest
 
 
 # @pytest.mark.skip("This test is flakey, needs a re-write")

@@ -101,12 +101,14 @@ class SFM(Process):
         needs_initial_reconstruction = len(self.leds_2d) > 0
         update_info = True
         while not self._exit_event.is_set():
+            print("looping")
 
             update_sfm = False
             print_overlap = False
             print_reconstructed = False
 
             while not self._input_queue.empty():
+                print("items in input queue!")
 
                 control, data = self._input_queue.get()
                 if control == DetectionControlEnum.DETECT:
@@ -129,9 +131,9 @@ class SFM(Process):
             start_time = 0
             end_sfm_time = 0
             end_post_process_time = 0
-
+            print(f"len of leds {len(self.leds_2d)}")
             if (update_sfm or needs_initial_reconstruction) and len(self.leds_2d) > 0:
-
+                print("update time baby!")
                 start_time = time.time()
                 self.leds_3d = sfm(
                     self.leds_2d,
@@ -139,7 +141,8 @@ class SFM(Process):
                     camera_fov=self._camera_fov,
                 )
                 end_sfm_time = time.time()
-
+                print(f"sfm complete with time of {end_sfm_time - start_time}")
+                print(f"len of leds {len(self.leds_3d)}")
                 if len(self.leds_3d) > 0:
                     rescale(self.leds_3d)
 
@@ -150,6 +153,7 @@ class SFM(Process):
                     add_normals(self.leds_3d)
 
                     for queue in self._output_queues:
+                        print(f"sending to output queue: {queue}")
                         queue.put(self.leds_3d)
 
                 if update_info:
