@@ -45,13 +45,14 @@ def sfm(
         options.mapper.abs_pose_min_num_inliers = 9  # default 30
         options.mapper.init_min_num_inliers = 50  # used to be 100
 
-        # with SupressLogging():
-        #     pycolmap.incremental_mapping(
-        #         database_path=database_path,
-        #         image_path=temp_dir,
-        #         output_path=temp_dir,
-        #         options=options,
-        #     )
+        # I think what's happening here is that this is spinning up a thread which is crashing the forked process https://github.com/python/cpython/issues/77906
+        with SupressLogging():
+            pycolmap.incremental_mapping(
+                database_path=database_path,
+                image_path=temp_dir,
+                output_path=temp_dir,
+                options=options,
+            )
 
         # NOTE!
         # There might be more map folders than just "0", however this is the base section and only the one we're
