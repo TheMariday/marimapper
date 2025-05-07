@@ -46,7 +46,8 @@ def sfm(
         options.mapper.init_min_num_inliers = 50  # used to be 100
 
         # I think what's happening here is that this is spinning up a thread which is crashing the forked process https://github.com/python/cpython/issues/77906
-        with SupressLogging():
+        # Aaaah if this sig sevs then it got caught by the handler
+        if True:
             pycolmap.incremental_mapping(
                 database_path=database_path,
                 image_path=temp_dir,
