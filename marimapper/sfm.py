@@ -57,6 +57,7 @@ def sfm(
                 output_path=temp_dir,
                 options=options,
             )
+            print("sfm done!!!!")
 
         # NOTE!
         # There might be more map folders than just "0", however this is the base section and only the one we're
