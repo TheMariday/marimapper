@@ -1,7 +1,9 @@
+# it's something in heeeere
 from pathlib import Path
 from tempfile import TemporaryDirectory
+print("importing pycolmap")
 import pycolmap
-
+print("pycolmap imported!")
 from marimapper.database_populator import (
     populate_database,
     camera_model_radial,
@@ -37,19 +39,25 @@ def sfm(
 
         populate_database(database_path, leds_2d, camera_model, camera_fov)
 
+        logger.error(f"database_path: {database_path}")
+        logger.error(f"temp_dir: {temp_dir}")
+
         options = pycolmap.IncrementalPipelineOptions()
         options.triangulation.ignore_two_view_tracks = False  # used to be true
         options.min_num_matches = 9  # default 15
         options.mapper.abs_pose_min_num_inliers = 9  # default 30
         options.mapper.init_min_num_inliers = 50  # used to be 100
 
-        with SupressLogging():
+        # I think what's happening here is that this is spinning up a thread which is crashing the forked process https://github.com/python/cpython/issues/77906
+        # Aaaah if this sig sevs then it got caught by the handler
+        if True:
             pycolmap.incremental_mapping(
                 database_path=database_path,
                 image_path=temp_dir,
                 output_path=temp_dir,
                 options=options,
             )
+            logger.error("sfm done!!!!")
 
         # NOTE!
         # There might be more map folders than just "0", however this is the base section and only the one we're
