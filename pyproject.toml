@@ -5,14 +5,14 @@ build-backend = "hatchling.build"
 
 [project]
 name = "marimapper"
-version = "V3.2.2"
+version = "V3.2.3"
 
 dependencies = [
     "numpy",
     "opencv-python",
     "tqdm",
     "open3d",
-    "pycolmap",
+    "pycolmap==3.11.1", # 2 track is broken on > 3.12. see https://github.com/TheMariday/marimapper/issues/79
     "pyserial",          # required by fcmega
     "pixelblaze-client", # required by pixelblaze
     "requests"           # required by wled
@@ -63,13 +63,15 @@ omit = [
     "*/__main__.py",
     "marimapper/backends/*",
     "marimapper/scripts/*",
-    "marimapper/pycolmap_tools/*"
+    "marimapper/pycolmap_tools/*",
+    ".venv/*"
     ]
 
 [tool.black]
 exclude = '''
 (/(
     | venv
+    | .venv
     | marimapper/pycolmap_tools
 )/)
 '''

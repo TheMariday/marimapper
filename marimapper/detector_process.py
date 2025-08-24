@@ -196,7 +196,7 @@ class DetectorProcess(Process):
                             distance = get_distance(led_current, led_first)
                             if distance > 0.01:  # 1% movement
                                 logger.error(
-                                    f"Camera movement of {int(distance*100)}% has been detected"
+                                    f"Camera movement of {int(distance * 100)}% has been detected"
                                 )
                                 movement = True
                         else:
