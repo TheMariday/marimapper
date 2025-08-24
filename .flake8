@@ -1,5 +1,5 @@
 [flake8]
 ignore = E402
-exclude = marimapper/backends/fadecandy/opc.py, venv, marimapper/pycolmap_tools/*
+exclude = marimapper/backends/fadecandy/opc.py, venv, marimapper/pycolmap_tools/*, .venv, MariMapper-Test-Data, .pytest_cache
 max-line-length=127
 extend-ignore = W503, E203

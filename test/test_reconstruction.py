@@ -65,6 +65,7 @@ def test_sparse_reconstruction():
     )
 
 
+# this is broken in newer versions of pycolmap, needs investigation https://github.com/TheMariday/marimapper/issues/79
 def test_2_track_reconstruction():
     leds = get_all_2d_led_maps(get_test_dir("scan"))
     leds_2_track = get_leds_with_views(leds, [1, 2])
