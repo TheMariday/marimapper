@@ -154,9 +154,13 @@ class DetectorProcess(Process):
 
                 # scan start here
                 set_cam_dark(cam, self._dark_exposure)
+                dark_frame = cam.read()
 
                 # Firstly, if there are leds visible, break out
-                if find_led(cam, self._threshold, self._display) is not None:
+                if (
+                    find_led(cam, self._threshold, self._display, dark_frame=dark_frame)
+                    is not None
+                ):
                     logger.error(
                         "Detector process can detect an LED when no LEDs should be visible"
                     )
