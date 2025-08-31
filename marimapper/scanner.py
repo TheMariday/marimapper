@@ -60,7 +60,6 @@ class Scanner:
         interpolation_max_error: float,
         check_movement: bool,
         camera_model_name: str,
-        step: int,
     ):
         logger.debug("initialising scanner")
         set_start_method("spawn")  # VERY important, see top of file
@@ -110,7 +109,7 @@ class Scanner:
 
         # we add plus one here as I assume people want to include the last led they define
         self.led_id_range = range(
-            led_start, min(led_end + 1, self.detector.get_led_count(), step)
+            led_start, min(led_end + 1, self.detector.get_led_count())
         )
 
         logger.debug("scanner initialised")
@@ -191,10 +190,7 @@ class Scanner:
                 continue
 
             self.detector.detect(
-                self.led_id_range.start,
-                self.led_id_range.stop,
-                self.led_id_range.step,
-                self.current_view,
+                self.led_id_range.start, self.led_id_range.stop, self.current_view
             )
 
             success = self.wait_for_scan()

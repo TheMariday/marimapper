@@ -70,13 +70,6 @@ def add_scanner_args(parser) -> None:
     )
 
     scanner_options.add_argument(
-        "--step",
-        type=int,
-        help="Scan only every nth LED, useful for quick scans leaving the other leds to be interpolated",
-        default=1,
-    )
-
-    scanner_options.add_argument(
         "--interpolation_max_fill",
         type=int,
         default=5,
