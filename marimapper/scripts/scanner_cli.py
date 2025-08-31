@@ -1,3 +1,9 @@
+import warnings
+
+warnings.simplefilter(
+    "ignore", UserWarning
+)  # see https://github.com/TheMariday/marimapper/issues/78
+
 import multiprocessing
 import argparse
 import logging
