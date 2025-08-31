@@ -60,7 +60,7 @@ class Scanner:
         interpolation_max_error: float,
         check_movement: bool,
         camera_model_name: str,
-        step: int
+        step: int,
     ):
         logger.debug("initialising scanner")
         set_start_method("spawn")  # VERY important, see top of file
@@ -191,7 +191,10 @@ class Scanner:
                 continue
 
             self.detector.detect(
-                self.led_id_range.start, self.led_id_range.stop, self.led_id_range.step, self.current_view
+                self.led_id_range.start,
+                self.led_id_range.stop,
+                self.led_id_range.step,
+                self.current_view,
             )
 
             success = self.wait_for_scan()

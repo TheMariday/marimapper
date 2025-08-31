@@ -23,7 +23,9 @@ class BaseQueue:
 
 class RequestDetectionsQueue(BaseQueue):
 
-    def request(self, led_id_from: int, led_id_to: int, step: int, view_id: int) -> None:
+    def request(
+        self, led_id_from: int, led_id_to: int, step: int, view_id: int
+    ) -> None:
         self._queue.put((led_id_from, led_id_to, step, view_id))
 
     def get_id_from_id_to_view(self, timeout=None) -> tuple[int, int, int, int]:

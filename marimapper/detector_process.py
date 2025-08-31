@@ -114,7 +114,7 @@ class DetectorProcess(Process):
     def add_output_queue(self, queue: Queue2D):
         self._output_queues.append(queue)
 
-    def detect(self, led_id_from: int, led_id_to: int, step:int, view_id: int):
+    def detect(self, led_id_from: int, led_id_to: int, step: int, view_id: int):
         self._request_detections_queue.request(led_id_from, led_id_to, step, view_id)
 
     def get_led_count(self):
