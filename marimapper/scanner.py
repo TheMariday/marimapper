@@ -56,10 +56,11 @@ class Scanner:
         backend_factory: partial,
         led_start: int,
         led_end: int,
-        max_fill: int,
+        interpolation_max_fill: int,
+        interpolation_max_error: float,
         check_movement: bool,
-        camera_fov: int,
         camera_model_name: str,
+        step: int,
     ):
         logger.debug("initialising scanner")
         set_start_method("spawn")  # VERY important, see top of file
@@ -81,11 +82,12 @@ class Scanner:
         led_count = led_end - led_start
 
         self.sfm = SFM(
-            max_fill,
+            interpolation_max_fill,
+            interpolation_max_error,
             existing_leds,
             led_count,
             camera_model_name=camera_model_name,
-            camera_fov=camera_fov,
+            camera_fov=60,
         )
 
         self.current_view = last_view(existing_leds) + 1
@@ -108,7 +110,7 @@ class Scanner:
 
         # we add plus one here as I assume people want to include the last led they define
         self.led_id_range = range(
-            led_start, min(led_end + 1, self.detector.get_led_count())
+            led_start, min(led_end + 1, self.detector.get_led_count(), step)
         )
 
         logger.debug("scanner initialised")
@@ -189,7 +191,10 @@ class Scanner:
                 continue
 
             self.detector.detect(
-                self.led_id_range.start, self.led_id_range.stop, self.current_view
+                self.led_id_range.start,
+                self.led_id_range.stop,
+                self.led_id_range.step,
+                self.current_view,
             )
 
             success = self.wait_for_scan()

@@ -148,11 +148,9 @@ def test_fcmega(monkeypatch):
     fcmega_backend.Backend()
 
 
-# py_mini_racer uses import pkg_resources which is depreciated
-@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_pixelblaze(monkeypatch):
 
-    import pixelblaze
+    from marimapper.backends.pixelblaze import pixelblaze_backend
 
     class PixelblazePatch:
         def __init__(self, _):
@@ -161,9 +159,7 @@ def test_pixelblaze(monkeypatch):
         def setActivePatternByName(self, _):
             pass
 
-    monkeypatch.setattr(pixelblaze, "Pixelblaze", PixelblazePatch)
-
-    from marimapper.backends.pixelblaze import pixelblaze_backend
+    monkeypatch.setattr(pixelblaze_backend.pixelblaze, "Pixelblaze", PixelblazePatch)
 
     pixelblaze_backend.Backend("1.2.3.4")
 

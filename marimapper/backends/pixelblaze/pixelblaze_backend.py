@@ -1,5 +1,13 @@
 from multiprocessing import get_logger
-import pixelblaze
+
+# see https://github.com/TheMariday/marimapper/issues/78
+# why this is a UserWarning and not a DepreciationWarning is beyond me...
+import warnings
+
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=UserWarning, module="py_mini_racer")
+    import pixelblaze
+
 from ipaddress import ip_address
 from functools import partial
 import argparse

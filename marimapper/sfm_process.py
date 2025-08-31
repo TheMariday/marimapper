@@ -58,7 +58,8 @@ class SFM(Process):
 
     def __init__(
         self,
-        max_fill: int = 5,
+        interpolation_max_fill: int = 5,
+        interpolation_max_error: float = 0.2,
         existing_leds: Union[list[LED2D], None] = None,
         led_count: int = 0,
         camera_model_name: str = camera_model_radial.__name__,
@@ -79,7 +80,8 @@ class SFM(Process):
             m for m in camera_models if m.__name__ == camera_model_name
         )
         self._camera_fov = camera_fov
-        self.max_fill = max_fill
+        self.interpolation_max_fill = interpolation_max_fill
+        self.interpolation_max_error = interpolation_max_error
         self.leds_2d = existing_leds if existing_leds is not None else []
         self.leds_3d: list[LED3D] = []
         self.daemon = True
@@ -143,7 +145,12 @@ class SFM(Process):
                 if len(self.leds_3d) > 0:
                     rescale(self.leds_3d)
 
-                    fill_gaps(self.leds_3d, max_missing=self.max_fill)
+                    fill_gaps(
+                        self.leds_3d,
+                        min_distance=1 - self.interpolation_max_error,
+                        max_distance=1 + self.interpolation_max_error,
+                        max_missing=self.interpolation_max_fill,
+                    )
 
                     recenter(self.leds_3d)
 
