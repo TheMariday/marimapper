@@ -49,6 +49,7 @@ def render_led_info(led_info: dict[int, LEDInfo], led_backend):
 def detect_leds(
     led_id_from: int,
     led_id_to: int,
+    step: int,
     cam: Camera,
     led_backend,
     view_id: int,
@@ -58,7 +59,7 @@ def detect_leds(
     output_queues: list[Queue2D],
 ):
     leds = []
-    for led_id in range(led_id_from, led_id_to):
+    for led_id in range(led_id_from, led_id_to, step):
         led = enable_and_find_led(
             cam,
             led_backend,
@@ -113,8 +114,8 @@ class DetectorProcess(Process):
     def add_output_queue(self, queue: Queue2D):
         self._output_queues.append(queue)
 
-    def detect(self, led_id_from: int, led_id_to: int, view_id: int):
-        self._request_detections_queue.request(led_id_from, led_id_to, view_id)
+    def detect(self, led_id_from: int, led_id_to: int, step:int, view_id: int):
+        self._request_detections_queue.request(led_id_from, led_id_to, step, view_id)
 
     def get_led_count(self):
         return self._led_count.get()
@@ -144,7 +145,7 @@ class DetectorProcess(Process):
 
             if not self._request_detections_queue.empty():
 
-                led_id_from, led_id_to, view_id = (
+                led_id_from, led_id_to, step, view_id = (
                     self._request_detections_queue.get_id_from_id_to_view()
                 )
 
@@ -168,6 +169,7 @@ class DetectorProcess(Process):
                 leds = detect_leds(
                     led_id_from,
                     led_id_to,
+                    step,
                     cam,
                     led_backend,
                     view_id,

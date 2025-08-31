@@ -70,10 +70,21 @@ def add_scanner_args(parser) -> None:
     )
 
     scanner_options.add_argument(
-        "--max_fill",
+        "--step", type=int, help="Scan only every nth LED, useful for quick scans leaving the other leds to be interpolated", default=1
+    )
+
+    scanner_options.add_argument(
+        "--interpolation_max_fill",
         type=int,
         default=5,
-        help="The max number of consecutive LEDs that can be estimated based on adjacent LEDs",
+        help="The maximum number of consecutive LEDs that can be interpolated based on adjacent LEDs. Set to -1 for no limit",
+    )
+
+    scanner_options.add_argument(
+        "--interpolation_max_error",
+        type=float,
+        default=0.2,
+        help="The maximum variance in led spacing whilst interpolating LEDs, set to -1 for no limit",
     )
 
     scanner_options.add_argument(

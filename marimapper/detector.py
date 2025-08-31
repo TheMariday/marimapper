@@ -1,3 +1,5 @@
+import logging
+
 import cv2
 import time
 from typing import Optional
@@ -142,9 +144,16 @@ def enable_and_find_led(
     display: bool = False,
 ) -> Optional[LED2D]:
 
-    # First wait for no leds to be visible
+    darkness_timeout_seconds = 3.0
+
+    # First wait for no leds to be visible, this should always be false
+    start = time.time()
     while find_led(cam, threshold, display) is not None:
-        pass
+        if time.time() - start > darkness_timeout_seconds:
+            logging.warning(
+                f"Detector can't start detecting led {led_id} as an led is already visible"
+            )
+            return None
 
     # Set the led to on and start the clock
     response_time_start = time.time()
@@ -165,7 +174,13 @@ def enable_and_find_led(
 
     timeout_controller.add_response_time(time.time() - response_time_start)
 
+    start = time.time()
     while find_led(cam, threshold, display) is not None:
-        pass
+        if time.time() - start > darkness_timeout_seconds:
+            logging.warning(
+                f"Detector can't stop detecting led {led_id} as an led is already visible, retrying backend..."
+            )
+            led_backend.set_led(led_id, False)
+            start = time.time()
 
     return LED2D(led_id, view_id, point)

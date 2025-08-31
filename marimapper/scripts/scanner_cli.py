@@ -1,9 +1,3 @@
-import warnings
-
-warnings.simplefilter(
-    "ignore", UserWarning
-)  # see https://github.com/TheMariday/marimapper/issues/78
-
 import multiprocessing
 import argparse
 import logging
@@ -55,10 +49,11 @@ def main():
         backend_factory,
         args.start,
         args.end,
-        args.max_fill,
+        args.interpolation_max_fill if args.interpolation_max_fill != -1 else 10000,
+        args.interpolation_max_error if args.interpolation_max_error != -1 else 10000,
         args.disable_movement_check,
-        60,  # this is the camera fov, it was an argument, but I removed it to reduce clutter
         args.camera_model,
+        args.step
     )
 
     scanner.mainloop()
