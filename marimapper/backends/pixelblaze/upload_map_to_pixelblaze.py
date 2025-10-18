@@ -2,6 +2,7 @@ import csv
 
 from marimapper import utils
 from multiprocessing import get_logger
+from marimapper.backends.pixelblaze import pixelblaze_backend
 
 logger = get_logger()
 
@@ -46,6 +47,7 @@ def upload_map_to_pixelblaze(cli_args):
     logger.info(
         f"Uploading coordinates to pixelblaze {cli_args.server if cli_args.server is not None else ''}"
     )
-    led_backend = utils.get_backend("pixelblaze", cli_args.server)
+
+    led_backend = pixelblaze_backend.pixelblaze_backend_factory(cli_args)
     led_backend.set_map_coordinates(final_coordinate_list)
     logger.info("Finished")

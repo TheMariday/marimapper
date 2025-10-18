@@ -16,7 +16,7 @@ logger = get_logger()
 
 
 def pixelblaze_backend_factory(argparse_args: argparse.Namespace):
-    return partial(Backend, argparse_args.ip)
+    return partial(Backend, argparse_args.server)
 
 
 def pixelblaze_backend_set_args(parser):
