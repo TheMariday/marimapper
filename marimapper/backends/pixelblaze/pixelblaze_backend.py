@@ -10,6 +10,7 @@ with warnings.catch_warnings():
 
 from ipaddress import ip_address
 from functools import partial
+from pathlib import Path
 import argparse
 
 logger = get_logger()
@@ -35,18 +36,10 @@ class Backend:
             )
 
         self.pb = pixelblaze.Pixelblaze(pixelblaze_ip)
-        try:
-            self.pb.setActivePatternByName(
-                "marimapper"
-            )  # Need to install marimapper.js to your pixelblaze
-        except TypeError as e:
-            if "'NoneType' has no len()" in str(e):
-                raise RuntimeError(
-                    "Pixelblaze may have failed to find the effect 'marimapper'. "
-                    "Have you uploaded marimapper.epe to your controller?"
-                )
-            else:
-                raise e
+        with open(Path(__file__).parent / "marimapper.js", 'r', encoding='utf-8-sig') as f:
+            source_code = f.read()
+        bytecode = self.pb.compilePattern(source_code)
+        self.pb.sendPatternToRenderer(bytecode)
 
     def get_led_count(self):
         pixel_count = self.pb.getPixelCount()

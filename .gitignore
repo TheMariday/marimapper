@@ -161,3 +161,6 @@ cython_debug/
 *.csv
 *.ply
 .idea/
+
+# uv is referenced, but not primary package management system
+uv.lock
