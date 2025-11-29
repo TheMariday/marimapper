@@ -92,14 +92,14 @@ def main(dir, fill):
             map_df = pd.read_csv("led_map_3d.csv")
             map_data = {int(idx): row.to_dict() for idx, row in map_df.iterrows()}
         except Exception as e:
-            click.secho(f"Error loading 3D map: {e}", fg='red', err=True)
+            log(f"Error loading 3D map: {e}", fg='red')
             sys.exit(1)
 
         # Scan 2D detections
         try:
             data_2d_log, files_2d = scan_2d_indices(".")
         except Exception as e:
-            click.secho(f"Error scanning 2D files: {e}", fg='red', err=True)
+            log(f"Error scanning 2D files: {e}", fg='red')
             sys.exit(1)
 
         all_2d_indices = set(data_2d_log.keys())
@@ -108,33 +108,29 @@ def main(dir, fill):
 
         # Report status
         log(f"2D Indices Found: {len(all_2d_indices)} across {len(files_2d)} scans")
-        click.secho(f"3D Indices Mapped: {len(existing_3d_indices)}", err=True)
-        click.secho("", err=True)
+        log(f"3D Indices Mapped: {len(existing_3d_indices)}\n")
 
         if not missing_indices:
-            click.secho("Status: COMPLETE", err=True)
+            log("Status: COMPLETE")
             final_map = map_data
         else:
-            click.secho(f"Status: INCOMPLETE ({len(missing_indices)} missing)", err=True)
+            log(f"Status: INCOMPLETE ({len(missing_indices)} missing)")
 
             # Display missing indices table using pandas
             missing_table_data = [[idx, len(data_2d_log[idx])] for idx in missing_indices]
             df_missing = pd.DataFrame(missing_table_data, columns=["Index", "# Views"])
-            click.secho(df_missing.to_string(index=False), err=True)
-            click.secho("", err=True)
+            log(df_missing.to_string(index=False) + "\n")
 
             if fill:
                 # Run photogrammetric reconstruction
-                click.secho("Running photogrammetric reconstruction...", err=True)
-                click.secho("", err=True)
+                log("Running photogrammetric reconstruction...\n")
                 final_map = fill_missing_indices(".")
                 if final_map is None:
-                    click.secho("Error: Photogrammetric reconstruction failed", fg='red', err=True)
+                    log("Error: Photogrammetric reconstruction failed", fg='red')
                     sys.exit(1)
             else:
                 final_map = map_data
-                click.secho("(Use --fill to reconstruct missing indices using photogrammetry)", err=True)
-                click.secho("", err=True)
+                log("(Use --fill to reconstruct missing indices using photogrammetry)\n")
 
         # Output final 3D map to stdout using pandas
         if final_map:

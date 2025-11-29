@@ -3,6 +3,9 @@ import sys
 import numpy as np
 import os
 import pandas as pd
+import click
+
+log = lambda *args, **kwargs: click.secho(*args, err=True, **kwargs)
 
 # --- MATHS HELPERS ---
 
@@ -66,7 +69,7 @@ def triangulate_point(cameras, detections):
 def load_3d_map(filename):
     """Load 3D map from CSV using pandas."""
     if not os.path.exists(filename):
-        sys.stderr.write(f"Error: {filename} not found.\n")
+        log(f"Error: {filename} not found.", fg='red')
         sys.exit(1)
 
     df = pd.read_csv(filename)
@@ -148,14 +151,14 @@ def fill_missing_indices(data_dir="."):
         # We define a "Camera" for each 2D file
         valid_cameras = []
 
-        sys.stderr.write(f"Step 1: Estimating camera poses using DLT for {len(views)} views...\n")
+        log(f"Step 1: Estimating camera poses using DLT for {len(views)} views...")
 
         for view in views:
             # Find common points between this 2D view and the known 3D map
             common_indices = set(view['points'].keys()).intersection(set(map_3d.keys()))
 
             if len(common_indices) < 8: # DLT needs 6, but 8+ is safer for noise
-                sys.stderr.write(f"  Skipped {view['filename']}: only {len(common_indices)} common points (need 8+)\n")
+                log(f"  Skipped {view['filename']}: only {len(common_indices)} common points (need 8+)")
                 continue
 
             obj_pts = []
@@ -171,9 +174,9 @@ def fill_missing_indices(data_dir="."):
                     'points': view['points'],
                     'filename': view['filename']
                 })
-                sys.stderr.write(f"  Calibrated {view['filename']}: {len(common_indices)} control points\n")
+                log(f"  Calibrated {view['filename']}: {len(common_indices)} control points")
 
-        sys.stderr.write(f"Step 2: Successfully calibrated {len(valid_cameras)} / {len(views)} views using DLT\n\n")
+        log(f"Step 2: Successfully calibrated {len(valid_cameras)} / {len(views)} views using DLT\n")
 
         # 3. Identify Missing Pixels
         # We want to check ranges. Let's assume the max index in 2D files is the strip length
@@ -183,7 +186,7 @@ def fill_missing_indices(data_dir="."):
 
         missing_indices = sorted(list(all_2d_indices - set(map_3d.keys())))
 
-        sys.stderr.write(f"Step 3: Reconstructing {len(missing_indices)} missing pixels using SVD triangulation\n\n")
+        log(f"Step 3: Reconstructing {len(missing_indices)} missing pixels using SVD triangulation\n")
 
         final_map = map_3d.copy()
 
@@ -240,14 +243,14 @@ def fill_missing_indices(data_dir="."):
         # Print reconstruction table using pandas
         if reconstruction_table:
             df_table = pd.DataFrame(reconstruction_table, columns=["Index", "Method", "Views", "3D Position"])
-            sys.stderr.write(df_table.to_string(index=False) + "\n\n")
+            log(df_table.to_string(index=False) + "\n")
 
         # Print summary
-        sys.stderr.write("Reconstruction Summary:\n")
-        sys.stderr.write(f"  Triangulated (SVD):          {triangulated_count}\n")
-        sys.stderr.write(f"  Interpolated (insufficient): {interpolated_insufficient_count}\n")
-        sys.stderr.write(f"  Interpolated (SVD failed):   {interpolated_failed_count}\n")
-        sys.stderr.write(f"  Total pixels in final map:   {len(final_map)}\n\n")
+        log("Reconstruction Summary:")
+        log(f"  Triangulated (SVD):          {triangulated_count}")
+        log(f"  Interpolated (insufficient): {interpolated_insufficient_count}")
+        log(f"  Interpolated (SVD failed):   {interpolated_failed_count}")
+        log(f"  Total pixels in final map:   {len(final_map)}\n")
 
         return final_map
 
