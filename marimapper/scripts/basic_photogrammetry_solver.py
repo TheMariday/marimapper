@@ -4,8 +4,44 @@ import numpy as np
 import os
 import pandas as pd
 import click
+import math
+from scipy.linalg import rq
+from pathlib import Path
 
 log = lambda *args, **kwargs: click.secho(*args, err=True, **kwargs)
+
+
+def extract_camera_pose(P):
+    """
+    Extract camera center and orientation from projection matrix P (3x4).
+    Returns: (camera_center, yaw_deg, pitch_deg, roll_deg, distance_from_origin)
+    """
+    try:
+        M = P[:, :3]
+        p4 = P[:, 3]
+
+        # Extract camera center: C = -M^(-1) * p4
+        M_inv = np.linalg.inv(M)
+        C = -M_inv @ p4
+        distance = np.linalg.norm(C)
+
+        # Extract rotation via RQ decomposition
+        R, K = rq(M)
+        # Make sure R is a proper rotation matrix (det = 1)
+        if np.linalg.det(R) < 0:
+            R = -R
+            K = -K
+
+        # Extract Euler angles (ZYX order: yaw, pitch, roll)
+        # From rotation matrix to angles
+        yaw = math.atan2(R[1, 0], R[0, 0]) * 180 / math.pi
+        pitch = math.asin(-np.clip(R[2, 0], -1, 1)) * 180 / math.pi
+        roll = math.atan2(R[2, 1], R[2, 2]) * 180 / math.pi
+
+        return C, yaw, pitch, roll, distance
+    except Exception:
+        return None, None, None, None, None
+
 
 # --- MATHS HELPERS ---
 
@@ -174,7 +210,17 @@ def fill_missing_indices(data_dir="."):
                     'points': view['points'],
                     'filename': view['filename']
                 })
-                log(f"  Calibrated {view['filename']}: {len(common_indices)} control points")
+
+                # Extract timestamp from filename (e.g., "led_map_2d_20251128-133730.csv" -> "20251128-133730")
+                timestamp = Path(view['filename']).stem.split('_')[-1]
+
+                # Extract camera pose
+                C, yaw, pitch, roll, dist = extract_camera_pose(P)
+                if C is not None:
+                    pose_str = f"yaw={yaw:+6.1f}° pitch={pitch:+6.1f}° roll={roll:+6.1f}° dist={dist:6.2f}"
+                    log(f"  {timestamp}: {len(common_indices)} pts, {pose_str}")
+                else:
+                    log(f"  {timestamp}: {len(common_indices)} points")
 
         log(f"Step 2: Successfully calibrated {len(valid_cameras)} / {len(views)} views using DLT\n")
 
