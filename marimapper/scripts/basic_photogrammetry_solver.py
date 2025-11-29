@@ -1,8 +1,8 @@
 import glob
-import csv
 import sys
 import numpy as np
 import os
+import pandas as pd
 
 # --- MATHS HELPERS ---
 
@@ -64,35 +64,35 @@ def triangulate_point(cameras, detections):
 # --- STANDARD LOADERS ---
 
 def load_3d_map(filename):
-    data = {}
+    """Load 3D map from CSV using pandas."""
     if not os.path.exists(filename):
         sys.stderr.write(f"Error: {filename} not found.\n")
         sys.exit(1)
-    with open(filename, 'r') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            idx = int(row['index'])
-            data[idx] = {
-                'pos': np.array([float(row['x']), float(row['y']), float(row['z'])]),
-                'norm': np.array([float(row['xn']), float(row['yn']), float(row['zn'])]),
-                'error': float(row['error'])
-            }
+
+    df = pd.read_csv(filename)
+    data = {}
+    for _, row in df.iterrows():
+        idx = int(row['index'])
+        data[idx] = {
+            'pos': np.array([float(row['x']), float(row['y']), float(row['z'])]),
+            'norm': np.array([float(row['xn']), float(row['yn']), float(row['zn'])]),
+            'error': float(row['error'])
+        }
     return data
 
 def load_all_2d_files():
+    """Load all 2D detection files using pandas."""
     files = glob.glob("./led_map_2d_*.csv")
-    views = [] # List of dicts: [{'filename': str, 'points': {index: (u,v)}}]
-    
+    views = []  # List of dicts: [{'filename': str, 'points': {index: (u,v)}}]
+
     for fname in files:
+        df = pd.read_csv(fname)
         view_data = {}
-        with open(fname, 'r') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                idx = int(row['index'])
-                # Assuming detections are floats
-                view_data[idx] = (float(row['u']), float(row['v']))
+        for _, row in df.iterrows():
+            idx = int(row['index'])
+            view_data[idx] = (float(row['u']), float(row['v']))
         views.append({'filename': fname, 'points': view_data})
-    
+
     return views
 
 def interpolate_linear(idx, known_data):
@@ -183,12 +183,15 @@ def fill_missing_indices(data_dir="."):
 
         missing_indices = sorted(list(all_2d_indices - set(map_3d.keys())))
 
-        sys.stderr.write(f"Step 3: Reconstructing {len(missing_indices)} missing pixels using SVD triangulation\n")
-        sys.stderr.write("-" * 70 + "\n")
-        sys.stderr.write(f"{'Index':<6} | {'Method':<15} | {'Views':<6} | {'3D Position'}\n")
-        sys.stderr.write("-" * 70 + "\n")
+        sys.stderr.write(f"Step 3: Reconstructing {len(missing_indices)} missing pixels using SVD triangulation\n\n")
 
         final_map = map_3d.copy()
+
+        # Track reconstruction outcomes
+        triangulated_count = 0
+        interpolated_insufficient_count = 0
+        interpolated_failed_count = 0
+        reconstruction_table = []
 
         for idx in missing_indices:
             # Gather all cameras that saw this missing index
@@ -208,10 +211,16 @@ def fill_missing_indices(data_dir="."):
                 result_pos = triangulate_point(participating_cameras, participating_detections)
                 if result_pos is not None:
                     method = "Triangulated (SVD)"
-
-            # Fallback to Interpolation if Triangulation failed or not enough views
-            if result_pos is None:
-                method = "Interpolated"
+                    triangulated_count += 1
+                else:
+                    # Triangulation failed despite having enough views
+                    method = "Interpolated (SVD failed)"
+                    interpolated_failed_count += 1
+                    result_pos, _ = interpolate_linear(idx, final_map)
+            else:
+                # Not enough views for triangulation
+                method = "Interpolated (insufficient)"
+                interpolated_insufficient_count += 1
                 result_pos, _ = interpolate_linear(idx, final_map)
 
             # For normals, triangulation doesn't help us (cameras don't see orientation easily).
@@ -222,13 +231,23 @@ def fill_missing_indices(data_dir="."):
             final_map[idx] = {
                 'pos': result_pos,
                 'norm': interp_norm,
-                'error': -1.0 if method == "Interpolated" else 0.001
+                'error': -1.0 if "Interpolated" in method else 0.001
             }
 
-            sys.stderr.write(f"{idx:<6} | {method:<15} | {len(participating_cameras):<6} | {result_pos}\n")
+            pos_str = f"[{result_pos[0]:.6f}, {result_pos[1]:.6f}, {result_pos[2]:.6f}]"
+            reconstruction_table.append([idx, method, len(participating_cameras), pos_str])
 
-        sys.stderr.write("-" * 70 + "\n")
-        sys.stderr.write(f"Reconstruction complete. Total pixels in final map: {len(final_map)}\n\n")
+        # Print reconstruction table using pandas
+        if reconstruction_table:
+            df_table = pd.DataFrame(reconstruction_table, columns=["Index", "Method", "Views", "3D Position"])
+            sys.stderr.write(df_table.to_string(index=False) + "\n\n")
+
+        # Print summary
+        sys.stderr.write("Reconstruction Summary:\n")
+        sys.stderr.write(f"  Triangulated (SVD):          {triangulated_count}\n")
+        sys.stderr.write(f"  Interpolated (insufficient): {interpolated_insufficient_count}\n")
+        sys.stderr.write(f"  Interpolated (SVD failed):   {interpolated_failed_count}\n")
+        sys.stderr.write(f"  Total pixels in final map:   {len(final_map)}\n\n")
 
         return final_map
 
@@ -241,14 +260,11 @@ def main():
     if final_map is None:
         sys.exit(1)
 
-    # 4. Output to stdout
-    fieldnames = ['index', 'x', 'y', 'z', 'xn', 'yn', 'zn', 'error']
-    writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
-    writer.writeheader()
-
+    # 4. Output to stdout using pandas
+    rows = []
     for idx in sorted(final_map.keys()):
         d = final_map[idx]
-        writer.writerow({
+        rows.append({
             'index': idx,
             'x': f"{d['pos'][0]:.6f}",
             'y': f"{d['pos'][1]:.6f}",
@@ -258,6 +274,9 @@ def main():
             'zn': f"{d['norm'][2]:.6f}",
             'error': f"{d['error']:.6f}"
         })
+
+    df = pd.DataFrame(rows)
+    df.to_csv(sys.stdout, index=False)
 
 if __name__ == "__main__":
     main()
