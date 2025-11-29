@@ -4,17 +4,24 @@ import numpy as np
 import os
 import pandas as pd
 import click
-import math
-from scipy.linalg import rq
 from pathlib import Path
 
 log = lambda *args, **kwargs: click.secho(*args, err=True, **kwargs)
 
 
-def extract_camera_pose(P):
+def extract_camera_info(P, com):
     """
-    Extract camera center and orientation from projection matrix P (3x4).
-    Returns: (camera_center, yaw_deg, pitch_deg, roll_deg, distance_from_origin)
+    Extract camera position and orientation relative to subject COM.
+
+    Args:
+        P: 3x4 projection matrix
+        com: 3D center of mass of the LED points
+
+    Returns:
+        (azimuth_deg, elevation_deg, distance)
+        - azimuth: angle in XY plane around Z axis (degrees, 0=+Y, 90=+X, etc.)
+        - elevation: angle down from horizontal (degrees, 0=horiz, -90=down, 90=up)
+        - distance: 3D distance from COM to camera
     """
     try:
         M = P[:, :3]
@@ -23,24 +30,28 @@ def extract_camera_pose(P):
         # Extract camera center: C = -M^(-1) * p4
         M_inv = np.linalg.inv(M)
         C = -M_inv @ p4
-        distance = np.linalg.norm(C)
 
-        # Extract rotation via RQ decomposition
-        R, K = rq(M)
-        # Make sure R is a proper rotation matrix (det = 1)
-        if np.linalg.det(R) < 0:
-            R = -R
-            K = -K
+        # Vector from subject COM to camera
+        cam_rel = C - com
+        distance = np.linalg.norm(cam_rel)
 
-        # Extract Euler angles (ZYX order: yaw, pitch, roll)
-        # From rotation matrix to angles
-        yaw = math.atan2(R[1, 0], R[0, 0]) * 180 / math.pi
-        pitch = math.asin(-np.clip(R[2, 0], -1, 1)) * 180 / math.pi
-        roll = math.atan2(R[2, 1], R[2, 2]) * 180 / math.pi
+        if distance < 1e-6:
+            return None, None, None
 
-        return C, yaw, pitch, roll, distance
+        # Normalize direction vector
+        cam_dir = cam_rel / distance
+
+        # Azimuth: angle in XY plane (assuming Z is up)
+        # atan2(x, y) gives angle from Y axis, 0 = +Y, 90 = +X
+        azimuth = np.degrees(np.arctan2(cam_dir[0], cam_dir[1]))
+
+        # Elevation: angle below horizontal plane
+        # 0 = horizontal, -90 = straight down, 90 = straight up
+        elevation = -np.degrees(np.arcsin(np.clip(cam_dir[2], -1, 1)))
+
+        return azimuth, elevation, distance
     except Exception:
-        return None, None, None, None, None
+        return None, None, None
 
 
 # --- MATHS HELPERS ---
@@ -183,6 +194,10 @@ def fill_missing_indices(data_dir="."):
         map_3d = load_3d_map("led_map_3d.csv")
         views = load_all_2d_files()
 
+        # Compute center of mass of 3D points (subject position)
+        positions = np.array([map_3d[idx]['pos'] for idx in sorted(map_3d.keys())])
+        com = np.mean(positions, axis=0)
+
         # 2. Estimate Cameras (Projection Matrices using DLT + SVD)
         # We define a "Camera" for each 2D file
         valid_cameras = []
@@ -214,11 +229,11 @@ def fill_missing_indices(data_dir="."):
                 # Extract timestamp from filename (e.g., "led_map_2d_20251128-133730.csv" -> "20251128-133730")
                 timestamp = Path(view['filename']).stem.split('_')[-1]
 
-                # Extract camera pose
-                C, yaw, pitch, roll, dist = extract_camera_pose(P)
-                if C is not None:
-                    pose_str = f"yaw={yaw:+6.1f}° pitch={pitch:+6.1f}° roll={roll:+6.1f}° dist={dist:6.2f}"
-                    log(f"  {timestamp}: {len(common_indices)} pts, {pose_str}")
+                # Extract camera position relative to subject COM
+                azimuth, elevation, distance = extract_camera_info(P, com)
+                if azimuth is not None:
+                    info_str = f"azim={azimuth:+7.1f}° elev={elevation:+6.1f}° dist={distance:6.2f}"
+                    log(f"  {timestamp}: {len(common_indices)} pts, {info_str}")
                 else:
                     log(f"  {timestamp}: {len(common_indices)} points")
 
