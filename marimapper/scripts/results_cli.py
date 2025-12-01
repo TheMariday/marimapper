@@ -58,22 +58,58 @@ def normalize_map_for_csv(final_map):
 
 @click.command()
 @click.option(
-    '--dir',
+    '--dir', '-d',
     default='.',
     type=click.Path(exists=True, file_okay=False, dir_okay=True),
     help='Directory containing led_map_3d.csv and led_map_2d_*.csv files (default: current directory)'
 )
 @click.option(
-    '--fill',
+    '--fill', '-f',
     is_flag=True,
-    help='Fill in missing LED indices using photogrammetric reconstruction (DLT + SVD)'
+    help='Fill missing indices using photogrammetric reconstruction'
 )
-def main(dir, fill):
+@click.option(
+    '--ransac-iter', '-n',
+    default=500,
+    type=int,
+    show_default=True,
+    help='RANSAC iterations for camera calibration'
+)
+@click.option(
+    '--ransac-thresh', '-t',
+    default=5.0,
+    type=float,
+    show_default=True,
+    help='RANSAC inlier threshold (pixels)'
+)
+@click.option(
+    '--min-calib-pts', '-p',
+    default=8,
+    type=int,
+    show_default=True,
+    help='Min calibration points per camera'
+)
+@click.option(
+    '--reproj-thresh', '-r',
+    default=10.0,
+    type=float,
+    show_default=True,
+    help='Max reprojection error for strict triangulation (pixels)'
+)
+@click.option(
+    '--min-angle', '-a',
+    default=2.0,
+    type=float,
+    show_default=True,
+    help='Min ray angle for strict triangulation (degrees)'
+)
+def main(dir, fill, ransac_iter, ransac_thresh, min_calib_pts, reproj_thresh, min_angle):
     """
-    Process LED mapping results.
+    Summarize LED mapping results.
 
     Shows mapping status (2D detections vs 3D calibration). When --fill is used,
-    reconstructs missing 3D positions using photogrammetric methods.
+    reconstructs missing 3D positions using photogrammetric methods. Camera
+    positions and orientations are also estimated and summarized.
 
     Outputs final 3D mapping as CSV to stdout (all logging goes to stderr).
     """
@@ -124,7 +160,14 @@ def main(dir, fill):
             if fill:
                 # Run photogrammetric reconstruction
                 log("Running photogrammetric reconstruction...\n")
-                final_map = fill_missing_indices(".")
+                final_map = fill_missing_indices(
+                    data_dir=".",
+                    ransac_iterations=ransac_iter,
+                    ransac_threshold=ransac_thresh,
+                    min_calibration_points=min_calib_pts,
+                    triangulation_reproj_threshold=reproj_thresh,
+                    min_ray_angle=min_angle
+                )
                 if final_map is None:
                     log("Error: Photogrammetric reconstruction failed", fg='red')
                     sys.exit(1)
