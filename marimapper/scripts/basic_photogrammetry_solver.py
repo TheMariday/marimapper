@@ -2,6 +2,8 @@
 """
 Marimapper results summary and gap fill script
 
+Lighter weight than COLMAP, tries multiple best effort approaches
+with fallback results.
 Uses DLT with Hartley normalization for camera calibration,
 RANSAC for outlier rejection, and quality-checked triangulation.
 """
