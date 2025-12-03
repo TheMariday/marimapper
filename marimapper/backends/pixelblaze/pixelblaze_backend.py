@@ -1,4 +1,6 @@
 from multiprocessing import get_logger
+import time
+import socket
 
 # see https://github.com/TheMariday/marimapper/issues/78
 # why this is a UserWarning and not a DepreciationWarning is beyond me...
@@ -20,18 +22,72 @@ RGB_PATTERN = Path(__file__).parent / "rgb.js"
 logger = get_logger()
 
 
+def check_pixelblaze_reachable(ip, timeout=0.5):
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(timeout)
+        result = sock.connect_ex((ip, 81))
+        sock.close()
+        return result == 0
+    except:
+        return False
+
+
+def discover_pixelblazes(timeout=3.0):
+    logger.info(f"Listening for PixelBlaze beacon packets ({timeout}s)...")
+
+    enumerator = pixelblaze.PixelblazeEnumerator()
+
+    time.sleep(timeout)
+    devices = enumerator.getPixelblazeList()
+    enumerator.stop()
+
+    logger.info(f"Found {len(devices)} PixelBlaze(s)")
+    return devices
+
+
 def pixelblaze_backend_factory(argparse_args: argparse.Namespace):
     return partial(Backend, argparse_args.server)
 
 
 def pixelblaze_backend_set_args(parser):
-    parser.add_argument("--server", default="4.3.2.1")
+    parser.add_argument(
+        "--server",
+        default="auto",
+        help='IP address of PixelBlaze (default: "auto" - discovers first PixelBlaze on network)'
+    )
 
 
 class Backend:
     _pattern_cache = {}  # Class-level cache: source_code -> compiled bytecode
+    _last_rendered_pattern = ""
 
     def __init__(self, pixelblaze_ip: str):
+        self.pb = self.init_pixelblaze(pixelblaze_ip)
+        self.switch_to_mapper_pattern()
+
+    def init_pixelblaze(self, pixelblaze_ip: str):
+        # Handle auto-discovery mode
+        if pixelblaze_ip.lower() == "auto":
+            logger.info("Auto-discovering PixelBlaze...")
+
+            # First check Ad Hoc mode (fast)
+            logger.info("Checking for Ad Hoc mode (192.168.4.1)...")
+            if check_pixelblaze_reachable("192.168.4.1"):
+                pixelblaze_ip = "192.168.4.1"
+                logger.info("Found PixelBlaze in Ad Hoc mode at 192.168.4.1")
+            else:
+                # Try beacon scan on network
+                devices = discover_pixelblazes(timeout=3.0)
+                if devices:
+                    first_device = devices[0]
+                    pixelblaze_ip = first_device.get('address') if isinstance(first_device, dict) else str(first_device)
+                    logger.info(f"Found PixelBlaze at {pixelblaze_ip}")
+                else:
+                    logger.error("No PixelBlazes found. Specify IP with --server")
+                    raise RuntimeError("No PixelBlazes found on network")
+
+        logger.info(f"PixelBlaze server: {pixelblaze_ip}")
 
         try:
             ip_address(pixelblaze_ip)
@@ -40,12 +96,14 @@ class Backend:
                 f"Pixelblaze backend failed to start due as {pixelblaze_ip} is not a valid IP address"
             )
 
-        self.pb = pixelblaze.Pixelblaze(pixelblaze_ip)
+        return pixelblaze.Pixelblaze(pixelblaze_ip)
+    
+    def switch_to_mapper_pattern(self):
         try:
             self.render_pattern(MARIMAPPER_PATTERN)
         except Exception as err:
             self.load_existing_pattern(MARIMAPPER_PATTERN.stem)
-
+    
     def get_led_count(self):
         pixel_count = self.pb.getPixelCount()
         logger.info(f"Pixelblaze reports {pixel_count} pixels")
@@ -55,24 +113,25 @@ class Backend:
         self.pb.setActiveVariables({"pixel_to_light": led_index, "turn_on": on})
     
     def set_leds(self, buffer: list[list[int]]):
-        """Set arbitrary pixel indices with RGB colors. Buffer format: [[index, r, g, b], ...]"""
-        self.render_pattern(RGB_PATTERN)
+        """Set arbitrary pixel colors. Buffer format: [[r, g, b], ...] where index is position in list"""
 
-        if not buffer:
-            self.pb.setActiveVariables({"colors": []})
+        # If setting all black or empty...
+        if not buffer or all(rgb == [0, 0, 0] for rgb in buffer):
+            self.switch_to_mapper_pattern()
             return
 
-        # Find the maximum index to size the array
-        max_index = max(entry[0] for entry in buffer)
-        colors = [None] * (max_index + 1)
+        try:
+            self.render_pattern(RGB_PATTERN)
 
-        # Fill in the colors array, scaling 0-255 to 0-1
-        for entry in buffer:
-            index, r, g, b = entry[0], entry[1], entry[2], entry[3]
-            colors[index] = [r / 255.0, g / 255.0, b / 255.0]
+            # Scale 0-255 to 0-1 and flatten to [r,g,b,r,g,b,...] format
+            colors = []
+            for r, g, b in buffer:
+                colors.extend([r / 255.0, g / 255.0, b / 255.0])
 
-        # Send to pixelblaze
-        self.pb.setActiveVariables({"colors": colors})
+            # Send to pixelblaze
+            self.pb.setActiveVariables({"colors": colors})
+        except Exception as e:
+            logger.error(f"Failed to set RGB pixels on PixelBlaze: {e}")
 
     def set_map_coordinates(self, pixelmap: list):
         result = self.pb.setMapCoordinates(pixelmap)
@@ -95,6 +154,9 @@ class Backend:
                 raise e
     
     def render_pattern(self, source_code: PathLike | str):
+        if self._last_rendered_pattern == source_code:
+            return
+
         """Sets current PixelBlaze renderer to this pattern source code, compiles and uses caching."""
         with open(Path(source_code), 'r', encoding='utf-8-sig') as f:
             source_code = f.read()
@@ -106,4 +168,5 @@ class Backend:
             bytecode = self.pb.compilePattern(source_code)
             self._pattern_cache[source_code] = bytecode
 
+        self._last_rendered_pattern = source_code
         self.pb.sendPatternToRenderer(bytecode)
