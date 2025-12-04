@@ -5,7 +5,7 @@ import argparse
 
 
 def wled_backend_factory(argparse_args: argparse.Namespace):
-    return partial(Backend, argparse_args.base_url)
+    return partial(Backend, argparse_args.server)
 
 
 def wled_backend_set_args(parser):
