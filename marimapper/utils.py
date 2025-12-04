@@ -4,6 +4,7 @@ import json
 import re
 from pathlib import Path
 
+
 def get_user_confirmation(prompt):  # pragma: no coverage
 
     try:
@@ -52,8 +53,10 @@ class SupressLogging(object):
         self.outnull_file.close()
         self.errnull_file.close()
 
+
 CONFIG_DIR = Path.home() / ".config" / "marimapper" / "windows"
 _CACHE = {}
+
 
 def position_window(name: str, x: int, y: int, w: int, h: int) -> list[int]:
     """
@@ -65,18 +68,18 @@ def position_window(name: str, x: int, y: int, w: int, h: int) -> list[int]:
     if name in _CACHE:
         return _CACHE[name]
 
-    clean_name = re.sub(r'[^\w\-_\. ]', '_', name)
+    clean_name = re.sub(r"[^\w\-_\. ]", "_", name)
     file_path = CONFIG_DIR / f"{clean_name}.json"
-    
+
     defaults = {"x": x, "y": y, "width": w, "height": h}
     config = defaults.copy()
 
     if file_path.exists():
         try:
-            with open(file_path, 'r') as f:
+            with open(file_path, "r") as f:
                 data = json.load(f)
                 config.update(data)
-        except Exception as e:
+        except Exception:
             pass
 
     # Return as list [x, y, w, h]

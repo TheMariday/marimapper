@@ -76,11 +76,7 @@ class VisualiseProcess(Process):
             open3d.visualization.Visualizer()
         )  # This needs to be updated to O3DVisualizer
         self._vis.create_window(
-            window_name=window_name,
-            width=w,
-            height=h,
-            left=x,
-            top=y      
+            window_name=window_name, width=w, height=h, left=x, top=y
         )
 
         view_ctl = (

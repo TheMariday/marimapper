@@ -91,12 +91,12 @@ def draw_led_detections(image: cv2.Mat, led_detection: Optional[Point2D]) -> np.
 
 def show_image(image: np.ndarray) -> None:
     window_name = "MariMapper - Detector"
-    
+
     x, y, _, target_height = position_window(window_name, 320, 0, 960, 540)
-    
+
     native_h, native_w = image.shape[:2]
     aspect_ratio = native_w / native_h
-    
+
     target_width = int(target_height * aspect_ratio)
 
     if not getattr(show_image, "setup_done", False):
@@ -106,7 +106,7 @@ def show_image(image: np.ndarray) -> None:
         show_image.setup_done = True
 
     display_image = cv2.resize(image, (target_width, target_height))
-    
+
     cv2.imshow(window_name, display_image)
     key = cv2.waitKey(1)
 

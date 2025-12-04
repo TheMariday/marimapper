@@ -29,7 +29,7 @@ def check_pixelblaze_reachable(ip, timeout=0.5):
         result = sock.connect_ex((ip, 81))
         sock.close()
         return result == 0
-    except:
+    except Exception:
         return False
 
 
@@ -54,7 +54,7 @@ def pixelblaze_backend_set_args(parser):
     parser.add_argument(
         "--server",
         default="auto",
-        help='IP address of PixelBlaze (default: "auto" - discovers first PixelBlaze on network)'
+        help='IP address of PixelBlaze (default: "auto" - discovers first PixelBlaze on network)',
     )
 
 
@@ -81,7 +81,11 @@ class Backend:
                 devices = discover_pixelblazes(timeout=3.0)
                 if devices:
                     first_device = devices[0]
-                    pixelblaze_ip = first_device.get('address') if isinstance(first_device, dict) else str(first_device)
+                    pixelblaze_ip = (
+                        first_device.get("address")
+                        if isinstance(first_device, dict)
+                        else str(first_device)
+                    )
                     logger.info(f"Found PixelBlaze at {pixelblaze_ip}")
                 else:
                     logger.error("No PixelBlazes found. Specify IP with --server")
@@ -97,13 +101,13 @@ class Backend:
             )
 
         return pixelblaze.Pixelblaze(pixelblaze_ip)
-    
+
     def switch_to_mapper_pattern(self):
         try:
             self.render_pattern(MARIMAPPER_PATTERN)
-        except Exception as err:
+        except Exception:
             self.load_existing_pattern(MARIMAPPER_PATTERN.stem)
-    
+
     def get_led_count(self):
         pixel_count = self.pb.getPixelCount()
         logger.info(f"Pixelblaze reports {pixel_count} pixels")
@@ -111,7 +115,7 @@ class Backend:
 
     def set_led(self, led_index: int, on: bool):
         self.pb.setActiveVariables({"pixel_to_light": led_index, "turn_on": on})
-    
+
     def set_leds(self, buffer: list[list[int]]):
         """Set arbitrary pixel colors. Buffer format: [[r, g, b], ...] where index is position in list"""
 
@@ -152,13 +156,13 @@ class Backend:
                 )
             else:
                 raise e
-    
+
     def render_pattern(self, source_code: PathLike | str):
         if self._last_rendered_pattern == source_code:
             return
 
         """Sets current PixelBlaze renderer to this pattern source code, compiles and uses caching."""
-        with open(Path(source_code), 'r', encoding='utf-8-sig') as f:
+        with open(Path(source_code), "r", encoding="utf-8-sig") as f:
             source_code = f.read()
 
         # Check cache for compiled bytecode
