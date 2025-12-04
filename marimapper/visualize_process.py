@@ -3,11 +3,6 @@ import open3d
 from multiprocessing import get_logger, Process, Event
 from marimapper.queues import Queue3D
 from marimapper.led import LED3D, View, get_next, get_distance
-from marimapper.window_state import (
-    get_saved_dimensions,
-    register_on_exit_capture,
-    apply_window_state,
-)
 import time
 
 logger = get_logger()
@@ -74,28 +69,14 @@ class VisualiseProcess(Process):
     def initialise_visualiser__(self):
         logger.debug("Renderer3D process initialising visualiser")
 
-        window_name = "MariMapper"
-
-        # Get saved dimensions if available, with sanity checks
-        saved_w, saved_h = get_saved_dimensions(window_name)
-        width = saved_w if saved_w and saved_w >= 400 else 640
-        height = saved_h if saved_h and saved_h >= 300 else 640
-        logger.debug(f"Creating window with dimensions: {width}x{height}")
-
         self._vis = (
             open3d.visualization.Visualizer()
         )  # This needs to be updated to O3DVisualizer
         self._vis.create_window(
-            window_name=window_name,
-            width=width,
-            height=height,
+            window_name="MariMapper",
+            width=640,
+            height=640,
         )
-
-        # Apply saved position after window creation
-        apply_window_state(window_name)
-
-        # Register handler to capture window state on exit
-        register_on_exit_capture(window_name)
 
         view_ctl = (
             self._vis.get_view_control()

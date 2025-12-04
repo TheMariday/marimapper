@@ -9,12 +9,9 @@ from multiprocessing import get_logger
 from marimapper.camera import Camera
 from marimapper.timeout_controller import TimeoutController
 from marimapper.led import Point2D, LED2D
-from marimapper.window_state import apply_window_state, register_on_exit_capture
 
 
 logger = get_logger()
-_window_created = False
-_state_applied = False
 
 
 def contour_brightness(image: np.ndarray, contour: np.ndarray) -> int:
@@ -92,25 +89,7 @@ def draw_led_detections(image: cv2.Mat, led_detection: Optional[Point2D]) -> np.
 
 
 def show_image(image: np.ndarray) -> None:
-    global _window_created, _state_applied
-
-    window_name = "MariMapper - Detector"
-
-    # First call: create resizable window
-    if not _window_created:
-        logger.debug(f"First call to show_image, creating resizable window...")
-        cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-        _window_created = True
-        register_on_exit_capture(window_name)
-
-    cv2.imshow(window_name, image)
-
-    # Apply saved state after first imshow (window must exist for resize/move to work)
-    if not _state_applied:
-        logger.debug(f"Applying saved window state...")
-        apply_window_state(window_name)
-        _state_applied = True
-
+    cv2.imshow("MariMapper - Detector", image)
     key = cv2.waitKey(1)
 
     if key == 27:  # esc
