@@ -2,10 +2,12 @@ import json
 import cv2
 import platform
 import subprocess
+import atexit
 from pathlib import Path
 from multiprocessing import get_logger
 
 logger = get_logger()
+_exit_handlers_registered = set()  # Track which windows have exit handlers
 
 
 def get_state_file():
@@ -43,9 +45,17 @@ def save_window_state(window_name="MariMapper - Detector", x=None, y=None, width
         if y is not None:
             window_state["y"] = y
         if width is not None:
-            window_state["width"] = width
+            # Sanity check: don't save unreasonably small widths (min 400px)
+            if width >= 400:
+                window_state["width"] = width
+            else:
+                logger.debug(f"Rejecting width {width} (too small, min 400px)")
         if height is not None:
-            window_state["height"] = height
+            # Sanity check: don't save unreasonably small heights (min 300px)
+            if height >= 300:
+                window_state["height"] = height
+            else:
+                logger.debug(f"Rejecting height {height} (too small, min 300px)")
 
         if window_state:  # Only update if we have something to save
             state[window_name] = window_state
@@ -57,7 +67,7 @@ def save_window_state(window_name="MariMapper - Detector", x=None, y=None, width
 
 
 def apply_window_state(window_name="MariMapper - Detector"):
-    """Apply saved window state (position and size) to a window."""
+    """Apply saved window state (position and size with sanity checks)."""
     state = load_window_state(window_name)
 
     if not state:
@@ -65,11 +75,13 @@ def apply_window_state(window_name="MariMapper - Detector"):
         return False
 
     try:
-        logger.debug(f"Attempting to apply window state: {state}")
-        # Apply size first (if window was created with cv2.WINDOW_NORMAL)
+        logger.debug(f"Applying window state: {state}")
+        # Apply size first (only for resizable windows created with cv2.WINDOW_NORMAL)
         if "width" in state and "height" in state:
-            logger.debug(f"Resizing window to {state['width']}x{state['height']}")
-            cv2.resizeWindow(window_name, state["width"], state["height"])
+            w, h = state["width"], state["height"]
+            if w >= 400 and h >= 300:  # Sanity check
+                logger.debug(f"Resizing window to {w}x{h}")
+                cv2.resizeWindow(window_name, w, h)
         # Then apply position
         if "x" in state and "y" in state:
             logger.debug(f"Moving window to x={state['x']}, y={state['y']}")
@@ -78,7 +90,7 @@ def apply_window_state(window_name="MariMapper - Detector"):
         return True
     except Exception as e:
         logger.debug(f"Failed to apply window state: {e}")
-        return False
+    return False
 
 
 def get_window_size_macos_pyobjc(window_name="MariMapper - Detector"):
@@ -221,12 +233,14 @@ def get_window_size_platform_specific(window_name="MariMapper - Detector"):
 
 
 def capture_window_state(window_name="MariMapper - Detector"):
-    """Attempt to capture and save window state (position and size)."""
+    """Attempt to capture and save window state (position and size with sanity checks)."""
     try:
-        # Try platform-specific method to get window position and size
+        # Try platform-specific method to get full window bounds
         size_info = get_window_size_platform_specific(window_name)
         if size_info:
             x, y, w, h = size_info[0], size_info[1], size_info[2], size_info[3]
+            logger.debug(f"Captured window bounds: x={x}, y={y}, w={w}, h={h}")
+            # save_window_state will apply sanity checks
             save_window_state(window_name, x=x, y=y, width=w, height=h)
             return True
 
@@ -234,8 +248,61 @@ def capture_window_state(window_name="MariMapper - Detector"):
         rect = cv2.getWindowImageRect(window_name)
         if rect and len(rect) >= 4:
             x, y, w, h = rect[0], rect[1], rect[2], rect[3]
+            logger.debug(f"Captured window rect (OpenCV): x={x}, y={y}, w={w}, h={h}")
+            # save_window_state will apply sanity checks
             save_window_state(window_name, x=x, y=y, width=w, height=h)
             return True
     except Exception as e:
         logger.debug(f"Failed to capture window state: {e}")
     return False
+
+
+# ==============================================================================
+# Public API for window state management
+# ==============================================================================
+
+
+def get_saved_dimensions(window_name: str) -> tuple:
+    """
+    Get saved window dimensions if available.
+
+    Returns:
+        (width, height) tuple if saved, else (None, None)
+    """
+    state = load_window_state(window_name)
+    if "width" in state and "height" in state:
+        return state["width"], state["height"]
+    return None, None
+
+
+def get_saved_position(window_name: str) -> tuple:
+    """
+    Get saved window position if available.
+
+    Returns:
+        (x, y) tuple if saved, else (None, None)
+    """
+    state = load_window_state(window_name)
+    if "x" in state and "y" in state:
+        return state["x"], state["y"]
+    return None, None
+
+
+def register_on_exit_capture(window_name: str):
+    """
+    Register an atexit handler to capture and save window state on program exit.
+    Safe to call multiple times for the same window.
+    """
+    if window_name in _exit_handlers_registered:
+        return  # Already registered
+
+    def _save_on_exit():
+        try:
+            logger.debug(f"Capturing window state for {window_name} on exit...")
+            capture_window_state(window_name)
+        except Exception:
+            pass  # Silently fail if we can't capture state
+
+    atexit.register(_save_on_exit)
+    _exit_handlers_registered.add(window_name)
+    logger.debug(f"Registered exit handler for window: {window_name}")

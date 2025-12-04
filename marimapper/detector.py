@@ -2,7 +2,6 @@ import logging
 
 import cv2
 import time
-import atexit
 from typing import Optional
 import numpy as np
 from multiprocessing import get_logger
@@ -10,7 +9,7 @@ from multiprocessing import get_logger
 from marimapper.camera import Camera
 from marimapper.timeout_controller import TimeoutController
 from marimapper.led import Point2D, LED2D
-from marimapper.window_state import apply_window_state, capture_window_state
+from marimapper.window_state import apply_window_state, register_on_exit_capture
 
 
 logger = get_logger()
@@ -92,16 +91,6 @@ def draw_led_detections(image: cv2.Mat, led_detection: Optional[Point2D]) -> np.
     return render_image
 
 
-def _register_window_state_handler():
-    """Register atexit handler to save window state on exit."""
-    def _save_on_exit():
-        try:
-            capture_window_state("MariMapper - Detector")
-        except Exception:
-            pass  # Silently fail if we can't capture state
-    atexit.register(_save_on_exit)
-
-
 def show_image(image: np.ndarray) -> None:
     global _window_created, _state_applied
 
@@ -112,7 +101,7 @@ def show_image(image: np.ndarray) -> None:
         logger.debug(f"First call to show_image, creating resizable window...")
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
         _window_created = True
-        _register_window_state_handler()
+        register_on_exit_capture(window_name)
 
     cv2.imshow(window_name, image)
 
