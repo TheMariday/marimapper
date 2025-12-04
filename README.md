@@ -17,7 +17,9 @@ Above example data folder can be found under [docs/highbeam_example/](docs/highb
 > [!CAUTION]
 > Exposure control is [not supported on mac](https://github.com/TheMariday/marimapper/issues/51)
 > 
-> You can however adjust the exposure manually in third party tools or use the software that comes with your webcam
+> You can however adjust the exposure manually in third party tools or use the software that comes
+> with your webcam. [Camo](https://reincubate.com/camo/) (including its free tier) with iPhone
+> is a viable route, [see more](docs/backends/PixelBlaze.md).
 
 
 ## Step 0: Install
@@ -97,6 +99,8 @@ If your LED backend isn't supported, you need to write your own,
 
 - 🪨 Make sure that your camera is stable and won't move, try mounting it on a tripod if you can
 - 💡 Make sure there are no light sources in your cameras view, tape up power leds and notification lights
+- 🤖 Experiment with available software and hardware controls like aperture, shutter speed, gamma, etc., the
+     goal being dimming the background and highlighting LED pixels
 - ✋ Make sure you can move your camera around without changing the layout of your leds, 
 even a small nudge can throw off the reconstructor!
 
@@ -153,6 +157,8 @@ They should be able to tell you at least roughly what area is going wrong.
 If you want a lot more reading material, run `marimapper` with `-v` to put it into verbose mode.
 This will tell you pretty much everything marimapper is doing under the hood.
 Also good if you're just curious as to why *x* is taking so long!
+
+See also [here](docs/backends/PixelBlaze.md) for some more example walk through of the process.
 
 # Feedback
 
