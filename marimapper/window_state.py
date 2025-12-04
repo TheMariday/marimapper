@@ -10,35 +10,45 @@ logger = get_logger()
 _exit_handlers_registered = set()  # Track which windows have exit handlers
 
 
-def get_state_file():
-    """Get the path to the window state configuration file."""
+def get_config_dir():
+    """Get the marimapper config directory."""
     config_dir = Path.home() / ".config" / "marimapper"
     config_dir.mkdir(parents=True, exist_ok=True)
-    return config_dir / "window_state.json"
+    return config_dir
+
+
+def get_state_file(window_name="MariMapper - Detector"):
+    """Get the path to the window state file for a specific window (separate file per window)."""
+    config_dir = get_config_dir()
+    # Use window name to create unique filename, sanitize for filesystem
+    safe_name = window_name.replace(" ", "_").replace("-", "_")
+    return config_dir / f"window_state.{safe_name}.json"
 
 
 def load_window_state(window_name="MariMapper - Detector"):
     """Load saved window state for a given window name."""
     try:
-        state_file = get_state_file()
-        if state_file.exists():
-            with open(state_file, "r") as f:
-                state = json.load(f)
-                return state.get(window_name, {})
+        state_file = get_state_file(window_name)
+        if not state_file.exists():
+            return {}
+
+        with open(state_file, "r") as f:
+            content = f.read()
+            if not content.strip():  # Handle empty file
+                return {}
+            state = json.loads(content)
+            return state
+    except json.JSONDecodeError as e:
+        logger.debug(f"Corrupted window state file {state_file}, starting fresh: {e}")
+        return {}
     except Exception as e:
         logger.debug(f"Failed to load window state: {e}")
     return {}
 
 
 def save_window_state(window_name="MariMapper - Detector", x=None, y=None, width=None, height=None):
-    """Save window state to configuration file."""
+    """Save window state to per-window file."""
     try:
-        state_file = get_state_file()
-        state = {}
-        if state_file.exists():
-            with open(state_file, "r") as f:
-                state = json.load(f)
-
         window_state = {}
         if x is not None:
             window_state["x"] = x
@@ -58,9 +68,9 @@ def save_window_state(window_name="MariMapper - Detector", x=None, y=None, width
                 logger.debug(f"Rejecting height {height} (too small, min 300px)")
 
         if window_state:  # Only update if we have something to save
-            state[window_name] = window_state
+            state_file = get_state_file(window_name)
             with open(state_file, "w") as f:
-                json.dump(state, f, indent=2)
+                json.dump(window_state, f, indent=2)
             logger.debug(f"Saved window state for {window_name}: {window_state}")
     except Exception as e:
         logger.debug(f"Failed to save window state: {e}")
