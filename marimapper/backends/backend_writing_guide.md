@@ -25,6 +25,9 @@ class MyBackend:
 
     def set_led(self, led_index: int, on: bool) -> None:
         pass
+
+    def set_leds(self, buffer: list[list[int]]) -> None:
+        raise AttributeError("Not yet implemented")
 ```
 
 The only thing you'll need to do extra is add the dependencies to the `pyproject.toml` file

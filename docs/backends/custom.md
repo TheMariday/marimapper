@@ -23,6 +23,12 @@ class Backend:
         #     some_led_library.set_led(led_index, (255, 255, 255))
         # else:
         #     some_led_library.set_led(led_index, (0, 0, 0))
+    
+    def set_leds(self, buffer: list[list[int]]) -> None:
+        # This method is meant to color code light up pixels based on detection success
+        # `buffer` is a list of pixels (by index), as 3-sized list of [red, green, blue],
+        # values 0 - 255. It is mostly optional to implement
+        raise AttributeError("Not yet implemented")
 ```
 
 Fill out the blanks and check it by running `marimapper_check_backend custom my_backend.py` in the same directory

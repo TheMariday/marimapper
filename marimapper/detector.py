@@ -9,6 +9,7 @@ from multiprocessing import get_logger
 from marimapper.camera import Camera
 from marimapper.timeout_controller import TimeoutController
 from marimapper.led import Point2D, LED2D
+from marimapper.utils import position_window
 
 
 logger = get_logger()
@@ -89,7 +90,24 @@ def draw_led_detections(image: cv2.Mat, led_detection: Optional[Point2D]) -> np.
 
 
 def show_image(image: np.ndarray) -> None:
-    cv2.imshow("MariMapper - Detector", image)
+    window_name = "MariMapper - Detector"
+
+    x, y, _, target_height = position_window(window_name, 320, 0, 960, 540)
+
+    native_h, native_w = image.shape[:2]
+    aspect_ratio = native_w / native_h
+
+    target_width = int(target_height * aspect_ratio)
+
+    if not getattr(show_image, "setup_done", False):
+        cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(window_name, target_width, target_height)
+        cv2.moveWindow(window_name, x, y)
+        show_image.setup_done = True
+
+    display_image = cv2.resize(image, (target_width, target_height))
+
+    cv2.imshow(window_name, display_image)
     key = cv2.waitKey(1)
 
     if key == 27:  # esc
