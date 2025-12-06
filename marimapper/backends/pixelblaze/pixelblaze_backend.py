@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from multiprocessing import get_logger
 import time
 import socket
@@ -39,7 +41,7 @@ def discover_pixelblazes(timeout=3.0):
     enumerator = pixelblaze.PixelblazeEnumerator()
 
     time.sleep(timeout)
-    devices = enumerator.getPixelblazeList()
+    devices: list[str] = enumerator.getPixelblazeList()
     enumerator.stop()
 
     logger.info(f"Found {len(devices)} PixelBlaze(s)")
@@ -80,12 +82,7 @@ class Backend:
                 # Try beacon scan on network
                 devices = discover_pixelblazes(timeout=3.0)
                 if devices:
-                    first_device = devices[0]
-                    pixelblaze_ip = (
-                        first_device.get("address")
-                        if isinstance(first_device, dict)
-                        else str(first_device)
-                    )
+                    pixelblaze_ip = devices[0]
                     logger.info(f"Found PixelBlaze at {pixelblaze_ip}")
                 else:
                     logger.error("No PixelBlazes found. Specify IP with --server")

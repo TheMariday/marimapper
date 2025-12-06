@@ -3,7 +3,6 @@ import sys
 import os
 import glob
 import pandas as pd
-from marimapper.scripts.basic_photogrammetry_solver import fill_missing_indices
 
 
 def log(*args, **kwargs):
@@ -31,36 +30,6 @@ def scan_2d_indices(data_dir):
         os.chdir(old_cwd)
 
 
-def normalize_map_for_csv(final_map):
-    """Convert final map data to pandas DataFrame for CSV output."""
-    rows = []
-    for idx in sorted(final_map.keys()):
-        row_data = final_map[idx]
-
-        # Handle filled format (numpy arrays) and CSV format (strings)
-        if isinstance(row_data, dict) and "pos" in row_data:
-            pos = row_data["pos"]
-            norm = row_data["norm"]
-            error = row_data["error"]
-            rows.append(
-                {
-                    "index": idx,
-                    "x": f"{float(pos[0]):.6f}",
-                    "y": f"{float(pos[1]):.6f}",
-                    "z": f"{float(pos[2]):.6f}",
-                    "xn": f"{float(norm[0]):.6f}",
-                    "yn": f"{float(norm[1]):.6f}",
-                    "zn": f"{float(norm[2]):.6f}",
-                    "error": f"{float(error):.6f}",
-                }
-            )
-        else:
-            # Already in CSV format
-            rows.append({"index": idx, **row_data})
-
-    return pd.DataFrame(rows)
-
-
 @click.command()
 @click.option(
     "--dir",
@@ -69,61 +38,11 @@ def normalize_map_for_csv(final_map):
     type=click.Path(exists=True, file_okay=False, dir_okay=True),
     help="Directory containing led_map_3d.csv and led_map_2d_*.csv files (default: current directory)",
 )
-@click.option(
-    "--fill",
-    "-f",
-    is_flag=True,
-    help="Fill missing indices using photogrammetric reconstruction",
-)
-@click.option(
-    "--ransac-iter",
-    "-n",
-    default=500,
-    type=int,
-    show_default=True,
-    help="RANSAC iterations for camera calibration",
-)
-@click.option(
-    "--ransac-thresh",
-    "-t",
-    default=5.0,
-    type=float,
-    show_default=True,
-    help="RANSAC inlier threshold (pixels)",
-)
-@click.option(
-    "--min-calib-pts",
-    "-p",
-    default=8,
-    type=int,
-    show_default=True,
-    help="Min calibration points per camera",
-)
-@click.option(
-    "--reproj-thresh",
-    "-r",
-    default=10.0,
-    type=float,
-    show_default=True,
-    help="Max reprojection error for strict triangulation (pixels)",
-)
-@click.option(
-    "--min-angle",
-    "-a",
-    default=2.0,
-    type=float,
-    show_default=True,
-    help="Min ray angle for strict triangulation (degrees)",
-)
-def main(
-    dir, fill, ransac_iter, ransac_thresh, min_calib_pts, reproj_thresh, min_angle
-):
+def main(dir):
     """
     Summarize LED mapping results.
 
-    Shows mapping status (2D detections vs 3D calibration). When --fill is used,
-    reconstructs missing 3D positions using photogrammetric methods. Camera
-    positions and orientations are also estimated and summarized.
+    Shows mapping status (2D detections vs 3D calibration).
 
     Outputs final 3D mapping as CSV to stdout (all logging goes to stderr).
     """
@@ -140,7 +59,6 @@ def main(
         # Load existing 3D map
         try:
             map_df = pd.read_csv("led_map_3d.csv")
-            map_data = {int(idx): row.to_dict() for idx, row in map_df.iterrows()}
         except Exception as e:
             log(f"Error loading 3D map: {e}", fg="red")
             sys.exit(1)
@@ -153,7 +71,7 @@ def main(
             sys.exit(1)
 
         all_2d_indices = set(data_2d_log.keys())
-        existing_3d_indices = set(map_data.keys())
+        existing_3d_indices = set(map_df["index"].astype(int))
         missing_indices = sorted(list(all_2d_indices - existing_3d_indices))
 
         # Report status
@@ -162,9 +80,9 @@ def main(
 
         if not missing_indices:
             log("Status: COMPLETE")
-            final_map = map_data
         else:
             log(f"Status: INCOMPLETE ({len(missing_indices)} missing)")
+            log(f"Try --interpolation_max_error and --interpolation_max_fill")
 
             # Display missing indices table using pandas
             missing_table_data = [
@@ -173,30 +91,7 @@ def main(
             df_missing = pd.DataFrame(missing_table_data, columns=["Index", "# Views"])
             log(df_missing.to_string(index=False) + "\n")
 
-            if fill:
-                # Run photogrammetric reconstruction
-                log("Running photogrammetric reconstruction...\n")
-                final_map = fill_missing_indices(
-                    data_dir=".",
-                    ransac_iterations=ransac_iter,
-                    ransac_threshold=ransac_thresh,
-                    min_calibration_points=min_calib_pts,
-                    triangulation_reproj_threshold=reproj_thresh,
-                    min_ray_angle=min_angle,
-                )
-                if final_map is None:
-                    log("Error: Photogrammetric reconstruction failed", fg="red")
-                    sys.exit(1)
-            else:
-                final_map = map_data
-                log(
-                    "(Use --fill to reconstruct missing indices using photogrammetry)\n"
-                )
-
-        # Output final 3D map to stdout using pandas
-        if final_map:
-            df_output = normalize_map_for_csv(final_map)
-            df_output.to_csv(sys.stdout, index=False)
+        map_df.to_csv(sys.stdout, index=False)
 
     finally:
         os.chdir(old_cwd)

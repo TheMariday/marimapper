@@ -25,20 +25,19 @@ marimapper pixelblaze
 marimapper pixelblaze --help
 ```
 
-For any backend, we can summarize the results with the following command.
-Adding `--fill` is often good enough for basic LED mapping if you're struggling
-to get completeness:
+For any backend, we can summarize the results with the following command:
 ```bash
 marimapper_results
-marimapper_results --fill > filled_led_map_3d.csv
 ```
+
+If LEDs are logged missing, you can try marimapper args `--interpolation_max_error` and `--interpolation_max_fill`.
 
 Uploading a completed 3d scan:
 ```bash
 marimapper_upload_mapping_to_pixelblaze --csv_file led_map_3d.csv
 ```
 
-Or with manual gap fill, plus `pb` CLI:
+Or with results CLI, plus `pb` CLI:
 ```bash
 ( echo '[' ; marimapper_results \
     | tail -n+2 | cut -d, -f 5-7 \
