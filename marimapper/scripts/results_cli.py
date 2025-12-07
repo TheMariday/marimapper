@@ -82,7 +82,7 @@ def main(dir):
             log("Status: COMPLETE")
         else:
             log(f"Status: INCOMPLETE ({len(missing_indices)} missing)")
-            log(f"Try --interpolation_max_error and --interpolation_max_fill")
+            log("Try --interpolation_max_error and --interpolation_max_fill")
 
             # Display missing indices table using pandas
             missing_table_data = [
