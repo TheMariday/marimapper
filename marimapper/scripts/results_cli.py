@@ -72,10 +72,15 @@ def main(dir):
 
         all_2d_indices = set(data_2d_log.keys())
         existing_3d_indices = set(map_df["index"].astype(int))
-        missing_indices = sorted(list(all_2d_indices - existing_3d_indices))
+
+        # Infer expected total from max index found in either 2D or 3D data
+        max_index = max(max(all_2d_indices), max(existing_3d_indices))
+        expected_indices = set(range(max_index + 1))
+        missing_indices = sorted(list(expected_indices - existing_3d_indices))
 
         # Report status
         log(f"2D Indices Found: {len(all_2d_indices)} across {len(files_2d)} scans")
+        log(f"Expected Total: {len(expected_indices)} (indices 0-{max_index})")
         log(f"3D Indices Mapped: {len(existing_3d_indices)}\n")
 
         if not missing_indices:
@@ -86,7 +91,7 @@ def main(dir):
 
             # Display missing indices table using pandas
             missing_table_data = [
-                [idx, len(data_2d_log[idx])] for idx in missing_indices
+                [idx, len(data_2d_log.get(idx, []))] for idx in missing_indices
             ]
             df_missing = pd.DataFrame(missing_table_data, columns=["Index", "# Views"])
             log(df_missing.to_string(index=False) + "\n")

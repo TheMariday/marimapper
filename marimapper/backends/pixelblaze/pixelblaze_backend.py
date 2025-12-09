@@ -116,10 +116,9 @@ class Backend:
     def set_leds(self, buffer: list[list[int]]):
         """Set arbitrary pixel colors. Buffer format: [[r, g, b], ...] where index is position in list"""
 
-        # If setting all black or empty...
+        # If setting all black or empty, treat as "reset"...
         if not buffer or all(rgb == [0, 0, 0] for rgb in buffer):
-            self.switch_to_mapper_pattern()
-            return
+            self.reset()
 
         try:
             self.render_pattern(RGB_PATTERN)
@@ -133,6 +132,12 @@ class Backend:
             self.pb.setActiveVariables({"colors": colors})
         except Exception as e:
             logger.error(f"Failed to set RGB pixels on PixelBlaze: {e}")
+
+
+    def reset(self):
+        self.pb.setBrightnessSlider(1.0)
+        self.switch_to_mapper_pattern()
+
 
     def set_map_coordinates(self, pixelmap: list):
         result = self.pb.setMapCoordinates(pixelmap)
