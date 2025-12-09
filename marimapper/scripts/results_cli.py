@@ -4,8 +4,10 @@ import os
 import glob
 import csv
 
+
 def log(msg, **kwargs):
     sys.stderr.write(str(msg) + "\n")
+
 
 def scan_2d_indices(data_dir):
     """Scan all 2D detection files in directory."""
@@ -14,7 +16,7 @@ def scan_2d_indices(data_dir):
     detection_log = {}
 
     for fname in files:
-        with open(fname, mode='r', newline='', encoding='utf-8') as f:
+        with open(fname, mode="r", newline="", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 idx = int(row["index"])
@@ -24,12 +26,13 @@ def scan_2d_indices(data_dir):
 
     return detection_log, files
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Summarize LED mapping results.\n\nShows mapping status (2D detections vs 3D calibration).\nOutputs final 3D mapping as CSV to stdout (all logging goes to stderr).",
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    
+
     parser.add_argument(
         "--dir",
         "-d",
@@ -55,7 +58,7 @@ def main():
     map_rows = []
     map_fieldnames = []
 
-    with open(map_file_path, mode='r', newline='', encoding='utf-8') as f:
+    with open(map_file_path, mode="r", newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         map_fieldnames = reader.fieldnames
         for row in reader:
@@ -100,6 +103,7 @@ def main():
     writer = csv.DictWriter(sys.stdout, fieldnames=map_fieldnames)
     writer.writeheader()
     writer.writerows(map_rows)
+
 
 if __name__ == "__main__":
     main()

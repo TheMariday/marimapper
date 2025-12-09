@@ -58,10 +58,10 @@ class SupressLogging(object):
 def window_config(name: str, x: int, y: int, w: int, h: int) -> list[int]:
     try:
         with open(Path.home() / ".config" / "marimapper.json", "r") as f:
-                data = json.load(f)
-                window_cfg = data["window"] and data["window"][name]
-                if window_cfg:
-                    return [window_cfg["x"], window_cfg["y"], window_cfg["width"], window_cfg["height"]]
+            data = json.load(f)
+            cfg = data["window"] and data["window"][name]
+            if cfg:
+                return [cfg["x"], cfg["y"], cfg["width"], cfg["height"]]
     except Exception:
         pass
     return [x, y, w, h]

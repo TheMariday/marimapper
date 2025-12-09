@@ -22,6 +22,7 @@ class _Window:
     camera_native_aspect_ratio: float = -1
     initial_height: int = -1
 
+
 _win = _Window()
 
 
@@ -110,10 +111,9 @@ def _init_win_if_needed(image: np.ndarray) -> None:
         cv2.namedWindow(_win.name, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(_win.name, target_win_width, target_win_height)
         cv2.moveWindow(_win.name, x, y)
-        
+
         _win.initial_height = target_win_height
         _win.camera_native_aspect_ratio = cam_aspect_ratio
-
 
 
 def show_image(image: np.ndarray) -> None:

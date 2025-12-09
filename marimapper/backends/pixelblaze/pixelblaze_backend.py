@@ -133,11 +133,9 @@ class Backend:
         except Exception as e:
             logger.error(f"Failed to set RGB pixels on PixelBlaze: {e}")
 
-
     def reset(self):
         self.pb.setBrightnessSlider(1.0)
         self.switch_to_mapper_pattern()
-
 
     def set_map_coordinates(self, pixelmap: list):
         result = self.pb.setMapCoordinates(pixelmap)
