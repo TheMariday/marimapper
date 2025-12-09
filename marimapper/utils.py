@@ -54,35 +54,14 @@ class SupressLogging(object):
         self.errnull_file.close()
 
 
-CONFIG_DIR = Path.home() / ".config" / "marimapper" / "windows"
-_CACHE = {}
-
-
-def position_window(name: str, x: int, y: int, w: int, h: int) -> list[int]:
-    """
-    Returns [x, y, width, height].
-    Checks memory cache first.
-    If not in cache, checks disk.
-    If not on disk, returns defaults immediately.
-    """
-    if name in _CACHE:
-        return _CACHE[name]
-
-    clean_name = re.sub(r"[^\w\-_\. ]", "_", name)
-    file_path = CONFIG_DIR / f"{clean_name}.json"
-
-    defaults = {"x": x, "y": y, "width": w, "height": h}
-    config = defaults.copy()
-
-    if file_path.exists():
-        try:
-            with open(file_path, "r") as f:
+# Look for stored window position and size settings, otherwise return supplied defaults
+def window_config(name: str, x: int, y: int, w: int, h: int) -> list[int]:
+    try:
+        with open(Path.home() / ".config" / "marimapper.json", "r") as f:
                 data = json.load(f)
-                config.update(data)
-        except Exception:
-            pass
-
-    # Return as list [x, y, w, h]
-    result = [config["x"], config["y"], config["width"], config["height"]]
-    _CACHE[name] = result
-    return result
+                window_cfg = data["window"] and data["window"][name]
+                if window_cfg:
+                    return [window_cfg["x"], window_cfg["y"], window_cfg["width"], window_cfg["height"]]
+    except Exception:
+        pass
+    return [x, y, w, h]

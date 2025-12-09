@@ -3,7 +3,7 @@ import open3d
 from multiprocessing import get_logger, Process, Event
 from marimapper.queues import Queue3D
 from marimapper.led import LED3D, View, get_next, get_distance
-from marimapper.utils import position_window
+from marimapper.utils import window_config
 import time
 
 logger = get_logger()
@@ -70,7 +70,7 @@ class VisualiseProcess(Process):
     def initialise_visualiser__(self):
         logger.debug("Renderer3D process initialising visualiser")
         window_name = "MariMapper"
-        x, y, w, h = position_window(window_name, 0, 0, 640, 640)
+        x, y, w, h = window_config(window_name, 0, 0, 640, 640)
 
         self._vis = (
             open3d.visualization.Visualizer()

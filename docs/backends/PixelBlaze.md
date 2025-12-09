@@ -40,7 +40,7 @@ marimapper_upload_mapping_to_pixelblaze --csv_file led_map_3d.csv
 Or with results CLI, plus `pb` CLI:
 ```bash
 ( echo '[' ; marimapper_results \
-    | tail -n+2 | cut -d, -f 5-7 \
+    | tail -n+2 | cut -d, -f 2-4 \
     | awk '{print (NR==1 ? "[" : "],[" ) $0 }' ; \
   echo ']]' ) | pb map
 ```

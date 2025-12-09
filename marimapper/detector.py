@@ -3,16 +3,26 @@ import logging
 import cv2
 import time
 from typing import Optional
+from dataclasses import dataclass
 import numpy as np
 from multiprocessing import get_logger
 
 from marimapper.camera import Camera
 from marimapper.timeout_controller import TimeoutController
 from marimapper.led import Point2D, LED2D
-from marimapper.utils import position_window
+from marimapper.utils import window_config
 
 
 logger = get_logger()
+
+
+@dataclass
+class _Window:
+    name: str = "MariMapper - Detector"
+    camera_native_aspect_ratio: float = -1
+    initial_height: int = -1
+
+_win = _Window()
 
 
 def contour_brightness(image: np.ndarray, contour: np.ndarray) -> int:
@@ -89,25 +99,34 @@ def draw_led_detections(image: cv2.Mat, led_detection: Optional[Point2D]) -> np.
     return render_image
 
 
+# If this is our first render and cv2.imshow(), make sure the window is created
+def _init_win_if_needed(image: np.ndarray) -> None:
+    if _win.initial_height <= 0:
+        cam_h, cam_w = image.shape[:2]
+        cam_aspect_ratio = cam_w / cam_h
+
+        x, y, _, target_win_height = window_config(_win.name, 320, 0, 960, 540)
+        target_win_width = int(target_win_height * cam_aspect_ratio)
+        cv2.namedWindow(_win.name, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(_win.name, target_win_width, target_win_height)
+        cv2.moveWindow(_win.name, x, y)
+        
+        _win.initial_height = target_win_height
+        _win.camera_native_aspect_ratio = cam_aspect_ratio
+
+
+
 def show_image(image: np.ndarray) -> None:
-    window_name = "MariMapper - Detector"
+    _init_win_if_needed(image)
 
-    x, y, _, target_height = position_window(window_name, 320, 0, 960, 540)
+    # Resizing actually seems to perform better than not (more responsive too)
+    # We only need to resize the display image (not window), and can use the initial height,
+    # user movements are still respected
+    image_height = _win.initial_height
+    image_width = int(image_height * _win.camera_native_aspect_ratio)
+    display_image = cv2.resize(image, (image_width, image_height))
 
-    native_h, native_w = image.shape[:2]
-    aspect_ratio = native_w / native_h
-
-    target_width = int(target_height * aspect_ratio)
-
-    if not getattr(show_image, "setup_done", False):
-        cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(window_name, target_width, target_height)
-        cv2.moveWindow(window_name, x, y)
-        show_image.setup_done = True
-
-    display_image = cv2.resize(image, (target_width, target_height))
-
-    cv2.imshow(window_name, display_image)
+    cv2.imshow(_win.name, display_image)
     key = cv2.waitKey(1)
 
     if key == 27:  # esc
