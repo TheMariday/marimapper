@@ -29,7 +29,9 @@ def scan_2d_indices(data_dir):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Summarize LED mapping results.\n\nShows mapping status (2D detections vs 3D calibration).\nOutputs final 3D mapping as CSV to stdout (all logging goes to stderr).",
+        description="Summarize LED mapping results.\n\n"
+                    "Shows mapping status (2D detections vs 3D calibration).\n"
+                    "Outputs final 3D mapping as CSV to stdout (all logging goes to stderr).",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
