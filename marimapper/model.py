@@ -3,7 +3,7 @@ from pathlib import Path
 from marimapper.pycolmap_tools.read_write_model import (
     qvec2rotmat,
     read_images_binary,
-    read_points3D_binary,
+    read_points3D_binary, rotmat2qvec,
 )
 
 from marimapper.led import LED3D, View
@@ -23,7 +23,7 @@ def binary_to_led_map_3d(path: Path) -> list[LED3D]:
         rotation = qvec2rotmat(img.qvec).T
         translation = -rotation @ img.tvec
 
-        views[img.id] = (img.id, translation, rotation)
+        views[img.id] = (img.id, translation, rotmat2qvec(rotation))
 
     for (
         led_data

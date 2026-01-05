@@ -10,7 +10,7 @@ from marimapper.detector import (
     find_led,
 )
 from marimapper.led import get_distance, get_color, LEDInfo
-from marimapper.queues import (
+from marimapper.old.queues import (
     RequestDetectionsQueue,
     Queue2D,
     DetectionControlEnum,

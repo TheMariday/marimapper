@@ -10,8 +10,7 @@ version = "V3.4.1"
 dependencies = [
     "numpy",
     "opencv-python",
-    "tqdm",
-    "open3d",
+    "viser",
     "pycolmap==3.11.1", # 2 track is broken on > 3.12. see https://github.com/TheMariday/marimapper/issues/79
     "pyserial",          # required by fcmega
     "pixelblaze-client", # required by pixelblaze

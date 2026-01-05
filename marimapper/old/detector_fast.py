@@ -11,7 +11,7 @@ from marimapper.camera import Camera
 from marimapper.detector import show_image
 from marimapper.led import LED2D, Point2D
 from marimapper.timeout_controller import TimeoutController
-from marimapper.queues import Queue2D, DetectionControlEnum
+from marimapper.old.queues import Queue2D, DetectionControlEnum
 import logging
 from multiprocessing import get_logger
 import time

@@ -62,6 +62,9 @@ def draw_led_detections(image: cv2.Mat, led_detection: Optional[Point2D]) -> np.
         image if len(image.shape) == 3 else cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     )
 
+
+    image[0:100,0:100] = (0,0,255) if len(led_detection.contours) > 10 else (255,0,0)
+
     if led_detection is None:
         return render_image
 

@@ -40,7 +40,7 @@ def check_dimensions(map_3d, max_error):
 
 
 def test_reconstruction():
-    maps = get_all_2d_led_maps(get_test_dir("scan"))
+    maps = get_all_2d_led_maps("C:\\Users\\marti\\PycharmProjects\\marimapper\\test\\MariMapper-Test-Data\\highbeam")
 
     map_3d = sfm(maps)
 

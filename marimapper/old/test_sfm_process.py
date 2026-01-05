@@ -1,6 +1,6 @@
-from marimapper.sfm_process import SFM
+from marimapper.old.sfm_process import SFM
 from marimapper.file_tools import get_all_2d_led_maps
-from marimapper.queues import Queue3D
+from marimapper.old.queues import Queue3D
 from utils import get_test_dir
 import time
 import pytest
