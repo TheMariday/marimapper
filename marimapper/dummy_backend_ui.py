@@ -1,18 +1,6 @@
-class Backend:
-
+class BackendUI:
     def __init__(self):
         pass
-
-    def connected(self):
-        return False
-
-    def state(self):
-        return "Not a valid backend"
-
-class BackendUI:
-    name = "None"
-    def __init__(self):
-        self.backend = Backend()
 
     def remove(self):
         pass
@@ -20,8 +8,14 @@ class BackendUI:
     def enable(self):
         pass
 
-    def disable(self):
+    def disabled(self, disabled):
         pass
 
-    def get_backend(self):
-        return self.backend
+    def connect(self):
+        return False
+
+    def set_led(self, led_id, on):
+        pass
+
+    def disconnect(self):
+        pass

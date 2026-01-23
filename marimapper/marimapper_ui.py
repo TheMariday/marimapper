@@ -1,23 +1,22 @@
+import json
 import logging
 import os
+import re
+import unicodedata
 import viser
 import time
 from sidebar import MarimapperSidebar
-from marimapper import dummy_backend_ui
 from marimapper.custom_ui_elements import notify
 from marimapper.ui_style import Color, populate_theme
 from marimapper.marimapper_backend import Marimapper
-from marimapper.marimapper_backend import MMState
 import marimapper.custom_ui_elements as viser_custom
+import dummy_backend_ui
 import cv2
-import numpy as np
 from threading import Lock
+from MMState import MMState
 
-
-import unicodedata
-import re
 def slugify(value, allow_unicode=False):
-    """
+    """s
     Taken from https://github.com/django/django/blob/master/django/utils/text.py
     Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
     dashes to single dashes. Remove characters that aren't alphanumerics,
@@ -33,37 +32,6 @@ def slugify(value, allow_unicode=False):
     return re.sub(r'[-\s]+', '-', value).strip('-_')
 
 
-import json
-class Project:
-    def __init__(self,name:str):
-        # These must all be pickleable
-        self.name:str = name
-        self.backend_option:str = "None"
-        self.scan_from = 0
-        self.scan_to = 10
-        self.webcam_index = 0 # warning, if we load this and it doesn't work then we have an issue
-        self.gap_fill_max = 3
-        self.webcam_exposure = None
-
-        self.scans = []
-
-    def save(self):
-        print("saving")
-        json_data = json.dumps(self.__dict__, sort_keys=True, indent=4)
-        with open(f"{self.name}.marimapper" , "w") as file:
-            file.write(json_data)
-        print("saved")
-
-    def load(self, project_filename):
-        try:
-            with open(project_filename, "r") as file:
-                self.__dict__ = json.load(file)
-                return True
-        except:
-            return False
-
-
-
 def list_projects(save_dir="."):
 
     projects_found = []
@@ -74,100 +42,121 @@ def list_projects(save_dir="."):
                 projects_found.append(filename.replace(".marimapper", ""))
     return projects_found
 
+
+
 class MarimapperUI:
 
     def __init__(self):
         logging.info("Marimapper UI initialising")
         self.server = viser.ViserServer()
-        self.reset_gui()
-        self.loading_lock = Lock()
+        populate_theme(self.server.gui)
+        self.state = MMState(self.update_state)
 
-        self.last_project_save = None
-        self.initialised = False
+        self.name = ""
 
-        self.sidebar:MarimapperSidebar|None = None
+        self.backend = dummy_backend_ui.BackendUI()
+
+        self.sidebar = MarimapperSidebar(self.server.gui)
+
+        self.marimapper = Marimapper(self.sidebar.webcam_callback)
+
+        self.sidebar.scan_start_button.on_click(self.start_scan)
+        self.sidebar.scan_stop_button.on_click(self.stop_scan)
+        self.sidebar.file_project_load_button.on_click(lambda event: self.show_splash(event.client, new_visible=False))
+        self.sidebar.file_project_new_button.on_click(lambda event: self.new_project_modal(event.client))
+        self.sidebar.file_project_save_button.on_click(lambda event: self.save_project())
+        self.sidebar.backend_dropdown.on_update(self.load_backend)
+        self.sidebar.webcam_number.on_update(self.change_webcam)
+        self.sidebar.webcam_exposure.on_update(lambda _: self.marimapper.set_camera_exposure(self.sidebar.webcam_exposure.value))
+        self.sidebar.webcam_threshold.on_update(lambda _: self.marimapper.set_threshold(self.sidebar.webcam_threshold.value))
+        self.sidebar.webcam_test_led_index.on_update(lambda _: self.update_test_led())
+        self.sidebar.webcam_test.on_click(self.camera_test_toggle)
+        self.sidebar.led_driver_connect.on_click(self.connect_toggle)
+
         self.server.on_client_connect(self.on_client_connect)
-        self.marimapper: Marimapper | None = None
+        self.marimapper.set_camera_id(self.sidebar.webcam_number.value)
+        self.sidebar.webcam_exposure.value = self.marimapper.get_camera_exposure()
+
+        self.default = self.to_json()
+
         logging.info("Marimapper UI initialised")
+
+    def update_state(self):
+        self.sidebar.transition_callback(self.state)
+
+    def camera_test_toggle(self, event):
+        if event and not event.client: return
+
+        self.state.camera_testing = not self.state.camera_testing
+
+        self.backend.set_led(self.sidebar.webcam_test_led_index.value, self.state.camera_testing)
+
+    def connect_toggle(self, event):
+        if event and not event.client: return
+
+        if self.state.backend_connected:
+            self.backend.disconnect()
+            self.state.backend_connected = False
+        else:
+            if self.backend.connect():
+                self.state.backend_connected = True
+            else:
+                viser_custom.notify(event.client, "failed to connect to backend")
 
 
     def on_client_connect(self, client):
-        if not self.initialised:
+        if not self.name:
             logging.info("Marimapper UI new client connect whilst project is none")
             self.show_splash(client, welcome=True)
         else:
             logging.info("Marimapper UI new client connect")
 
-    def reset_gui(self):
-        logging.info("Marimapper UI resetting gui")
-        self.server.gui.reset()
-        populate_theme(self.server.gui)
-        logging.info("Marimapper UI gui reset")
-
-    def init_project(self, project):
-        logging.info("Marimapper UI project initialising")
-
-        if self.initialised:
-            self.save_project()
-
-        if self.marimapper is not None:
-            self.marimapper.stop()
-            self.marimapper = None
-
-        if self.sidebar is not None:
-            self.sidebar = None
-            self.reset_gui()
-
-        self.last_project_save = project
-        self.sidebar = MarimapperSidebar(self.server.gui, project)
-        self.sidebar.scan_start_button.on_click(self.start_scan)
-        self.sidebar.scan_stop_button.on_click(self.stop_scan)
-        self.sidebar.file_project_load_button.on_click(lambda event: self.show_splash(event.client, new_visible=False))
-        self.sidebar.file_project_new_button.on_click(lambda event: self.new_project_modal(event.client))
-        self.sidebar.backend_dropdown.on_update(self.load_backend)
-        self.sidebar.webcam_number.on_update(self.change_webcam)
-        self.sidebar.webcam_exposure.on_update(lambda _: self.marimapper.set_camera_exposure(self.sidebar.webcam_exposure.value))
-
-        self.sidebar.webcam_threshold.on_update(lambda _: self.marimapper.set_threshold(self.sidebar.webcam_threshold.value))
-
-        self.sidebar.webcam_test_led_index.on_update(lambda _: self.update_test_led())
-
-        self.marimapper = Marimapper(self.sidebar.transition_callback, self.sidebar.webcam_callback)
-        self.marimapper.set_camera_id(self.sidebar.webcam_number.value)
-        self.sidebar.webcam_exposure.value = self.marimapper.get_camera_exposure()
-
-        self.sidebar.webcam_test.on_click(lambda _:self.marimapper.toggle_test())
-
-        # Needs to be done after marimapper due to callbacks in marimapper
-        self.load_backend_from_name(self.sidebar.backend_dropdown.value)
-
-        self.initialised = True
-
-        self.save_project()
-
-        logging.info("Marimapper UI project initialised")
-
-    def update_test_led(self):
-        self.sidebar.backend_ui.get_backend().set_led(self.sidebar.webcam_test_led_index.value, True)
 
     def load_project(self, project_name):
         logging.info("Marimapper UI loading project")
-        project = Project(project_name)
-        if not project.load(project_name+ ".marimapper"):
-            logging.info("Marimapper UI failed to load project")
-            return False
+        self.save_project()
 
-        self.init_project(project)
+        with open(project_name+".marimapper", "r") as file:
+            json_data = json.load(file)
+            self.from_json(json_data)
 
         logging.info("Marimapper UI loaded project")
         return True
 
-    def save_project(self):
-        if not self.initialised: return
+    def from_json(self, json_data):
 
-        logging.info("Marimapper UI saving project")
-        self.sidebar.update_project(self.last_project_save)
-        self.last_project_save.save()
+        self.sidebar.from_json(json_data)
+        self.load_backend_from_name(json_data["backend"])
+
+        self.marimapper.set_camera_id(self.sidebar.webcam_number.value)
+        try:
+            self.marimapper.set_camera_exposure(json_data["webcam_exposure"])
+        except KeyError:
+            pass
+
+
+        self.name = json_data["name"]
+
+    def to_json(self):
+        json_data = {}
+        json_data.update(self.sidebar.to_json())
+
+        json_data["backend"] = self.sidebar.backend_dropdown.value
+        json_data["name"] = self.name
+        return json_data
+
+    def save_project(self):
+        if self.name:
+            logging.info("Marimapper UI saving project")
+
+            with open(f"{self.name}.marimapper", "w") as file:
+                file.write(json.dumps(self.to_json(), sort_keys=True, indent=4))
+            print("saved")
+
+    def new_project(self, project_name):
+        self.save_project()
+        self.from_json(self.default)
+        self.name = project_name
 
     def new_project_modal(self, client, parent_modal=None):
         logging.info("Marimapper UI launching new project modal")
@@ -192,7 +181,8 @@ class MarimapperUI:
                         notify(event.client, f"Project named {project_name} already exists.", notification=False, modal=True, color=Color.ERROR)
                         return
 
-                    self.init_project(Project(project_name))
+
+                    self.new_project(project_name)
                     text_modal.close()
                     if parent_modal:
                         parent_modal.close()
@@ -215,33 +205,33 @@ class MarimapperUI:
             new_project_button.visible = new_visible
             close_button = client.gui.add_button("close")
             close_button.on_click(lambda _: splash_modal.close())
-            close_button.visible = self.initialised
+            close_button.visible = self.name != ""
             load_buttons = []
 
-            def delete_project(project_name):
-                os.remove(project_name + ".marimapper")
+            def delete_project(proj_name):
+                os.remove(proj_name + ".marimapper")
                 for button in load_buttons:
-                    if button.label == project_name:
+                    if button.label == proj_name:
                         button.visible = False
                         print("hiding", button.label)
 
             def load_previous_save(event):
                 with viser_custom.ProgressWrapper(new_project_button, close_button):
-                    project_name = event.target.label
+                    pname = event.target.label
                     match event.target.value:
                         case "Load":
-                            if self.load_project(project_name):
+                            if self.load_project(pname):
                                 splash_modal.close()
                             else:
-                                notify(event.client, f"Failed to load {project_name}")
+                                notify(event.client, f"Failed to load {pname}")
                         case "Delete":
-                            viser_custom.get_confirmation(event.client, f"are you sure you want to delete {project_name}?", lambda: delete_project(project_name))
+                            viser_custom.get_confirmation(event.client, f"are you sure you want to delete {pname}?", lambda: delete_project(pname))
                         case _:
                             pass
 
             with client.gui.add_folder("Load previous project"):
                 for project_name in list_projects("."):
-                    if self.last_project_save and self.last_project_save.name == project_name:
+                    if project_name == self.name:
                         continue
 
                     load_buttons.append(client.gui.add_button_group(project_name, ["Load", "Delete"]))
@@ -267,39 +257,35 @@ class MarimapperUI:
 
         viser_custom.get_confirmation(client=event.client, message="Are you sure you want to stop the current scan?", yes_lambda=lambda: self.marimapper.stop_scan())
 
-    def change_webcam(self, event):
+    def change_webcam(self, event=None):
+        if event and not event.client: return
 
-        notify(event.client, "Warning! All captures in a project must be done with the same camera. Is this the camera you did the rest with?", color=Color.WARNING)
+        if event:
+            notify(event.client, "Warning! All captures in a project must be done with the same camera. Is this the camera you did the rest with?", color=Color.WARNING)
 
         with viser_custom.ProgressWrapper(self.sidebar.webcam_number):
-            pass
             success = self.marimapper.set_camera_id(self.sidebar.webcam_number.value)
             if not success:
-                viser_custom.notify(event.client, f"Failed to set webcam index to {self.sidebar.webcam_number.value}", color=Color.ERROR)
-                self.sidebar.webcam_number.value = self.marimapper.camera.device_id
+                if event:
+                    viser_custom.notify(event.client, f"Failed to set webcam index to {self.sidebar.webcam_number.value}", color=Color.ERROR)
+                self.sidebar.webcam_number.value = 0
+
+            self.sidebar.webcam_exposure.value = self.marimapper.get_camera_exposure()
 
     def load_backend_from_name(self, name):
-        with self.sidebar.backend_folder:
 
+        with self.sidebar.backend_folder:
             match name:
                 case "None":
                     import dummy_backend_ui
-                    new_backend = dummy_backend_ui.BackendUI()
-                    self.marimapper.backend_ready(False)
-                    self.sidebar.backend_ui.remove()
-                    self.sidebar.backend_ui = new_backend
+                    self.backend.remove()
+                    self.backend = dummy_backend_ui.BackendUI()
+                    self.sidebar.set_led_driver_ui(self.backend)
                 case "FCMega":
-                    import fcmega_backend_ui
-                    new_backend = fcmega_backend_ui.BackendUI(self.server.gui, self.marimapper.backend_ready)
-                    self.marimapper.backend_ready(False)
-                    self.sidebar.backend_ui.remove()
-                    self.sidebar.backend_ui = new_backend
-                case "PixelBlaze":
-                    import pixelblaze_backend_ui
-                    self.marimapper.backend_ready(False)
-                    self.sidebar.backend_ui.remove()
-                    self.sidebar.backend_ui = pixelblaze_backend_ui.BackendUI(self.server.gui,
-                                                                              self.marimapper.backend_ready)
+                    import fcmega
+                    self.backend.remove()
+                    self.backend = fcmega.FCMegaBackend(self.server.gui)
+                    self.sidebar.set_led_driver_ui(self.backend)
                 case _:
                     pass
 
@@ -307,7 +293,6 @@ class MarimapperUI:
         if not event.client: return
 
         self.load_backend_from_name(self.sidebar.backend_dropdown.value)
-
 
 
 if __name__ == "__main__":
@@ -322,4 +307,5 @@ if __name__ == "__main__":
         print("shutting down")
     finally:
         marimapper_ui.save_project()
+        marimapper_ui.marimapper.stop()
 
