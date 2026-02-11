@@ -1,5 +1,5 @@
 import numpy as np
-import open3d
+#import open3d
 from multiprocessing import get_logger, Process, Event
 from marimapper.queues import Queue3D
 from marimapper.led import LED3D, View, get_next, get_distance
@@ -8,7 +8,7 @@ import time
 logger = get_logger()
 
 # Temporary fix to stop the zero points issue when visualising
-open3d.utility.set_verbosity_level(open3d.utility.VerbosityLevel.Error)
+# open3d.utility.set_verbosity_level(open3d.utility.VerbosityLevel.Error)
 
 
 def get_all_views(leds: list[LED3D]) -> list[View]:
@@ -67,92 +67,93 @@ class VisualiseProcess(Process):
                 time.sleep(1)
 
     def initialise_visualiser__(self):
-        logger.debug("Renderer3D process initialising visualiser")
-
-        self._vis = (
-            open3d.visualization.Visualizer()
-        )  # This needs to be updated to O3DVisualizer
-        self._vis.create_window(
-            window_name="MariMapper",
-            width=640,
-            height=640,
-        )
-
-        view_ctl = (
-            self._vis.get_view_control()
-        )  # I'm not sure the camera controls work anymore, bar the z dist
-        view_ctl.set_up((0, 1, 0))
-        view_ctl.set_lookat((0, 0, 0))
-        view_ctl.set_zoom(0.3)
-        # set far distance to 20000x the inter-led distance
-        view_ctl.set_constant_z_far(20000)
-
-        render_options = self._vis.get_render_option()
-        render_options.point_show_normal = True
-        render_options.point_color_option = open3d.visualization.PointColorOption.Color
-        render_options.background_color = [0.2, 0.2, 0.2]
-
-        logger.debug("Renderer3D process initialised visualiser")
+        pass
+        # logger.debug("Renderer3D process initialising visualiser")
+        #
+        # self._vis = (
+        #     open3d.visualization.Visualizer()
+        # )  # This needs to be updated to O3DVisualizer
+        # self._vis.create_window(
+        #     window_name="MariMapper",
+        #     width=640,
+        #     height=640,
+        # )
+        #
+        # view_ctl = (
+        #     self._vis.get_view_control()
+        # )  # I'm not sure the camera controls work anymore, bar the z dist
+        # view_ctl.set_up((0, 1, 0))
+        # view_ctl.set_lookat((0, 0, 0))
+        # view_ctl.set_zoom(0.3)
+        # # set far distance to 20000x the inter-led distance
+        # view_ctl.set_constant_z_far(20000)
+        #
+        # render_options = self._vis.get_render_option()
+        # render_options.point_show_normal = True
+        # render_options.point_color_option = open3d.visualization.PointColorOption.Color
+        # render_options.background_color = [0.2, 0.2, 0.2]
+        #
+        # logger.debug("Renderer3D process initialised visualiser")
 
     def reload_geometry__(self, leds: list[LED3D], first=False):
-
-        logger.debug("Renderer3D process reloading geometry")
-
-        logger.debug(f"Fetched led map with size {len(leds)}")
-        all_views = get_all_views(leds)
-
-        p, l, c = view_to_points_lines_colors(all_views)
-
-        if self.point_cloud is None:
-            self.point_cloud = open3d.geometry.PointCloud()
-        if self.line_set is None:
-            self.line_set = open3d.geometry.LineSet()
-        if self.strip_set is None:
-            self.strip_set = open3d.geometry.LineSet()
-
-        self.line_set.points = open3d.utility.Vector3dVector(p)
-        self.line_set.lines = open3d.utility.Vector2iVector(l)
-        self.line_set.colors = open3d.utility.Vector3dVector(c)
-
-        self.point_cloud.points = open3d.utility.Vector3dVector(
-            np.array([led.point.position for led in leds])
-        )
-        self.point_cloud.normals = open3d.utility.Vector3dVector(
-            np.array([led.point.normal for led in leds]) * 0.2
-        )
-        self.point_cloud.colors = open3d.utility.Vector3dVector(
-            np.array([led.get_color() for led in leds])
-        )
-
-        self.strip_set.points = self.point_cloud.points
-
-        strips = []
-        for led_index, led in enumerate(leds):
-            next_led = get_next(led, leds)
-            if next_led is not None and (next_led.led_id - led.led_id == 1):
-                if get_distance(led, next_led) < 1.50:  # + 50%
-                    strips.append((led_index, leds.index(next_led)))
-
-        self.strip_set.lines = open3d.utility.Vector2iVector(strips)
-        self.strip_set.colors = open3d.utility.Vector3dVector(
-            [[0.8, 0.8, 0.8] for _ in range(len(self.strip_set.lines))]
-        )
-
-        if first:
-            self._vis.add_geometry(
-                open3d.geometry.TriangleMesh.create_coordinate_frame()
-            )
-            # We only update the bounding box on the point cloud in case
-            # the camera has shot off into the distance
-            self._vis.add_geometry(self.point_cloud, reset_bounding_box=True)
-            self._vis.add_geometry(self.line_set, reset_bounding_box=False)
-            self._vis.add_geometry(self.strip_set, reset_bounding_box=False)
-        else:
-            self._vis.update_geometry(self.point_cloud)
-            self._vis.update_geometry(self.line_set)
-            self._vis.update_geometry(self.strip_set)
-
-        logger.debug("Renderer3D process reloaded geometry")
+        pass
+        # logger.debug("Renderer3D process reloading geometry")
+        #
+        # logger.debug(f"Fetched led map with size {len(leds)}")
+        # all_views = get_all_views(leds)
+        #
+        # p, l, c = view_to_points_lines_colors(all_views)
+        #
+        # if self.point_cloud is None:
+        #     self.point_cloud = open3d.geometry.PointCloud()
+        # if self.line_set is None:
+        #     self.line_set = open3d.geometry.LineSet()
+        # if self.strip_set is None:
+        #     self.strip_set = open3d.geometry.LineSet()
+        #
+        # self.line_set.points = open3d.utility.Vector3dVector(p)
+        # self.line_set.lines = open3d.utility.Vector2iVector(l)
+        # self.line_set.colors = open3d.utility.Vector3dVector(c)
+        #
+        # self.point_cloud.points = open3d.utility.Vector3dVector(
+        #     np.array([led.point.position for led in leds])
+        # )
+        # self.point_cloud.normals = open3d.utility.Vector3dVector(
+        #     np.array([led.point.normal for led in leds]) * 0.2
+        # )
+        # self.point_cloud.colors = open3d.utility.Vector3dVector(
+        #     np.array([led.get_color() for led in leds])
+        # )
+        #
+        # self.strip_set.points = self.point_cloud.points
+        #
+        # strips = []
+        # for led_index, led in enumerate(leds):
+        #     next_led = get_next(led, leds)
+        #     if next_led is not None and (next_led.led_id - led.led_id == 1):
+        #         if get_distance(led, next_led) < 1.50:  # + 50%
+        #             strips.append((led_index, leds.index(next_led)))
+        #
+        # self.strip_set.lines = open3d.utility.Vector2iVector(strips)
+        # self.strip_set.colors = open3d.utility.Vector3dVector(
+        #     [[0.8, 0.8, 0.8] for _ in range(len(self.strip_set.lines))]
+        # )
+        #
+        # if first:
+        #     self._vis.add_geometry(
+        #         open3d.geometry.TriangleMesh.create_coordinate_frame()
+        #     )
+        #     # We only update the bounding box on the point cloud in case
+        #     # the camera has shot off into the distance
+        #     self._vis.add_geometry(self.point_cloud, reset_bounding_box=True)
+        #     self._vis.add_geometry(self.line_set, reset_bounding_box=False)
+        #     self._vis.add_geometry(self.strip_set, reset_bounding_box=False)
+        # else:
+        #     self._vis.update_geometry(self.point_cloud)
+        #     self._vis.update_geometry(self.line_set)
+        #     self._vis.update_geometry(self.strip_set)
+        #
+        # logger.debug("Renderer3D process reloaded geometry")
 
 
 def view_to_points_lines_colors(views):  # returns points and lines
