@@ -12,7 +12,7 @@ dependencies = [
     "opencv-python",
     "tqdm",
 #    "open3d",
-    "pycolmap==3.11.1", # 2 track is broken on > 3.12. see https://github.com/TheMariday/marimapper/issues/79
+    "pycolmap", # 2 track is broken on > 3.12. see https://github.com/TheMariday/marimapper/issues/79
     "pyserial",          # required by fcmega
     "pixelblaze-client", # required by pixelblaze
     "requests"           # required by wled
