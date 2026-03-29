@@ -48,6 +48,7 @@ def upload_map_to_pixelblaze(cli_args):
         f"Uploading coordinates to pixelblaze {cli_args.server if cli_args.server is not None else ''}"
     )
 
-    led_backend = pixelblaze_backend.pixelblaze_backend_factory(cli_args)
+    backend_factory = pixelblaze_backend.pixelblaze_backend_factory(cli_args)
+    led_backend = backend_factory()
     led_backend.set_map_coordinates(final_coordinate_list)
     logger.info("Finished")
