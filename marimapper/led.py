@@ -38,7 +38,6 @@ class LED2D:
 class Point3D:
     def __init__(self):
         self.position = np.zeros(3)
-        self.normal = np.zeros(3)
         self.error = 0.0
         self.info = []
 
@@ -48,14 +47,12 @@ class Point3D:
     def __add__(self, other):
         new = Point3D()
         new.position = self.position + other.position
-        new.normal = self.normal + other.normal
         new.error = self.error + other.error
         return new
 
     def __mul__(self, other):
         new = Point3D()
         new.position = self.position * other
-        new.normal = self.normal * other
         new.error = self.error * other
         return new
 
@@ -295,7 +292,6 @@ def merge(leds: list[LED3D]) -> LED3D:
     new_led.views = [view for led in leds for view in led.views]
 
     new_led.point.position = np.average([led.point.position for led in leds], axis=0)
-    new_led.point.normal = np.average([led.point.normal for led in leds], axis=0)
     new_led.point.error = sum([led.point.error for led in leds])
     new_led.merged = True
     return new_led

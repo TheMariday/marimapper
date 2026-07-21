@@ -133,16 +133,6 @@ Here is an example reconstruction of a test tube of LEDs I have
 
 ![](docs/images/live_example.png)
 
-
-### How to move the model around
-
-- Click and drag to rotate the model around. 
-- Hold shift to roll the camera
-- Use the scroll wheel to zoom in / out
-- Use the `n` key to hide / show normals
-- Use the `+` / `-` keys to increase / decrease point sizes
-- Use `1`, `2`, `3` & `4` keys to change colour scheme
-
 ### LED Colors:
 By default (`1`), the colors of the leds in the visualiser are as follows:
 

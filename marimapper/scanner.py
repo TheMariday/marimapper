@@ -14,15 +14,6 @@ from marimapper.led import last_view
 from marimapper.file_writer_process import FileWriterProcess
 from functools import partial
 
-# This is to do with an issue with open3d bug in estimate normals
-# https://github.com/isl-org/Open3D/issues/1428
-# if left to its default fork start method, add_normals in sfm_process will fail
-# add_normals is also in the wrong file, it should be in sfm.py, but this causes a dependancy crash
-# I think there is something very wrong with open3d.geometry.PointCloud.estimate_normals()
-# See https://github.com/TheMariday/marimapper/issues/46
-# I would prefer not to call this here as it means that any process being called after this will have a different
-# spawn method, however it makes tests more robust in isolation
-# This is only an issue on Linux, as on Windows and Mac, the default start method is spawn
 
 logger = get_logger()
 
