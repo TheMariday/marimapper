@@ -65,9 +65,7 @@ class VisualiseProcess(Process):
 
         self._server = viser.ViserServer(label="MariMapper")
         self._server.scene.set_up_direction("+y")
-        self._server.scene.add_frame(
-            "/origin", axes_length=1.0, axes_radius=0.01
-        )
+        self._server.scene.add_frame("/origin", axes_length=1.0, axes_radius=0.01)
 
         logger.debug("Renderer3D process initialised visualiser")
 
@@ -106,7 +104,6 @@ class VisualiseProcess(Process):
             colors=colors,
             point_size=0.05,
         )
-
 
         strips = []
         for led_index, led in enumerate(leds):

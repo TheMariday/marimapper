@@ -6,8 +6,7 @@ from pathlib import Path
 def test_basic_usage():
 
     temp_backend_file = tempfile.NamedTemporaryFile(delete=False, suffix=".py")
-    temp_backend_file.write(
-        b"""
+    temp_backend_file.write(b"""
 class Backend:
 
     def __init__(self):
@@ -18,8 +17,7 @@ class Backend:
 
     def set_led(self, led_index, on):
         pass
-"""
-    )
+""")
     from marimapper.backends.custom.custom_backend import load_custom_backend
 
     temp_backend_file.close()
@@ -30,8 +28,7 @@ class Backend:
 
 def test_invalid_backend_due_to_missing_function():
     temp_backend_file = tempfile.NamedTemporaryFile(delete=False, suffix=".py")
-    temp_backend_file.write(
-        b"""
+    temp_backend_file.write(b"""
 class Backend:
 
         def __init__(self):
@@ -42,8 +39,7 @@ class Backend:
 
         def set_led(self, led_index, on):
             pass
-    """
-    )
+    """)
     temp_backend_file.close()
 
     from marimapper.backends.custom.custom_backend import load_custom_backend
@@ -54,8 +50,7 @@ class Backend:
 
 def test_invalid_backend_due_to_missing_function_arguments():
     temp_backend_file = tempfile.NamedTemporaryFile(delete=False, suffix=".py")
-    temp_backend_file.write(
-        b"""
+    temp_backend_file.write(b"""
 class Backend:
 
         def __init__(self):
@@ -66,8 +61,7 @@ class Backend:
 
         def set_led(self, led_index): # this is missing the on parameter
             pass
-    """
-    )
+    """)
     temp_backend_file.close()
 
     from marimapper.backends.custom.custom_backend import load_custom_backend
