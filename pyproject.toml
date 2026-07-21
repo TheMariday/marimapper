@@ -5,14 +5,14 @@ build-backend = "hatchling.build"
 
 [project]
 name = "marimapper"
-version = "V3.4.2"
+version = "V3.5.0"
 
 dependencies = [
     "numpy",
     "opencv-python",
     "tqdm",
-    "open3d",
-    "pycolmap==3.11.1", # 2 track is broken on > 3.12. see https://github.com/TheMariday/marimapper/issues/79
+    "viser",
+    "pycolmap",
     "pyserial",          # required by fcmega
     "pixelblaze-client", # required by pixelblaze
     "requests"           # required by wled
@@ -26,7 +26,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.9"
 
 maintainers = [
   {name = "TheMariday"},

@@ -12,7 +12,7 @@ from marimapper.led import (
 from marimapper.sfm import sfm
 from marimapper.database_populator import camera_models, camera_model_radial
 from marimapper.queues import Queue2D, Queue3D, DetectionControlEnum, Queue3DInfo
-import open3d
+# import open3d
 import numpy as np
 import math
 import time
@@ -24,30 +24,30 @@ logger = get_logger()
 # this is here for now as there is some weird import dependency going on...
 # See https://github.com/TheMariday/marimapper/issues/46
 def add_normals(leds: list[LED3D]):
-
-    pcd = open3d.geometry.PointCloud()
-
-    pcd.points = open3d.utility.Vector3dVector([led.point.position for led in leds])
-
-    pcd.normals = open3d.utility.Vector3dVector(np.zeros((len(leds), 3)))
-
-    pcd.estimate_normals()
-
-    camera_normals = []
-    for led in leds:
-        views = [view.position for view in led.views]
-        camera_normals.append(np.average(views, axis=0) if views else None)
-
-    for led, camera_normal, open3d_normal in zip(leds, camera_normals, pcd.normals):
-
-        led.point.normal = open3d_normal / np.linalg.norm(open3d_normal)
-
-        if camera_normal is not None:
-
-            angle = np.arccos(np.clip(np.dot(camera_normal, open3d_normal), -1.0, 1.0))
-
-            if angle > math.pi / 2.0:
-                led.point.normal *= -1
+    pass
+    # pcd = open3d.geometry.PointCloud()
+    #
+    # pcd.points = open3d.utility.Vector3dVector([led.point.position for led in leds])
+    #
+    # pcd.normals = open3d.utility.Vector3dVector(np.zeros((len(leds), 3)))
+    #
+    # pcd.estimate_normals()
+    #
+    # camera_normals = []
+    # for led in leds:
+    #     views = [view.position for view in led.views]
+    #     camera_normals.append(np.average(views, axis=0) if views else None)
+    #
+    # for led, camera_normal, open3d_normal in zip(leds, camera_normals, pcd.normals):
+    #
+    #     led.point.normal = open3d_normal / np.linalg.norm(open3d_normal)
+    #
+    #     if camera_normal is not None:
+    #
+    #         angle = np.arccos(np.clip(np.dot(camera_normal, open3d_normal), -1.0, 1.0))
+    #
+    #         if angle > math.pi / 2.0:
+    #             led.point.normal *= -1
 
 
 def print_without_hiding_scan_message(message: str):
