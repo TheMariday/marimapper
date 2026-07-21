@@ -1,14 +1,12 @@
 import numpy as np
-import open3d
+import viser
 from multiprocessing import get_logger, Process, Event
 from marimapper.queues import Queue3D
 from marimapper.led import LED3D, View, get_next, get_distance
+from marimapper.pycolmap_tools.read_write_model import rotmat2qvec
 import time
 
 logger = get_logger()
-
-# Temporary fix to stop the zero points issue when visualising
-open3d.utility.set_verbosity_level(open3d.utility.VerbosityLevel.Error)
 
 
 def get_all_views(leds: list[LED3D]) -> list[View]:
@@ -23,15 +21,14 @@ def get_all_views(leds: list[LED3D]) -> list[View]:
 
 class VisualiseProcess(Process):
 
-    def __init__(self):
+    def __init__(self, camera_fov: int = 60):
         logger.debug("Renderer3D initialising")
         super().__init__()
-        self._vis = None
+        self._server = None
+        self._camera_fov = camera_fov
+        self._view_handles: dict = {}
         self._input_queue = Queue3D()
         self._exit_event = Event()
-        self.point_cloud = None
-        self.line_set = None
-        self.strip_set = None
         self.daemon = True
         logger.debug("Renderer3D initialised")
 
@@ -54,14 +51,11 @@ class VisualiseProcess(Process):
 
                 if not initialised:
                     self.initialise_visualiser__()
-                    self.reload_geometry__(leds, True)
                     initialised = True
-                else:
-                    self.reload_geometry__(leds)
+
+                self.reload_geometry__(leds)
 
             if initialised:
-                self._vis.poll_events()
-                self._vis.update_renderer()
                 time.sleep(1 / 60)
             else:
                 time.sleep(1)
@@ -69,62 +63,47 @@ class VisualiseProcess(Process):
     def initialise_visualiser__(self):
         logger.debug("Renderer3D process initialising visualiser")
 
-        self._vis = (
-            open3d.visualization.Visualizer()
-        )  # This needs to be updated to O3DVisualizer
-        self._vis.create_window(
-            window_name="MariMapper",
-            width=640,
-            height=640,
-        )
-
-        view_ctl = (
-            self._vis.get_view_control()
-        )  # I'm not sure the camera controls work anymore, bar the z dist
-        view_ctl.set_up((0, 1, 0))
-        view_ctl.set_lookat((0, 0, 0))
-        view_ctl.set_zoom(0.3)
-        # set far distance to 20000x the inter-led distance
-        view_ctl.set_constant_z_far(20000)
-
-        render_options = self._vis.get_render_option()
-        render_options.point_show_normal = True
-        render_options.point_color_option = open3d.visualization.PointColorOption.Color
-        render_options.background_color = [0.2, 0.2, 0.2]
+        self._server = viser.ViserServer(label="MariMapper")
+        self._server.scene.set_up_direction("+y")
+        self._server.scene.add_frame("/origin", axes_length=1.0, axes_radius=0.01)
 
         logger.debug("Renderer3D process initialised visualiser")
 
-    def reload_geometry__(self, leds: list[LED3D], first=False):
+    def reload_geometry__(self, leds: list[LED3D]):
 
         logger.debug("Renderer3D process reloading geometry")
 
         logger.debug(f"Fetched led map with size {len(leds)}")
         all_views = get_all_views(leds)
 
-        p, l, c = view_to_points_lines_colors(all_views)
+        # Camera frustums, one scene node per view (built-in viser rendering).
+        # The camera model used for reconstruction is square, so aspect == 1.
+        current_view_ids = {view.view_id for view in all_views}
+        for view_id, handle in list(self._view_handles.items()):
+            if view_id not in current_view_ids:
+                handle.remove()
+                del self._view_handles[view_id]
 
-        if self.point_cloud is None:
-            self.point_cloud = open3d.geometry.PointCloud()
-        if self.line_set is None:
-            self.line_set = open3d.geometry.LineSet()
-        if self.strip_set is None:
-            self.strip_set = open3d.geometry.LineSet()
+        for view in all_views:
+            self._view_handles[view.view_id] = self._server.scene.add_camera_frustum(
+                f"/views/{view.view_id}",
+                fov=np.deg2rad(self._camera_fov),
+                aspect=1.0,
+                scale=0.3,
+                color=(204, 204, 204),
+                wxyz=rotmat2qvec(view.rotation),
+                position=view.position,
+            )
 
-        self.line_set.points = open3d.utility.Vector3dVector(p)
-        self.line_set.lines = open3d.utility.Vector2iVector(l)
-        self.line_set.colors = open3d.utility.Vector3dVector(c)
+        positions = np.array([led.point.position for led in leds])
+        colors = np.array([led.get_color() for led in leds])
 
-        self.point_cloud.points = open3d.utility.Vector3dVector(
-            np.array([led.point.position for led in leds])
+        self._server.scene.add_point_cloud(
+            "/leds",
+            points=positions,
+            colors=colors,
+            point_size=0.05,
         )
-        self.point_cloud.normals = open3d.utility.Vector3dVector(
-            np.array([led.point.normal for led in leds]) * 0.2
-        )
-        self.point_cloud.colors = open3d.utility.Vector3dVector(
-            np.array([led.get_color() for led in leds])
-        )
-
-        self.strip_set.points = self.point_cloud.points
 
         strips = []
         for led_index, led in enumerate(leds):
@@ -133,56 +112,11 @@ class VisualiseProcess(Process):
                 if get_distance(led, next_led) < 1.50:  # + 50%
                     strips.append((led_index, leds.index(next_led)))
 
-        self.strip_set.lines = open3d.utility.Vector2iVector(strips)
-        self.strip_set.colors = open3d.utility.Vector3dVector(
-            [[0.8, 0.8, 0.8] for _ in range(len(self.strip_set.lines))]
-        )
-
-        if first:
-            self._vis.add_geometry(
-                open3d.geometry.TriangleMesh.create_coordinate_frame()
+        if strips:
+            self._server.scene.add_line_segments(
+                "/strips",
+                points=positions[np.array(strips)],
+                colors=(204, 204, 204),
             )
-            # We only update the bounding box on the point cloud in case
-            # the camera has shot off into the distance
-            self._vis.add_geometry(self.point_cloud, reset_bounding_box=True)
-            self._vis.add_geometry(self.line_set, reset_bounding_box=False)
-            self._vis.add_geometry(self.strip_set, reset_bounding_box=False)
-        else:
-            self._vis.update_geometry(self.point_cloud)
-            self._vis.update_geometry(self.line_set)
-            self._vis.update_geometry(self.strip_set)
 
         logger.debug("Renderer3D process reloaded geometry")
-
-
-def view_to_points_lines_colors(views):  # returns points and lines
-
-    all_points: list[np.ndarray] = []
-    all_lines: list[np.ndarray] = []
-
-    camera_scale = 2.0
-
-    camera_cone_points = np.array(
-        [[0, 0, 0], [-1, -1, 2], [1, -1, 2], [1, 1, 2], [-1, 1, 2], [0, 1.5, 2]]
-    )
-
-    camera_cone_points *= camera_scale
-
-    camera_cone_lines = np.array(
-        [[0, 1], [0, 2], [0, 3], [0, 4], [1, 2], [2, 3], [3, 4], [4, 1], [3, 5], [4, 5]]
-    )
-
-    for i, view in enumerate(views):
-
-        points_in_world = [
-            (view.rotation @ p + view.position) for p in camera_cone_points
-        ]
-
-        offset = i * len(camera_cone_points)
-
-        all_points.extend(points_in_world)
-        all_lines.extend(camera_cone_lines + offset)
-
-    all_colors = [[0.8, 0.8, 0.8] for _ in range(len(all_lines))]
-
-    return all_points, all_lines, all_colors
