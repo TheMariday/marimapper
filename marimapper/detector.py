@@ -105,7 +105,7 @@ def set_cam_default(cam: Camera) -> None:
 def set_cam_dark(cam: Camera, exposure: int) -> bool:
     logger.info("setting cam to dark mode")
     cam.set_autofocus(0, 0)
-    cam.set_exposure_mode(1)
+    cam.set_exposure_mode(0)
     cam.set_gain(0)
     if not cam.set_exposure(exposure):
         logger.warning(
