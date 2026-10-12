@@ -37,7 +37,7 @@ Or if you're using Linux or Mac
 
 Once UV is installed, install marimapper with
 
-`uv tool install  --python '>=3.11,<3.16' git+https://github.com/TheMariday/marimapper`
+`uv tool install  --python 3.12 git+https://github.com/TheMariday/marimapper`
 
 You can run the scripts anywhere by just typing them into a console.
 
