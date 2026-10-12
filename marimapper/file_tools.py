@@ -67,7 +67,7 @@ def write_2d_leds_to_file(leds: list[LED2D], filename: Path):
 
 def write_3d_leds_to_file(leds: list[LED3D], filename: Path):
 
-    lines = ["index,x,y,z,xn,yn,zn,error"]
+    lines = ["index,x,y,z,error"]
 
     for led in sorted(leds, key=lambda led_t: led_t.led_id):
         lines.append(
@@ -75,9 +75,6 @@ def write_3d_leds_to_file(leds: list[LED3D], filename: Path):
             f"{led.point.position[0]:f},"
             f"{led.point.position[1]:f},"
             f"{led.point.position[2]:f},"
-            f"{led.point.normal[0]:f},"
-            f"{led.point.normal[1]:f},"
-            f"{led.point.normal[2]:f},"
             f"{led.point.error:f}"
         )
 

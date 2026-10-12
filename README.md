@@ -1,6 +1,6 @@
 ![logo.png](docs/images/logo.png)
 
-[![Supported Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)]()
+[![Supported Python Version](https://img.shields.io/badge/python-3.12-blue)]()
 [![Windows](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml)
 [![Ubuntu](https://github.com/TheMariday/MariMapper/actions/workflows/test_ubuntu.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_ubuntu.yml)
 [![MacOS](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml)
@@ -14,6 +14,10 @@
 > See more info [here](https://github.com/TheMariday/marimapper/discussions/86)
 
 ### Marimapper can use your webcam to map addressable LEDs to 3D space!
+
+Marimapper uses your webcam and a user-defined led-communication backend to map LEDs to 2D and 3D space!
+
+These are outputted as csv files for you to ingest into your application however you want!
 
 ![](docs/images/reconstruct_with_normals_and_strips.png)
 
@@ -37,29 +41,20 @@ Or if you're using Linux or Mac
 
 Once UV is installed, install marimapper with
 
-`uv tool install git+https://github.com/TheMariday/marimapper`
+`uv tool install  --python 3.12 git+https://github.com/TheMariday/marimapper`
 
 You can run the scripts anywhere by just typing them into a console.
 
-
 If you don't want to use UV, then Marimapper also supports PipX and pip
 
-## Step 1: Test your camera
+## Step 1: Test Marimaapper and your camera
 
 > [!TIP]
 > use `--help` for any MariMapper command to show a full list of additional arguments! 
 > 
 > Some not even in this doc...
 
-Run `marimapper_check_camera` to ensure your camera is compatible with MariMapper, or check the list below:
-
-- HP 4310 (settings may not revert)
-- Logitech C920
-- Dell Latitude 5521 built-in
-- HP Envy x360 built-in 
-
-If your camera works, please drop me a line, so I can add it to the list!
-
+Run `marimapper_check_camera` to ensure your camera is compatible with MariMapper with the process below:
 
 Test LED identification by turning down the lights and holding a torch or led up to the camera.
 
@@ -68,14 +63,25 @@ with a single crosshair on centered on your LED.
 
 Wrong webcam? MariMapper tools use `--device 0` by default, use `--device 1` to switch to your second webcam.
 
-![alt text](docs/images/camera_check.png "Camera Check window")
+If your camera works, please drop me a line, so I can add it to the list!
 
+- HP 4310 (settings may not revert)
+- Logitech C920
+- Dell Latitude 5521 built-in
+- HP Envy x360 built-in
+
+![alt text](docs/images/camera_check.png "Camera Check window")
 
 > [!TIP]
 > If the image is still too bright or you can't see a crosshair on your LED, try dimming the lights and playing around with:
 > 
 > - `--exposure` - The lower the darker, defaults to `-10`, my webcam only goes down to `-11`
 > - `--threshold` - The lower the more detections, ranges between `0-255`,  defaults to `128`
+
+
+Run `marimapper dummy --dir docs/highbeam_example` to ensure that Marimapper is working correctly, 
+you should see a scan of my first glowsuit, Highbeam! 
+
 ## Step 2: Choose your backend
 
 For the Marimapper to communicate with your leds, it requires a backend.
@@ -128,20 +134,6 @@ Once you have a few views and the reconstructor succeeds, a new window will appe
 If the window doesn't appear after 4 scans, then something has gone horribly wrong. Delete the scan .csv files in the current working directory and try again.
 
 If it doesn't look quite right, add some more scans!
-
-Here is an example reconstruction of a test tube of LEDs I have
-
-![](docs/images/live_example.png)
-
-
-### How to move the model around
-
-- Click and drag to rotate the model around. 
-- Hold shift to roll the camera
-- Use the scroll wheel to zoom in / out
-- Use the `n` key to hide / show normals
-- Use the `+` / `-` keys to increase / decrease point sizes
-- Use `1`, `2`, `3` & `4` keys to change colour scheme
 
 ### LED Colors:
 By default (`1`), the colors of the leds in the visualiser are as follows:
