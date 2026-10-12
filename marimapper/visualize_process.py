@@ -5,6 +5,8 @@ from marimapper.queues import Queue3D
 from marimapper.led import LED3D, View, get_next, get_distance
 from marimapper.pycolmap_tools.read_write_model import rotmat2qvec
 import time
+from marimapper.utils import SupressLogging
+import webbrowser
 
 logger = get_logger()
 
@@ -63,9 +65,13 @@ class VisualiseProcess(Process):
     def initialise_visualiser__(self):
         logger.debug("Renderer3D process initialising visualiser")
 
-        self._server = viser.ViserServer(label="MariMapper")
+        with SupressLogging():
+            self._server = viser.ViserServer(label="MariMapper")
+        webbrowser.open("http://localhost:8080", new=0, autoraise=True)
+
         self._server.scene.set_up_direction("+y")
         self._server.scene.add_frame("/origin", axes_length=1.0, axes_radius=0.01)
+        self._server.gui.configure_theme(dark_mode=True)
 
         logger.debug("Renderer3D process initialised visualiser")
 
