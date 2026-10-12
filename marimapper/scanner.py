@@ -14,7 +14,6 @@ from marimapper.led import last_view
 from marimapper.file_writer_process import FileWriterProcess
 from functools import partial
 
-
 logger = get_logger()
 
 

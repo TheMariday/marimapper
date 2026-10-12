@@ -10,6 +10,7 @@ from marimapper.camera import Camera
 from marimapper.timeout_controller import TimeoutController
 from marimapper.led import Point2D, LED2D
 
+
 logger = get_logger()
 
 

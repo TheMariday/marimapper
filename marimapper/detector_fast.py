@@ -19,6 +19,7 @@ import cv2
 
 from marimapper.utils import backend_black
 
+
 logger = get_logger()
 
 

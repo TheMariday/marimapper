@@ -1,6 +1,6 @@
 ![logo.png](docs/images/logo.png)
 
-[![Supported Python Version](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14%20%7C%203.15-blue)]()
+[![Supported Python Version](https://img.shields.io/badge/python-3.12-blue)]()
 [![Windows](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml)
 [![Ubuntu](https://github.com/TheMariday/MariMapper/actions/workflows/test_ubuntu.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_ubuntu.yml)
 [![MacOS](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml)
@@ -14,6 +14,10 @@
 > See more info [here](https://github.com/TheMariday/marimapper/discussions/86)
 
 ### Marimapper can use your webcam to map addressable LEDs to 3D space!
+
+Marimapper uses your webcam and a user-defined led-communication backend to map LEDs to 2D and 3D space!
+
+These are outputted as csv files for you to ingest into your application however you want!
 
 ![](docs/images/reconstruct_with_normals_and_strips.png)
 
