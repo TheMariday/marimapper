@@ -2,10 +2,10 @@
 # FATAL WEIRD CRASH IF THIS ISN'T IMPORTED FIRST DON'T ASK
 from marimapper.sfm_process import SFM
 
-from tqdm import tqdm
 from pathlib import Path
 from marimapper.detector_process import DetectorProcess
 from marimapper.queues import Queue2D, DetectionControlEnum
+from marimapper.scan_progress import RED, CameraStats, ScanDisplay, colour
 from multiprocessing import get_logger, set_start_method
 from marimapper.file_tools import get_all_2d_led_maps
 from marimapper.utils import get_user_confirmation
@@ -25,6 +25,9 @@ from functools import partial
 # This is only an issue on Linux, as on Windows and Mac, the default start method is spawn
 
 logger = get_logger()
+
+# after this many leds, a camera that hasn't seen a single one gets a hint about what to check
+NO_DETECTION_WARNING_AFTER = 20
 
 
 def join_with_warning(process_to_join, process_name, timeout=10):
@@ -64,6 +67,10 @@ class Scanner:
         logger.debug("initialising scanner")
         set_start_method("spawn")  # VERY important, see top of file
         self.output_dir = output_dir
+
+        # how many cameras capture each scan, and how far leds may be apart to be filled in
+        self.view_count = 1
+        self.interpolation_max_fill = interpolation_max_fill
 
         self.detector = DetectorProcess(
             device=device,
@@ -142,36 +149,86 @@ class Scanner:
 
         logger.debug("scanner closed")
 
+    def camera_label(self, camera: int) -> str:
+        return "The camera" if self.view_count == 1 else f"Camera {camera + 1}"
+
     def wait_for_scan(self):
 
-        with tqdm(
-            total=self.led_id_range.stop - self.led_id_range.start,
-            unit="LEDs",
-            desc="Capturing sequence",
-            smoothing=0,
-        ) as progress_bar:
+        # each camera finishes its own view, so there is one DONE or DELETE for every camera
+        views_unfinished = self.view_count
+        any_view_complete = False
 
-            while True:
+        led_count = self.led_id_range.stop - self.led_id_range.start
+        stats = [CameraStats() for _ in range(self.view_count)]
+        events = 0
+        warned = set()
 
-                control, data = self.detector_update_queue.get()
+        # a line for the whole scan, then one for every camera showing how many leds that camera has
+        # detected so far and where it has gaps
+        display = ScanDisplay(led_count, self.view_count)
+        display.draw(0, stats, self.interpolation_max_fill)
 
-                if control == DetectionControlEnum.FAIL:
-                    logger.error("Scan failed")
-                    return False
+        while True:
 
-                if control in [DetectionControlEnum.DETECT, DetectionControlEnum.SKIP]:
-                    progress_bar.update(1)
-                    progress_bar.refresh()
+            control, data = self.detector_update_queue.get()
 
-                if control == DetectionControlEnum.DONE:
-                    done_view = data
-                    logger.info(f"Scan complete {done_view}")
-                    return True
+            if control == DetectionControlEnum.FAIL:
+                logger.error("Scan failed")
+                return False
 
-                if control == DetectionControlEnum.DELETE:
-                    view_id = data
-                    logger.info(f"Deleting scan {view_id}")
-                    return False
+            if control in [DetectionControlEnum.DETECT, DetectionControlEnum.SKIP]:
+                # for every led the detector reports one result per camera, in camera order
+                camera = events % self.view_count
+                events += 1
+
+                found = control == DetectionControlEnum.DETECT
+                stats[camera].add(data.led_id if found else data, found)
+
+                leds_tried = events // self.view_count  # leds every camera has reported
+                display.draw(leds_tried, stats, self.interpolation_max_fill)
+
+                for camera, camera_stats in enumerate(stats):
+                    if (
+                        camera_stats.detected == 0
+                        and leds_tried >= NO_DETECTION_WARNING_AFTER
+                        and camera not in warned
+                    ):
+                        warned.add(camera)
+                        display.write(
+                            f"{self.camera_label(camera)} hasn't detected any of the first "
+                            f"{NO_DETECTION_WARNING_AFTER} LEDs yet. If it should see them, check that it "
+                            f"can and that the room is dark (marimapper_check_camera shows what it sees), "
+                            f"then try a higher --exposure (e.g. -8) or a lower --threshold"
+                        )
+
+            if control == DetectionControlEnum.DONE:
+                done_view = data
+                logger.info(f"Scan complete {done_view}")
+                any_view_complete = True
+                views_unfinished -= 1
+
+            if control == DetectionControlEnum.DELETE:
+                view_id = data
+                logger.info(f"Deleting scan {view_id}")
+                views_unfinished -= 1
+
+            if views_unfinished == 0:
+                display.finish(
+                    events // self.view_count, stats, self.interpolation_max_fill
+                )
+
+                # point out the gaps the reconstruction won't be able to fill in by itself
+                for camera, camera_stats in enumerate(stats):
+                    for line in camera_stats.report(self.interpolation_max_fill):
+                        print(
+                            colour(
+                                f"{self.camera_label(camera)}: {line}",
+                                RED,
+                                display.interactive,
+                            )
+                        )
+
+                return any_view_complete
 
     def mainloop(self):
 

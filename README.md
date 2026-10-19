@@ -123,6 +123,17 @@ Rotate your leds or move your webcam to a new position
 > As long as some of your leds are mostly in view, you can move your webcam to wherever you like!
 > Try and get at least 3 views between 6° - 20° apart
 
+#### Reading the scan progress
+
+While you scan, MariMapper shows a line for the whole scan and a line for every camera, with how many LEDs each camera has detected and where it has gaps (runs of LEDs it missed between two it saw):
+
+```
+Overall   100%|████████████████████| 200/200 LEDs [01:05<00:00]
+Camera 1 detected  90%|██████████████████░░| 181/200 found, gaps: 1 too long (longest: LEDs 70-76)
+```
+
+Short gaps are marked `fillable` because the reconstruction interpolates them (up to `--interpolation_max_fill`), longer ones are `too long` and are listed when the scan finishes. If a camera hasn't detected any of the first 20 LEDs you get a hint about what to check, such as the room being dark enough and `--exposure`.
+
 Once you have a few views and the reconstructor succeeds, a new window will appear showing the reconstructed 3D positions of your LEDs.
 
 If the window doesn't appear after 4 scans, then something has gone horribly wrong. Delete the scan .csv files in the current working directory and try again.
