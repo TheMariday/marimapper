@@ -2,6 +2,7 @@ import logging
 import importlib.metadata
 from marimapper.database_populator import camera_models, camera_model_radial
 from marimapper.backends.backend_utils import backend_arg_setters
+from marimapper.camera import parse_device
 
 from pathlib import Path
 import os
@@ -14,8 +15,10 @@ def add_camera_args(parser):
 
     camera_options.add_argument(
         "--device",
-        type=int,
-        help="Camera device index, set to 1 if using a laptop with a USB webcam",
+        type=parse_device,
+        help="Camera device index, set to 1 if using a laptop with a USB webcam. "
+        "For an Android phone running DroidCam give its address instead, e.g. 192.168.1.20:4747 "
+        "(the port defaults to 4747). Full http:// or rtsp:// URLs also work",
         default=0,
     )
 
