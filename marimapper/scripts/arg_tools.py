@@ -47,6 +47,32 @@ def add_common_args(parser) -> None:
     parser.add_argument("-v", "--verbose", action="store_true")
 
 
+def add_reconstruction_args(parser) -> None:
+    """The options that decide how the 3D map is built from the 2D maps, for a parser or an argument group"""
+
+    parser.add_argument(
+        "--interpolation_max_fill",
+        type=int,
+        default=5,
+        help="The maximum number of consecutive LEDs that can be interpolated based on adjacent LEDs. Set to -1 for no limit",
+    )
+
+    parser.add_argument(
+        "--interpolation_max_error",
+        type=float,
+        default=0.2,
+        help="The maximum variance in led spacing whilst interpolating LEDs, set to -1 for no limit",
+    )
+
+    parser.add_argument(
+        "--camera_model",
+        type=str,
+        choices=[model.__name__ for model in camera_models],
+        default=camera_model_radial.__name__,
+        help="Sets the camera model used for reconstruction, choose camera_model_opencv_full for higher accuracy",
+    )
+
+
 def add_scanner_args(parser) -> None:
 
     scanner_options = parser.add_argument_group("scanner options")
@@ -70,31 +96,18 @@ def add_scanner_args(parser) -> None:
     )
 
     scanner_options.add_argument(
-        "--interpolation_max_fill",
-        type=int,
-        default=5,
-        help="The maximum number of consecutive LEDs that can be interpolated based on adjacent LEDs. Set to -1 for no limit",
-    )
-
-    scanner_options.add_argument(
-        "--interpolation_max_error",
-        type=float,
-        default=0.2,
-        help="The maximum variance in led spacing whilst interpolating LEDs, set to -1 for no limit",
-    )
-
-    scanner_options.add_argument(
         "--disable_movement_check",
         action="store_false",
         help="Disables checking of movement when a scan completes",
     )
 
+    add_reconstruction_args(scanner_options)
+
     scanner_options.add_argument(
-        "--camera_model",
-        type=str,
-        choices=[model.__name__ for model in camera_models],
-        default=camera_model_radial.__name__,
-        help="Sets the camera model used for reconstruction, choose camera_model_opencv_full for higher accuracy",
+        "--capture_only",
+        action="store_true",
+        help="Only capture the 2D maps: no live 3D reconstruction and no 3D window. "
+        "Build the 3D map afterwards from the saved scans with marimapper_reconstruct",
     )
 
 

@@ -123,6 +123,19 @@ Rotate your leds or move your webcam to a new position
 > As long as some of your leds are mostly in view, you can move your webcam to wherever you like!
 > Try and get at least 3 views between 6° - 20° apart
 
+#### Capture first, reconstruct later
+
+If you only want to collect data for now, add `--capture_only` to skip the live 3D reconstruction and the 3D window:
+
+`marimapper wled --server 192.168.1.50 --capture_only`
+
+Build the 3D map from the saved scans whenever you like with `marimapper_reconstruct` (use `--dir` if your scans are in another folder):
+
+`marimapper_reconstruct`
+
+> [!NOTE]
+> Options have to come **after** the backend name. Anything written before it (e.g. `marimapper --device 1 wled`) is replaced by the defaults.
+
 Once you have a few views and the reconstructor succeeds, a new window will appear showing the reconstructed 3D positions of your LEDs.
 
 If the window doesn't appear after 4 scans, then something has gone horribly wrong. Delete the scan .csv files in the current working directory and try again.
