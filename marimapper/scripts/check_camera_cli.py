@@ -1,12 +1,12 @@
 import argparse
 
-from marimapper.detector import find_led, set_cam_dark
+from marimapper.detector import find_leds, set_cam_dark
 from marimapper.scripts.arg_tools import (
     add_camera_args,
     add_common_args,
     parse_common_args,
 )
-from marimapper.camera import Camera
+from marimapper.camera import open_cameras
 from multiprocessing import log_to_stderr
 import logging
 
@@ -29,16 +29,19 @@ def main():
 
     parse_common_args(args, logger)
 
-    cam = Camera(args.device)
+    cams = open_cameras(args.device)
 
-    set_cam_dark(cam, args.exposure)
+    for cam in cams:
+        set_cam_dark(cam, args.exposure)
 
     logger.info(
         "Camera connected! Hold an LED up to the camera to check LED identification"
+        if len(cams) == 1
+        else f"{len(cams)} cameras connected! Hold an LED up to each camera to check LED identification"
     )
 
     while True:
-        find_led(cam, args.threshold)
+        find_leds(cams, args.threshold)
 
 
 if __name__ == "__main__":

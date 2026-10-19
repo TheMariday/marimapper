@@ -88,8 +88,14 @@ def draw_led_detections(image: cv2.Mat, led_detection: Optional[Point2D]) -> np.
     return render_image
 
 
-def show_image(image: np.ndarray) -> None:
-    cv2.imshow("MariMapper - Detector", image)
+def detector_window_name(camera_index: int = 0, camera_count: int = 1) -> str:
+    if camera_count <= 1:
+        return "MariMapper - Detector"
+    return f"MariMapper - Detector {camera_index + 1}"
+
+
+def show_image(image: np.ndarray, window_name: str = "MariMapper - Detector") -> None:
+    cv2.imshow(window_name, image)
     key = cv2.waitKey(1)
 
     if key == 27:  # esc
@@ -134,6 +140,119 @@ def find_led(
     return results
 
 
+def find_leds(
+    cams: list[Camera], threshold: int = 128, display: bool = True
+) -> list[Optional[Point2D]]:
+    """Looks for an LED in every camera at (almost) the same moment."""
+
+    # grabbing from all cameras before decoding any of them keeps the cameras close in time
+    for cam in cams:
+        cam.grab()
+
+    images = [cam.retrieve() for cam in cams]
+    results = [find_led_in_image(image, threshold) for image in images]
+
+    if display:
+        for index, (image, result) in enumerate(zip(images, results)):
+            show_image(
+                draw_led_detections(image, result),
+                detector_window_name(index, len(cams)),
+            )
+
+    return results
+
+
+def enable_and_find_leds(
+    cams: list[Camera],
+    led_backend,
+    led_id: int,
+    view_ids: list[int],
+    timeout_controller: TimeoutController,
+    threshold: int,
+    display: bool = False,
+) -> list[Optional[LED2D]]:
+    """
+    Turns an LED on once and looks for it in all cameras, returning one result per camera
+    (None where that camera didn't see it), each in the view given for that camera.
+    """
+
+    darkness_timeout_seconds = 3.0
+    camera_count = len(cams)
+
+    # First wait for no leds to be visible, this should always be false
+    start = time.time()
+    while True:
+        blocked = [p is not None for p in find_leds(cams, threshold, display)]
+
+        if not any(blocked):
+            break
+
+        if time.time() - start > darkness_timeout_seconds:
+            for index in range(camera_count):
+                if blocked[index]:
+                    logging.warning(
+                        f"Detector can't start detecting led {led_id} in camera {index + 1} "
+                        f"as an led is already visible"
+                    )
+            if all(blocked):
+                return [None] * camera_count
+            break  # the other cameras can still look for it
+
+    # Set the led to on and start the clock
+    response_time_start = time.time()
+
+    led_backend.set_led(led_id, True)
+
+    # Wait until every camera has a result or we run out of time
+    points: list[Optional[Point2D]] = [None] * camera_count
+    detection_times = [response_time_start] * camera_count
+
+    while time.time() < response_time_start + timeout_controller.timeout and any(
+        points[i] is None and not blocked[i] for i in range(camera_count)
+    ):
+        for index, point in enumerate(find_leds(cams, threshold, display)):
+            if points[index] is None and not blocked[index] and point is not None:
+                points[index] = point
+                detection_times[index] = time.time()
+
+    switch_off_start = time.time()
+    led_backend.set_led(led_id, False)
+    switch_off_time = time.time() - switch_off_start
+
+    detected = [i for i in range(camera_count) if points[i] is not None]
+
+    if not detected:
+        return [None] * camera_count
+
+    # The response time is how long the slowest camera needed (not how long we waited for a camera that
+    # never saw the led, which would make the timeout grow on its own), plus the time the backend took
+    # to switch off, as it always has been
+    timeout_controller.add_response_time(
+        max(detection_times[i] for i in detected)
+        - response_time_start
+        + switch_off_time
+    )
+
+    # Wait for the cameras that saw the led to see it go out again
+    start = time.time()
+    while any(
+        point is not None
+        for i, point in enumerate(find_leds(cams, threshold, display))
+        if i in detected
+    ):
+        if time.time() - start > darkness_timeout_seconds:
+            logging.warning(
+                f"Detector can't stop detecting led {led_id} as an led is already visible, retrying backend..."
+            )
+            led_backend.set_led(led_id, False)
+            start = time.time()
+
+    return [
+        LED2D(led_id, view_ids[i], points[i]) if points[i] is not None else None
+        for i in range(camera_count)
+    ]
+
+
 def enable_and_find_led(
     cam: Camera,
     led_backend,
@@ -144,43 +263,12 @@ def enable_and_find_led(
     display: bool = False,
 ) -> Optional[LED2D]:
 
-    darkness_timeout_seconds = 3.0
-
-    # First wait for no leds to be visible, this should always be false
-    start = time.time()
-    while find_led(cam, threshold, display) is not None:
-        if time.time() - start > darkness_timeout_seconds:
-            logging.warning(
-                f"Detector can't start detecting led {led_id} as an led is already visible"
-            )
-            return None
-
-    # Set the led to on and start the clock
-    response_time_start = time.time()
-
-    led_backend.set_led(led_id, True)
-
-    # Wait until either we have a result or we run out of time
-    point = None
-    while (
-        point is None and time.time() < response_time_start + timeout_controller.timeout
-    ):
-        point = find_led(cam, threshold, display)
-
-    led_backend.set_led(led_id, False)
-
-    if point is None:
-        return None
-
-    timeout_controller.add_response_time(time.time() - response_time_start)
-
-    start = time.time()
-    while find_led(cam, threshold, display) is not None:
-        if time.time() - start > darkness_timeout_seconds:
-            logging.warning(
-                f"Detector can't stop detecting led {led_id} as an led is already visible, retrying backend..."
-            )
-            led_backend.set_led(led_id, False)
-            start = time.time()
-
-    return LED2D(led_id, view_id, point)
+    return enable_and_find_leds(
+        [cam],
+        led_backend,
+        led_id,
+        [view_id],
+        timeout_controller,
+        threshold,
+        display,
+    )[0]

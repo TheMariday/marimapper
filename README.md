@@ -134,6 +134,22 @@ Rotate your leds or move your webcam to a new position
 > As long as some of your leds are mostly in view, you can move your webcam to wherever you like!
 > Try and get at least 3 views between 6° - 20° apart
 
+#### Using several cameras at once
+
+Instead of moving one camera, you can set up several and capture every LED from all of them in a single scan. Give `--device` a comma separated list:
+
+`marimapper --device 1,2 fadecandy`
+
+Each LED is switched on once and looked for in every camera, so a scan with two cameras gives you two views for the price of one. Each camera counts as its own view, numbered in the order you list them, and they all feed the same reconstruction. Network streams can be mixed in too, e.g. `--device 1,http://192.168.1.20:8080/video`.
+
+`marimapper_check_camera --device 1,2` opens one window per camera so you can check them all.
+
+> [!NOTE]
+> - The cameras must not move during a scan, just like a single camera. A camera that moved is dropped from that scan and the others are kept.
+> - The reconstruction assumes every view comes from the same kind of camera (same lens and field of view), so use identical cameras.
+> - An LED that one camera can't see is simply left out of that camera's view.
+> - Several cameras share USB bandwidth, so plug them into different USB ports (or controllers) if you see dropped frames.
+
 Once you have a few views and the reconstructor succeeds, a new window will appear showing the reconstructed 3D positions of your LEDs.
 
 If the window doesn't appear after 4 scans, then something has gone horribly wrong. Delete the scan .csv files in the current working directory and try again.

@@ -6,7 +6,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import cv2
 import numpy
 import pytest
-from marimapper.camera import Camera, is_network_stream, parse_device
+from marimapper.camera import (
+    Camera,
+    as_device_list,
+    is_network_stream,
+    parse_device,
+    parse_devices,
+)
 from utils import get_test_dir
 
 
@@ -53,6 +59,47 @@ def test_parse_device(text, expected):
 def test_parse_device_rejects_garbage(text):
     with pytest.raises(ArgumentTypeError):
         parse_device(text)
+
+
+@pytest.mark.parametrize(
+    "text, expected",
+    [
+        ("0", [0]),
+        ("1,2", [1, 2]),
+        (" 1 , 2 , 3 ", [1, 2, 3]),
+        ("0,http://192.168.1.20:4747/video", [0, "http://192.168.1.20:4747/video"]),
+        (
+            "rtsp://camera1.local/live,rtsp://camera2.local/live",
+            ["rtsp://camera1.local/live", "rtsp://camera2.local/live"],
+        ),
+    ],
+)
+def test_parse_devices(text, expected):
+    assert parse_devices(text) == expected
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "",
+        "1,",
+        ",1",
+        "1,,2",
+        "1,2,1",
+        "1,not a device",
+        "rtsp://cam.local/a,rtsp://cam.local/a",
+    ],
+)
+def test_parse_devices_rejects_garbage(text):
+    with pytest.raises(ArgumentTypeError):
+        parse_devices(text)
+
+
+def test_as_device_list():
+    assert as_device_list(1) == [1]
+    assert as_device_list("rtsp://cam.local/a") == ["rtsp://cam.local/a"]
+    assert as_device_list([1, 2]) == [1, 2]
+    assert as_device_list((1, 2)) == [1, 2]
 
 
 def test_is_network_stream():

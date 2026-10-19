@@ -27,9 +27,17 @@ class FileWriterProcess(Process):
     def get_3d_input_queue(self):
         return self._input_queue_3d
 
-    def get_new_filename(self) -> Path:
+    def get_new_filename(self, taken=()) -> Path:
         string_time = time.strftime("%Y%m%d-%H%M%S")
-        return self._base_path / f"led_map_2d_{string_time}.csv"
+        filename = self._base_path / f"led_map_2d_{string_time}.csv"
+
+        # several cameras can finish a scan in the same second, they must not share a file
+        suffix = 1
+        while filename in taken or filename.exists():
+            filename = self._base_path / f"led_map_2d_{string_time}_{suffix}.csv"
+            suffix += 1
+
+        return filename
 
     def run(self):
         views: dict[int, list[LED2D]] = {}
@@ -52,12 +60,15 @@ class FileWriterProcess(Process):
                     led = data
 
                     if led.view_id not in view_id_to_filename:
-                        view_id_to_filename[led.view_id] = self.get_new_filename()
+                        view_id_to_filename[led.view_id] = self.get_new_filename(
+                            view_id_to_filename.values()
+                        )
                         views[led.view_id] = []
 
                     views[led.view_id].append(led)
 
                 if control == DetectionControlEnum.DELETE:
                     view_id = data
-                    del views[view_id]
-                    del view_id_to_filename[view_id]
+                    # a view that detected nothing never had a file or any leds
+                    views.pop(view_id, None)
+                    view_id_to_filename.pop(view_id, None)

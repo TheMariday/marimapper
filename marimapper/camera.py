@@ -10,6 +10,14 @@ logger = get_logger()
 NETWORK_SCHEMES = ("http://", "https://", "rtsp://", "rtmp://")
 NETWORK_TIMEOUT_MS = 5000
 
+# Tried in this order for webcams and the like. Each of them numbers the cameras in its own way
+LOCAL_CAPTURE_METHODS = [cv2.CAP_DSHOW, cv2.CAP_V4L2, cv2.CAP_ANY]
+CAPTURE_METHOD_NAMES = {
+    cv2.CAP_DSHOW: "DirectShow",
+    cv2.CAP_V4L2: "V4L2",
+    cv2.CAP_ANY: "the default method (Media Foundation on Windows)",
+}
+
 
 def is_network_stream(device_id) -> bool:
     return isinstance(device_id, str) and device_id.lower().startswith(NETWORK_SCHEMES)
@@ -35,6 +43,29 @@ def parse_device(text: str):
     )
 
 
+def parse_devices(text: str) -> list:
+    """
+    Turns the value of --device into a list of cameras, for capturing from several at once.
+
+    Cameras are separated by commas and each one is anything parse_device accepts,
+    e.g. "0,2" or "0,http://192.168.1.20:4747/video". A single camera gives a list of one.
+    """
+    devices = [parse_device(part) for part in text.split(",")]
+
+    for device in devices:
+        if devices.count(device) > 1:
+            raise ArgumentTypeError(
+                f"camera '{device}' is listed more than once in '{text}'"
+            )
+
+    return devices
+
+
+def as_device_list(device) -> list:
+    """Accepts one camera or a list of cameras and always returns a list."""
+    return list(device) if isinstance(device, (list, tuple)) else [device]
+
+
 class CameraSettings:
 
     def __init__(self, camera):
@@ -53,18 +84,19 @@ class CameraSettings:
 
 class Camera:
 
-    def __init__(self, device_id):
+    def __init__(self, device_id, capture_methods=None):
         logger.info(f"Connecting to device {device_id} ...")
         self.device_id = device_id
 
         network = is_network_stream(device_id)
+        params = []
 
         if network:
             # a second backend wouldn't fix an unreachable address, it would just double the wait
             if cv2.videoio_registry.hasBackend(cv2.CAP_FFMPEG):
-                capture_methods = [cv2.CAP_FFMPEG]
+                default_capture_methods = [cv2.CAP_FFMPEG]
             else:
-                capture_methods = [cv2.CAP_ANY]
+                default_capture_methods = [cv2.CAP_ANY]
             # without a timeout an unreachable address can block for half a minute
             params = [
                 cv2.CAP_PROP_OPEN_TIMEOUT_MSEC,
@@ -75,11 +107,12 @@ class Camera:
         elif isinstance(device_id, (str, Path)):
             # Paths are used in tests, and if it tries and use stuff like cv2.CAP_DSHOW, things can get weird
             device_id = str(device_id)
-            capture_methods = [cv2.CAP_ANY]
-            params = []
+            default_capture_methods = [cv2.CAP_ANY]
         else:
-            capture_methods = [cv2.CAP_DSHOW, cv2.CAP_V4L2, cv2.CAP_ANY]
-            params = []
+            default_capture_methods = LOCAL_CAPTURE_METHODS
+
+        if capture_methods is None:  # open_cameras picks one method for several webcams
+            capture_methods = default_capture_methods
 
         for capture_method in capture_methods:
             self.device = cv2.VideoCapture(device_id, capture_method, params)
@@ -106,6 +139,9 @@ class Camera:
             )
 
         self.default_settings = CameraSettings(self)
+
+    def release(self):
+        self.device.release()
 
     def reset(self):
         self.default_settings.apply(self)
@@ -169,3 +205,65 @@ class Camera:
             raise Exception("Failed to read image")
 
         return image
+
+    def grab(self):
+        """
+        Waits for the next frame without decoding it yet.
+        Grabbing from every camera first and only then retrieving keeps the cameras close in time.
+        """
+        if not self.device.grab():
+            raise Exception("Failed to read image")
+
+    def retrieve(self):
+        ret_val, image = self.device.retrieve()
+        if not ret_val:
+            raise Exception("Failed to read image")
+
+        return image
+
+
+def open_cameras(devices) -> list[Camera]:
+    """
+    Opens every camera in the list, in order.
+
+    A single camera is opened as it always was. With several webcams, every one of them is opened with
+    the same capture method, because each method numbers the cameras in its own way (on Windows,
+    DirectShow and Media Foundation list them in a different order, and mixing them can open the same
+    camera twice and miss another). The first method that opens all of them and gets a picture from each
+    is used.
+    """
+    devices = as_device_list(devices)
+    local = [device for device in devices if not is_network_stream(device)]
+
+    if len(local) <= 1:
+        return [Camera(device) for device in devices]
+
+    local_cameras = None
+    failures = []
+
+    for capture_method in LOCAL_CAPTURE_METHODS:
+        opened = []
+        try:
+            for device in local:
+                camera = Camera(device, [capture_method])
+                opened.append(camera)
+                camera.read()  # opening is not enough, it has to deliver pictures too
+            local_cameras = opened
+            break
+        except Exception as error:
+            for camera in opened:
+                camera.release()
+            name = CAPTURE_METHOD_NAMES.get(capture_method, str(capture_method))
+            failures.append(f"{name}: {error}")
+
+    if local_cameras is None:
+        raise RuntimeError(
+            f"Failed to open all of the cameras {local} with the same capture method ("
+            + "; ".join(failures)
+            + "). Cameras are numbered differently by each capture method, and two webcams of the same "
+            "model can fail to stream together when they share a USB port or hub, so try plugging "
+            "them into different USB ports"
+        )
+
+    cameras = iter(local_cameras)
+    return [Camera(d) if is_network_stream(d) else next(cameras) for d in devices]

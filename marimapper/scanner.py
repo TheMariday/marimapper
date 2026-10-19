@@ -3,6 +3,7 @@
 from marimapper.sfm_process import SFM
 
 from tqdm import tqdm
+from marimapper.camera import as_device_list
 from pathlib import Path
 from marimapper.detector_process import DetectorProcess
 from marimapper.queues import Queue2D, DetectionControlEnum
@@ -50,7 +51,7 @@ class Scanner:
     def __init__(
         self,
         output_dir: Path,
-        device: str,
+        device,
         exposure: int,
         threshold: int,
         backend_factory: partial,
@@ -64,6 +65,9 @@ class Scanner:
         logger.debug("initialising scanner")
         set_start_method("spawn")  # VERY important, see top of file
         self.output_dir = output_dir
+
+        # every camera captures its own view of each scan
+        self.view_count = len(as_device_list(device))
 
         self.detector = DetectorProcess(
             device=device,
@@ -144,9 +148,13 @@ class Scanner:
 
     def wait_for_scan(self):
 
+        # each camera finishes its own view, so there is one DONE or DELETE for every camera
+        views_unfinished = self.view_count
+        any_view_complete = False
+
         with tqdm(
-            total=self.led_id_range.stop - self.led_id_range.start,
-            unit="LEDs",
+            total=(self.led_id_range.stop - self.led_id_range.start) * self.view_count,
+            unit="LEDs" if self.view_count == 1 else "LED views",
             desc="Capturing sequence",
             smoothing=0,
         ) as progress_bar:
@@ -166,12 +174,16 @@ class Scanner:
                 if control == DetectionControlEnum.DONE:
                     done_view = data
                     logger.info(f"Scan complete {done_view}")
-                    return True
+                    any_view_complete = True
+                    views_unfinished -= 1
 
                 if control == DetectionControlEnum.DELETE:
                     view_id = data
                     logger.info(f"Deleting scan {view_id}")
-                    return False
+                    views_unfinished -= 1
+
+                if views_unfinished == 0:
+                    return any_view_complete
 
     def mainloop(self):
 
@@ -196,4 +208,4 @@ class Scanner:
             success = self.wait_for_scan()
 
             if success:
-                self.current_view += 1
+                self.current_view += self.view_count
