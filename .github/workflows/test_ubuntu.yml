@@ -34,6 +34,8 @@ jobs:
 
     - name: Install dependencies
       run: |
+        sudo apt-get update
+        sudo apt-get install -y libegl1
         python -m pip install --upgrade pip
         pip cache purge
         pip install .[develop]
