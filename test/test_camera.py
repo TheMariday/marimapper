@@ -3,6 +3,7 @@ from marimapper.camera import Camera
 from utils import get_test_dir
 
 
+@pytest.mark.skip(reason="Issue with VIDEOIO/FFMPEG errors on headless CI/CD runners")
 def test_valid_device():
 
     cam = Camera(
@@ -15,7 +16,7 @@ def test_valid_device():
     assert image.shape[1] == 640
     assert image.shape[2] >= 3
 
-
+@pytest.mark.skip(reason="Issue with VIDEOIO/FFMPEG errors on headless CI/CD runners")
 def test_invalid_device():
 
     with pytest.raises(RuntimeError):
