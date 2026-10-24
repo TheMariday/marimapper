@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "marimapper"
-version = "V3.4.2"
+version = "V3.4.3"
 
 dependencies = [
     "numpy",
@@ -20,13 +20,10 @@ dependencies = [
 
 classifiers = [
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
 
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.12,<3.13"
 
 maintainers = [
   {name = "TheMariday"},
