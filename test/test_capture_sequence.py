@@ -36,7 +36,7 @@ def test_capture_sequence():
 
         write_2d_leds_to_file(leds, filepath)
 
-@pytest.mark.skip("lets see if this fixes it")
+
 def test_capture_sequence_correctness():
     output_dir_full = get_test_dir("scan")
 
