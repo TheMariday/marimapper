@@ -1,6 +1,6 @@
 ![logo.png](docs/images/logo.png)
 
-[![Supported Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)]()
+[![Supported Python Version](https://img.shields.io/badge/python-3.12-blue)]()
 [![Windows](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_windows.yml)
 [![Ubuntu](https://github.com/TheMariday/MariMapper/actions/workflows/test_ubuntu.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_ubuntu.yml)
 [![MacOS](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml/badge.svg)](https://github.com/TheMariday/MariMapper/actions/workflows/test_mac.yml)
@@ -37,7 +37,7 @@ Or if you're using Linux or Mac
 
 Once UV is installed, install marimapper with
 
-`uv tool install git+https://github.com/TheMariday/marimapper`
+`uv tool install --python 3.12 git+https://github.com/TheMariday/marimapper`
 
 You can run the scripts anywhere by just typing them into a console.
 
