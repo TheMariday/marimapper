@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import cv2
 from multiprocessing import get_logger
 
@@ -26,13 +28,17 @@ class Camera:
         logger.info(f"Connecting to device {device_id} ...")
         self.device_id = device_id
 
-        for capture_method in [cv2.CAP_DSHOW, cv2.CAP_V4L2, cv2.CAP_ANY]:
-            self.device = cv2.VideoCapture(device_id, capture_method)
-            if self.device.isOpened():
-                logger.debug(
-                    f"Connected to device {device_id} with capture method {capture_method}"
-                )
-                break
+        # Paths are used in tests, and if it tries and use stuff like cv2.CAP_DSHOW, things can get weird
+        if isinstance(device_id, (str, Path)):
+            self.device = cv2.VideoCapture(str(device_id), cv2.CAP_ANY)
+        else:
+            for capture_method in [cv2.CAP_DSHOW, cv2.CAP_V4L2, cv2.CAP_ANY]:
+                self.device = cv2.VideoCapture(device_id, capture_method)
+                if self.device.isOpened():
+                    logger.debug(
+                        f"Connected to device {device_id} with capture method {capture_method}"
+                    )
+                    break
 
         if not self.device.isOpened():
             raise RuntimeError(f"Failed to connect to camera {device_id}")
