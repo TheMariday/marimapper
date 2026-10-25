@@ -60,6 +60,7 @@ class Scanner:
         interpolation_max_error: float,
         check_movement: bool,
         camera_model_name: str,
+        capture_only: bool = False,
     ):
         logger.debug("initialising scanner")
         set_start_method("spawn")  # VERY important, see top of file
@@ -80,30 +81,37 @@ class Scanner:
 
         led_count = led_end - led_start
 
-        self.sfm = SFM(
-            interpolation_max_fill,
-            interpolation_max_error,
-            existing_leds,
-            led_count,
-            camera_model_name=camera_model_name,
-            camera_fov=60,
-        )
-
         self.current_view = last_view(existing_leds) + 1
-
-        self.renderer3d = VisualiseProcess()
 
         self.detector_update_queue = Queue2D()
 
-        self.detector.add_output_queue(self.sfm.get_input_queue())
+        # when only capturing there is no live 3D reconstruction and no viewer, just the 2D maps
+        # on disk, the 3D map can be built from them later with marimapper_reconstruct
+        self.sfm = None
+        self.renderer3d = None
+
+        if not capture_only:
+            self.sfm = SFM(
+                interpolation_max_fill,
+                interpolation_max_error,
+                existing_leds,
+                led_count,
+                camera_model_name=camera_model_name,
+                camera_fov=60,
+            )
+            self.renderer3d = VisualiseProcess()
+
+        if self.sfm is not None:
+            self.detector.add_output_queue(self.sfm.get_input_queue())
         self.detector.add_output_queue(self.detector_update_queue)
         self.detector.add_output_queue(self.file_writer.get_2d_input_queue())
 
-        self.sfm.add_output_queue(self.renderer3d.get_input_queue())
-        self.sfm.add_output_queue(self.file_writer.get_3d_input_queue())
-        self.sfm.add_output_info_queue(self.detector.get_input_3d_info_queue())
-        self.sfm.start()
-        self.renderer3d.start()
+        if self.sfm is not None:
+            self.sfm.add_output_queue(self.renderer3d.get_input_queue())
+            self.sfm.add_output_queue(self.file_writer.get_3d_input_queue())
+            self.sfm.add_output_info_queue(self.detector.get_input_3d_info_queue())
+            self.sfm.start()
+            self.renderer3d.start()
         self.detector.start()
         self.file_writer.start()
 
@@ -118,10 +126,10 @@ class Scanner:
         if not self.detector.is_alive():
             raise Exception("LED Detector has stopped unexpectedly")
 
-        if not self.sfm.is_alive():
+        if self.sfm is not None and not self.sfm.is_alive():
             raise Exception("SFM has stopped unexpectedly")
 
-        if not self.renderer3d.is_alive():
+        if self.renderer3d is not None and not self.renderer3d.is_alive():
             raise Exception("Visualiser has stopped unexpectedly")
 
         if not self.file_writer.is_alive():
@@ -131,14 +139,17 @@ class Scanner:
         logger.debug("scanner closing")
 
         self.detector.stop()
-        self.sfm.stop()
-        self.renderer3d.stop()
         self.file_writer.stop()
+        if self.sfm is not None:
+            self.sfm.stop()
+            self.renderer3d.stop()
 
         join_with_warning(self.detector, "detector")
-        join_with_warning(self.sfm, "SFM")
+        if self.sfm is not None:
+            join_with_warning(self.sfm, "SFM")
         join_with_warning(self.file_writer, "File Writer")
-        join_with_warning(self.renderer3d, "Visualiser")
+        if self.renderer3d is not None:
+            join_with_warning(self.renderer3d, "Visualiser")
 
         logger.debug("scanner closed")
 
