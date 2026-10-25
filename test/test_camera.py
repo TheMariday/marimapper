@@ -35,16 +35,11 @@ def test_invalid_device():
         ("0", 0),
         ("1", 1),
         (" 2 ", 2),
-        ("192.168.1.20:4747", "http://192.168.1.20:4747/video"),
-        ("192.168.1.20", "http://192.168.1.20:4747/video"),
-        ("phone.local:8080", "http://phone.local:8080/video"),
-        (
-            "192.168.1.20:4747/video/force/1280x720",
-            "http://192.168.1.20:4747/video/force/1280x720",
-        ),
-        ("[fe80::1]:4747", "http://[fe80::1]:4747/video"),
         ("http://192.168.1.20:8080/mjpegfeed", "http://192.168.1.20:8080/mjpegfeed"),
+        (" http://phone.local:4747/video ", "http://phone.local:4747/video"),
+        ("http://[fe80::1]:4747/video", "http://[fe80::1]:4747/video"),
         ("rtsp://camera.local/stream", "rtsp://camera.local/stream"),
+        ("RTMP://camera.local/live", "RTMP://camera.local/live"),
     ],
 )
 def test_parse_device(text, expected):
@@ -53,7 +48,7 @@ def test_parse_device(text, expected):
 
 @pytest.mark.parametrize(
     "text",
-    ["", "192.168.1.20:", "192.168.1.20:0", "192.168.1.20:70000", "not a device"],
+    ["", "-1", "192.168.1.20:4747", "http://", "ftp://camera.local/x", "not a device"],
 )
 def test_parse_device_rejects_garbage(text):
     with pytest.raises(ArgumentTypeError):
@@ -67,8 +62,8 @@ def test_is_network_stream():
     assert not is_network_stream("capture_%04d.png")
 
 
-class _FakePhone(BaseHTTPRequestHandler):
-    """Serves an MJPEG stream on /video, the way the DroidCam app does."""
+class _FakeStream(BaseHTTPRequestHandler):
+    """Serves an MJPEG stream on /video, the way many IP cameras and phone apps do."""
 
     jpeg = b""
 
@@ -92,12 +87,12 @@ class _FakePhone(BaseHTTPRequestHandler):
 
 
 @pytest.fixture
-def fake_phone():
+def fake_stream():
     picture = numpy.zeros((480, 640, 3), dtype=numpy.uint8)
     picture[200:280, 300:380] = 255  # a bright square, like a lit LED
-    _FakePhone.jpeg = cv2.imencode(".jpg", picture)[1].tobytes()
+    _FakeStream.jpeg = cv2.imencode(".jpg", picture)[1].tobytes()
 
-    server = ThreadingHTTPServer(("127.0.0.1", 0), _FakePhone)
+    server = ThreadingHTTPServer(("127.0.0.1", 0), _FakeStream)
     server.daemon_threads = True
     threading.Thread(target=server.serve_forever, daemon=True).start()
     yield server.server_address[1]
@@ -105,9 +100,9 @@ def fake_phone():
     server.server_close()
 
 
-def test_network_device(fake_phone):
+def test_network_device(fake_stream):
 
-    cam = Camera(parse_device(f"127.0.0.1:{fake_phone}"))
+    cam = Camera(parse_device(f"http://127.0.0.1:{fake_stream}/video"))
 
     image = cam.read()
 
@@ -121,4 +116,4 @@ def test_network_device(fake_phone):
 def test_unreachable_network_device():
 
     with pytest.raises(RuntimeError):
-        Camera(parse_device("127.0.0.1:1"))  # nothing listens on port 1
+        Camera(parse_device("http://127.0.0.1:1/video"))  # nothing listens on port 1

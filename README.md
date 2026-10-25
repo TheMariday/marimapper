@@ -68,16 +68,16 @@ with a single crosshair on centered on your LED.
 
 Wrong webcam? MariMapper tools use `--device 0` by default, use `--device 1` to switch to your second webcam.
 
-#### Using an Android phone as a camera (DroidCam)
+#### Using a network video stream
 
-You can use a phone running the [DroidCam](https://www.dev47apps.com/) app without installing a PC client. Put the phone and your computer on the same WiFi network, start DroidCam, and give MariMapper the address shown in the app:
+`--device` also takes the URL of a network video stream (`http://`, `https://`, `rtsp://` or `rtmp://`), so you can use an IP camera or a phone running a camera streaming app. If the URL plays in a web browser or VLC, MariMapper should be able to use it:
 
-`marimapper_check_camera --device 192.168.1.20:4747`
+`marimapper_check_camera --device http://192.168.1.20:8080/video`
 
-The same `--device` works for every MariMapper command. The port defaults to `4747`, so `--device 192.168.1.20` is enough, and a full URL (`http://...` or `rtsp://...`) also works for other network cameras.
+For example, the Android [DroidCam](https://www.dev47apps.com/) app streams at `http://<phone ip>:4747/video`.
 
 > [!NOTE]
-> MariMapper can't change the exposure of a network camera, so `--exposure` has no effect. Dim the room and use the camera app's own settings to darken the image.
+> MariMapper can't change the exposure of a network stream, so `--exposure` has no effect. Dim the room and use the camera's or app's own settings to darken the image.
 
 ![alt text](docs/images/camera_check.png "Camera Check window")
 

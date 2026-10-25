@@ -17,8 +17,7 @@ def add_camera_args(parser):
         "--device",
         type=parse_device,
         help="Camera device index, set to 1 if using a laptop with a USB webcam. "
-        "For an Android phone running DroidCam give its address instead, e.g. 192.168.1.20:4747 "
-        "(the port defaults to 4747). Full http:// or rtsp:// URLs also work",
+        "A network video stream URL also works, e.g. http://192.168.1.20:8080/video or rtsp://...",
         default=0,
     )
 
