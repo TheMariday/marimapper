@@ -1,4 +1,5 @@
 from argparse import ArgumentTypeError
+from pathlib import Path
 from urllib.parse import urlsplit
 
 import cv2
@@ -71,6 +72,11 @@ class Camera:
                 cv2.CAP_PROP_READ_TIMEOUT_MSEC,
                 NETWORK_TIMEOUT_MS,
             ]
+        elif isinstance(device_id, (str, Path)):
+            # Paths are used in tests, and if it tries and use stuff like cv2.CAP_DSHOW, things can get weird
+            device_id = str(device_id)
+            capture_methods = [cv2.CAP_ANY]
+            params = []
         else:
             capture_methods = [cv2.CAP_DSHOW, cv2.CAP_V4L2, cv2.CAP_ANY]
             params = []
