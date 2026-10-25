@@ -1,9 +1,38 @@
+from argparse import ArgumentTypeError
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import cv2
 from multiprocessing import get_logger
 
 logger = get_logger()
+
+NETWORK_SCHEMES = ("http://", "https://", "rtsp://", "rtmp://")
+NETWORK_TIMEOUT_MS = 5000
+
+
+def is_network_stream(device_id) -> bool:
+    return isinstance(device_id, str) and device_id.lower().startswith(NETWORK_SCHEMES)
+
+
+def parse_device(text: str):
+    """
+    Turns the value of --device into something Camera can open.
+
+    - "0", "1", ...              a camera index, returned as an int
+    - "http://...", "rtsp://..." a network video stream, returned unchanged
+    """
+    text = text.strip()
+
+    if text.isdigit():
+        return int(text)
+
+    if is_network_stream(text) and urlsplit(text).hostname:
+        return text
+
+    raise ArgumentTypeError(
+        f"'{text}' is not a camera index or a stream URL like http://192.168.1.20:8080/video"
+    )
 
 
 class CameraSettings:
@@ -28,20 +57,53 @@ class Camera:
         logger.info(f"Connecting to device {device_id} ...")
         self.device_id = device_id
 
-        # Paths are used in tests, and if it tries and use stuff like cv2.CAP_DSHOW, things can get weird
-        if isinstance(device_id, (str, Path)):
-            self.device = cv2.VideoCapture(str(device_id), cv2.CAP_ANY)
+        network = is_network_stream(device_id)
+
+        if network:
+            # a second backend wouldn't fix an unreachable address, it would just double the wait
+            if cv2.videoio_registry.hasBackend(cv2.CAP_FFMPEG):
+                capture_methods = [cv2.CAP_FFMPEG]
+            else:
+                capture_methods = [cv2.CAP_ANY]
+            # without a timeout an unreachable address can block for half a minute
+            params = [
+                cv2.CAP_PROP_OPEN_TIMEOUT_MSEC,
+                NETWORK_TIMEOUT_MS,
+                cv2.CAP_PROP_READ_TIMEOUT_MSEC,
+                NETWORK_TIMEOUT_MS,
+            ]
+        elif isinstance(device_id, (str, Path)):
+            # Paths are used in tests, and if it tries and use stuff like cv2.CAP_DSHOW, things can get weird
+            device_id = str(device_id)
+            capture_methods = [cv2.CAP_ANY]
+            params = []
         else:
-            for capture_method in [cv2.CAP_DSHOW, cv2.CAP_V4L2, cv2.CAP_ANY]:
-                self.device = cv2.VideoCapture(device_id, capture_method)
-                if self.device.isOpened():
-                    logger.debug(
-                        f"Connected to device {device_id} with capture method {capture_method}"
-                    )
-                    break
+            capture_methods = [cv2.CAP_DSHOW, cv2.CAP_V4L2, cv2.CAP_ANY]
+            params = []
+
+        for capture_method in capture_methods:
+            self.device = cv2.VideoCapture(device_id, capture_method, params)
+            if self.device.isOpened():
+                logger.debug(
+                    f"Connected to device {device_id} with capture method {capture_method}"
+                )
+                break
 
         if not self.device.isOpened():
+            if network:
+                raise RuntimeError(
+                    f"Failed to connect to stream {device_id}. Check that the stream is running "
+                    f"and that the URL opens in a web browser or a video player such as VLC"
+                )
             raise RuntimeError(f"Failed to connect to camera {device_id}")
+
+        if network:
+            # a short buffer keeps the picture close to what the camera sees right now
+            self.device.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+            logger.info(
+                "Network streams usually can't be controlled from here: if the image is too bright, "
+                "lower the exposure on the camera or streaming software itself"
+            )
 
         self.default_settings = CameraSettings(self)
 

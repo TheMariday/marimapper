@@ -2,6 +2,7 @@ import logging
 import importlib.metadata
 from marimapper.database_populator import camera_models, camera_model_radial
 from marimapper.backends.backend_utils import backend_arg_setters
+from marimapper.camera import parse_device
 
 from pathlib import Path
 import os
@@ -14,8 +15,9 @@ def add_camera_args(parser):
 
     camera_options.add_argument(
         "--device",
-        type=int,
-        help="Camera device index, set to 1 if using a laptop with a USB webcam",
+        type=parse_device,
+        help="Camera device index, set to 1 if using a laptop with a USB webcam. "
+        "A network video stream URL also works, e.g. http://192.168.1.20:8080/video or rtsp://...",
         default=0,
     )
 
