@@ -1,5 +1,6 @@
 from multiprocessing import get_logger, Process, Queue, Event
 import time
+from queue import Empty
 from marimapper.detector import (
     show_image,
     set_cam_default,
@@ -121,7 +122,14 @@ class DetectorProcess(Process):
         self._request_detections_queue.request(led_id_from, led_id_to, view_id)
 
     def get_led_count(self):
-        count = self._led_count.get()
+        # A child that dies during startup cannot put an error on the queue.
+        while True:
+            try:
+                count = self._led_count.get(timeout=1)
+                break
+            except Empty:
+                if not self.is_alive():
+                    raise RuntimeError("LED detector exited before reporting its count")
         if isinstance(count, str):
             raise RuntimeError(count)
         return count

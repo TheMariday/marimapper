@@ -1,4 +1,9 @@
+from functools import partial
+import os
+from unittest.mock import Mock
+
 import pytest
+import requests
 
 from marimapper.backends.pixlite.pixlite_backend import Backend, PixLiteRequestError
 
@@ -123,3 +128,31 @@ def test_logical_pixel_count_and_port_boundary(
     assert controller["commands"][-1]["pixPortNum"] == 3
     assert controller["commands"][-1]["pixNum"] == 1
     backend.close()
+
+
+def test_http_success_can_contain_a_controller_rejection(monkeypatch):
+    backend = Backend.__new__(Backend)
+    backend.api_url = "https://pixlite.local:4443/v1.9/?user=admin"
+    response = Mock(spec=requests.Response, status_code=200)
+    response.json.return_value = {"resp": "modeTestData", "id": 1, "err": {"code": 10}}
+    monkeypatch.setattr(requests, "post", lambda *args, **kwargs: response)
+
+    with pytest.raises(PixLiteRequestError, match="modeTestData.*code 10"):
+        backend._request("modeTestData")
+
+
+def test_detector_reports_child_exit_before_backend_count():
+    from marimapper.detector_process import DetectorProcess
+
+    detector = DetectorProcess(
+        device=0,
+        dark_exposure=-10,
+        threshold=128,
+        backend_factory=partial(os._exit, 1),
+    )
+    detector.start()
+    try:
+        with pytest.raises(RuntimeError, match="before reporting its count"):
+            detector.get_led_count()
+    finally:
+        detector.join(timeout=5)

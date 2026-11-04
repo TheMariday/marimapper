@@ -17,9 +17,10 @@ marimapper_check_backend pixlite --server <controller-address>
 marimapper pixlite --server <controller-address>
 ```
 
-The backend uses the controller's administrator account for test-data mode. For a password-protected
-account, set the `PIXLITE_PASSWORD` environment variable and pass the full
-HTTPS URL (PixLite uses port 4443). The controller certificate must be trusted.
+The backend uses the controller's administrator account for test-data mode.
+For a password-protected account, set the `PIXLITE_PASSWORD` environment
+variable and pass the full HTTPS URL (PixLite uses port 4443). The controller
+certificate must be trusted.
 Requests can use a CA bundle specified by `REQUESTS_CA_BUNDLE`.
 
 Start with the controller in live mode. Scanning temporarily replaces live
