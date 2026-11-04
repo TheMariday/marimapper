@@ -1,9 +1,13 @@
 # Advatek PixLite Mk3
 
 Use a PixLite Mk3 controller that supports API v1.9. Configure the pixel
-outputs in Advatek Assistant first. MariMapper counts the configured pixels,
-starting at LED 0 on the first populated output and continuing in port order.
-Ports configured with null pixels are currently unsupported.
+outputs in Advatek Assistant first. MariMapper subtracts leading null pixels
+and counts each group as one logical LED, including any partial group at the
+end of a string. LED 0 starts on the first output with logical LEDs. The count
+continues in port order, skipping empty and all-null outputs.
+
+Scanning an output with null pixels or grouping is currently blocked pending
+physical verification of how PixLite test mode addresses those outputs.
 
 Run these commands with your controller's address:
 

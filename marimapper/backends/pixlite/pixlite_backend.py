@@ -65,6 +65,7 @@ class Backend:
                     "pix.expand",
                     "pixPort.pixCount",
                     "pixPort.nullPix",
+                    "pixPort.group",
                 ]
             },
         )["config"]
@@ -74,18 +75,33 @@ class Backend:
         port_count = constants["dev"]["pixPorts"] * (
             2 if config["pix"]["expand"] else 1
         )
-        counts = config["pixPort"]["pixCount"][:port_count]
-        null_pixels = config["pixPort"]["nullPix"][:port_count]
-        if len(counts) != port_count or len(null_pixels) != port_count:
+        ports = config["pixPort"]
+        if any(
+            len(ports[key]) < port_count for key in ("pixCount", "nullPix", "group")
+        ):
             raise RuntimeError(
                 "PixLite returned an incomplete pixel port configuration"
             )
-        if any(count and null for count, null in zip(counts, null_pixels)):
-            raise RuntimeError("PixLite ports with null pixels are unsupported")
 
-        self.counts = counts
+        self.counts = []
+        self.unverified_ports = set()
+        for index in range(port_count):
+            count = ports["pixCount"][index]
+            if count == 0:
+                self.counts.append(0)
+                continue
+            null = ports["nullPix"][index]
+            group = ports["group"][index]
+            if not 0 <= null <= count or not 1 <= group <= count:
+                raise RuntimeError(
+                    f"PixLite port {index + 1} has invalid pixel settings"
+                )
+            logical_count = (count - null + group - 1) // group
+            self.counts.append(logical_count)
+            if logical_count and (null or group > 1):
+                self.unverified_ports.add(index + 1)
         if not self.get_led_count():
-            raise RuntimeError("PixLite has no configured pixels")
+            raise RuntimeError("PixLite has no scannable pixels")
         channels = {"RGB": 3, "RGBW": 4, "RGBWX": 5}
         self.color_channels = channels[config["pix"]["colorType"]]
 
@@ -161,6 +177,11 @@ class Backend:
             raise IndexError(f"PixLite LED index out of range: {led_index}")
         for port, count in enumerate(self.counts, start=1):
             if led_index < count:
+                if port in self.unverified_ports:
+                    raise RuntimeError(
+                        f"PixLite port {port} uses null pixels or grouping, "
+                        "which still needs test-mode address verification"
+                    )
                 self._set_color(port, led_index + 1, on)
                 return
             led_index -= count

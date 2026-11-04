@@ -23,6 +23,7 @@ def controller(monkeypatch):
                     "pixPort": {
                         "pixCount": state["counts"],
                         "nullPix": state.get("null_pixels", [0, 0, 0, 0]),
+                        "group": state.get("groups", [1, 1, 1, 1]),
                     },
                 }
             }
@@ -94,7 +95,24 @@ def test_does_not_restore_mode_after_initial_rejection(controller):
     assert controller["mode"] == "playback"
 
 
-def test_rejects_null_pixels_on_active_ports(controller):
-    controller["null_pixels"] = [0, 0, 1, 0]
-    with pytest.raises(RuntimeError, match="null pixels"):
-        Backend("pixlite.local")
+@pytest.mark.parametrize(
+    ("count", "null_pixels", "group", "expected"),
+    [(8, 2, 4, 2), (10, 2, 4, 2), (8, 2, 1, 6), (8, 8, 1, 0)],
+)
+def test_logical_pixel_count_and_port_boundary(
+    controller, count, null_pixels, group, expected
+):
+    controller["counts"] = [count, 0, 2, 0]
+    controller["null_pixels"] = [null_pixels, 0, 0, 0]
+    controller["groups"] = [group, 0, 1, 0]
+    backend = Backend("pixlite.local")
+
+    assert backend.get_led_count() == expected + 2
+    if expected:
+        with pytest.raises(RuntimeError, match="port 1.*address verification"):
+            backend.set_led(expected - 1, True)
+        assert controller["commands"] == []
+    backend.set_led(expected, True)
+    assert controller["commands"][-1]["pixPortNum"] == 3
+    assert controller["commands"][-1]["pixNum"] == 1
+    backend.close()
