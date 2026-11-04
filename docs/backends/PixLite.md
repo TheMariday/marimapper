@@ -6,8 +6,9 @@ and counts each group as one logical LED, including any partial group at the
 end of a string. LED 0 starts on the first output with logical LEDs. The count
 continues in port order, skipping empty and all-null outputs.
 
-Scanning an output with null pixels or grouping is currently blocked pending
-physical verification of how PixLite test mode addresses those outputs.
+The backend requests the first physical pixel in each group as its scan point.
+The controller has accepted these addresses on an E16-S Mk3. Physical
+verification for outputs with null pixels and grouping is pending.
 
 Run these commands with your controller's address:
 

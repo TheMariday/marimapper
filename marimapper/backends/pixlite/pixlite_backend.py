@@ -39,6 +39,7 @@ class Backend:
             raise ValueError("Specify a PixLite hostname, IP address or controller URL")
 
         self.base_url = base_url.rstrip("/")
+        # The E16-S rejects modeTestData for the operator account.
         self.api_url = f"{self.base_url}/v1.9/?user=admin"
         self.in_test_mode = False
         version = self._request("version")
@@ -55,6 +56,7 @@ class Backend:
                     "A password-protected PixLite requires an HTTPS URL and PIXLITE_PASSWORD"
                 )
             digest = urlsafe_b64encode(sha256(password.encode("utf-8")).digest())
+            # Mk3 expects the Base64URL hash without URL escaping.
             self.api_url += f"&auth={digest.decode('ascii').rstrip('=')}"
 
         config = self._request(
@@ -72,6 +74,7 @@ class Backend:
         constants = self._request("constantRead", {"path": ["dev.pixPorts"]})[
             "constant"
         ]
+        # The config arrays can include entries for inactive expanded ports.
         port_count = constants["dev"]["pixPorts"] * (
             2 if config["pix"]["expand"] else 1
         )
@@ -83,12 +86,12 @@ class Backend:
                 "PixLite returned an incomplete pixel port configuration"
             )
 
-        self.counts = []
-        self.unverified_ports = set()
+        # Keep empty entries so list position still identifies the physical port.
+        self.ports = []
         for index in range(port_count):
             count = ports["pixCount"][index]
             if count == 0:
-                self.counts.append(0)
+                self.ports.append((0, 0, 1))
                 continue
             null = ports["nullPix"][index]
             group = ports["group"][index]
@@ -96,10 +99,10 @@ class Backend:
                 raise RuntimeError(
                     f"PixLite port {index + 1} has invalid pixel settings"
                 )
+            # Null pixels consume physical positions but do not belong to a group.
+            # Round up so a short group at the end still gets an LED index.
             logical_count = (count - null + group - 1) // group
-            self.counts.append(logical_count)
-            if logical_count and (null or group > 1):
-                self.unverified_ports.add(index + 1)
+            self.ports.append((logical_count, null, group))
         if not self.get_led_count():
             raise RuntimeError("PixLite has no scannable pixels")
         channels = {"RGB": 3, "RGBW": 4, "RGBWX": 5}
@@ -134,6 +137,7 @@ class Backend:
         ):
             raise RuntimeError(f"PixLite returned an invalid {name} reply")
         error = body.get("err")
+        # HTTP 200 confirms delivery. A controller rejection is in the JSON body.
         if isinstance(error, dict):
             raise PixLiteRequestError(
                 f"PixLite rejected {name} (code {error.get('code')})"
@@ -143,7 +147,7 @@ class Backend:
         return body["result"]
 
     def get_led_count(self) -> int:
-        return sum(self.counts)
+        return sum(count for count, _, _ in self.ports)
 
     def _set_color(self, port: int, pixel: int, on: bool) -> None:
         was_in_test_mode = self.in_test_mode
@@ -167,26 +171,27 @@ class Backend:
                 },
             )
         except PixLiteRequestError:
+            # An explicit rejection of the first command leaves live mode intact.
             self.in_test_mode = was_in_test_mode
             raise
         if result["status"]["mode"] != "testData":
             raise RuntimeError("PixLite did not enter test-data mode")
 
     def set_led(self, led_index: int, on: bool) -> None:
+        """Translate a global zero-based LED index to a port and local pixel."""
         if not 0 <= led_index < self.get_led_count():
             raise IndexError(f"PixLite LED index out of range: {led_index}")
-        for port, count in enumerate(self.counts, start=1):
+        for port, (count, null, group) in enumerate(self.ports, start=1):
             if led_index < count:
-                if port in self.unverified_ports:
-                    raise RuntimeError(
-                        f"PixLite port {port} uses null pixels or grouping, "
-                        "which still needs test-mode address verification"
-                    )
-                self._set_color(port, led_index + 1, on)
+                # API v1.9 Table 44 bounds pixNum by the physical pixel count.
+                # Select the first physical pixel in the group after the nulls.
+                pixel = null + led_index * group + 1
+                self._set_color(port, pixel, on)
                 return
             led_index -= count
 
     def blackout(self) -> None:
+        # Zero selects every port and pixel in test-data mode.
         self._set_color(0, 0, False)
 
     def close(self) -> None:

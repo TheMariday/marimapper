@@ -96,11 +96,16 @@ def test_does_not_restore_mode_after_initial_rejection(controller):
 
 
 @pytest.mark.parametrize(
-    ("count", "null_pixels", "group", "expected"),
-    [(8, 2, 4, 2), (10, 2, 4, 2), (8, 2, 1, 6), (8, 8, 1, 0)],
+    ("count", "null_pixels", "group", "expected", "scan_points"),
+    [
+        (8, 2, 4, 2, [3, 7]),
+        (10, 2, 4, 2, [3, 7]),
+        (8, 2, 1, 6, [3, 4, 5, 6, 7, 8]),
+        (8, 8, 1, 0, []),
+    ],
 )
 def test_logical_pixel_count_and_port_boundary(
-    controller, count, null_pixels, group, expected
+    controller, count, null_pixels, group, expected, scan_points
 ):
     controller["counts"] = [count, 0, 2, 0]
     controller["null_pixels"] = [null_pixels, 0, 0, 0]
@@ -108,10 +113,12 @@ def test_logical_pixel_count_and_port_boundary(
     backend = Backend("pixlite.local")
 
     assert backend.get_led_count() == expected + 2
-    if expected:
-        with pytest.raises(RuntimeError, match="port 1.*address verification"):
-            backend.set_led(expected - 1, True)
-        assert controller["commands"] == []
+    for index in range(expected):
+        backend.set_led(index, True)
+    assert [command["pixPortNum"] for command in controller["commands"]] == [
+        1
+    ] * expected
+    assert [command["pixNum"] for command in controller["commands"]] == scan_points
     backend.set_led(expected, True)
     assert controller["commands"][-1]["pixPortNum"] == 3
     assert controller["commands"][-1]["pixNum"] == 1
