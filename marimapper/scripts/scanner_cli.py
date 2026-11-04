@@ -61,8 +61,10 @@ def main():
         args.camera_model,
     )
 
-    scanner.mainloop()
-    scanner.close()
+    try:
+        scanner.mainloop()
+    finally:
+        scanner.close()
 
 
 if __name__ == "__main__":
