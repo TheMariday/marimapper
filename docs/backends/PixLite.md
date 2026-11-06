@@ -6,9 +6,10 @@ and counts each group as one logical LED, including any partial group at the
 end of a string. LED 0 starts on the first output with logical LEDs. The count
 continues in port order, skipping empty and all-null outputs.
 
-The backend requests the first physical pixel in each group as its scan point.
-The controller has accepted these addresses on an E16-S Mk3. Physical
-verification for outputs with null pixels and grouping is pending.
+The backend sends logical pixel numbers to test mode. The controller applies
+null pixels, grouping, zigzag and reverse mapping itself, as described in
+section 7.1 of the PixLite Mk3 Management Guide V20260618. Physical verification
+for outputs with null pixels and grouping is pending.
 
 Run these commands with your controller's address:
 

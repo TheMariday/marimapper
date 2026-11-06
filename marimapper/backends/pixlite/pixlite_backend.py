@@ -23,7 +23,7 @@ class PixLiteRequestError(RuntimeError):
 
 
 class Backend:
-    """Use PixLite Mk3 test-data mode to illuminate one physical pixel at a time."""
+    """Use PixLite Mk3 test-data mode to illuminate one logical pixel at a time."""
 
     def __init__(self, server: str):
         base_url = server if "://" in server else f"http://{server}"
@@ -87,11 +87,11 @@ class Backend:
             )
 
         # Keep empty entries so list position still identifies the physical port.
-        self.ports = []
+        self.counts = []
         for index in range(port_count):
             count = ports["pixCount"][index]
             if count == 0:
-                self.ports.append((0, 0, 1))
+                self.counts.append(0)
                 continue
             null = ports["nullPix"][index]
             group = ports["group"][index]
@@ -102,7 +102,7 @@ class Backend:
             # Null pixels consume physical positions but do not belong to a group.
             # Round up so a short group at the end still gets an LED index.
             logical_count = (count - null + group - 1) // group
-            self.ports.append((logical_count, null, group))
+            self.counts.append(logical_count)
         if not self.get_led_count():
             raise RuntimeError("PixLite has no scannable pixels")
         channels = {"RGB": 3, "RGBW": 4, "RGBWX": 5}
@@ -147,7 +147,7 @@ class Backend:
         return body["result"]
 
     def get_led_count(self) -> int:
-        return sum(count for count, _, _ in self.ports)
+        return sum(self.counts)
 
     def _set_color(self, port: int, pixel: int, on: bool) -> None:
         was_in_test_mode = self.in_test_mode
@@ -181,12 +181,12 @@ class Backend:
         """Translate a global zero-based LED index to a port and local pixel."""
         if not 0 <= led_index < self.get_led_count():
             raise IndexError(f"PixLite LED index out of range: {led_index}")
-        for port, (count, null, group) in enumerate(self.ports, start=1):
+        for port, count in enumerate(self.counts, start=1):
             if led_index < count:
-                # API v1.9 Table 44 bounds pixNum by the physical pixel count.
-                # Select the first physical pixel in the group after the nulls.
-                pixel = null + led_index * group + 1
-                self._set_color(port, pixel, on)
+                # Management Guide V20260618, section 7.1: test mode applies
+                # null pixels, grouping, zigzag and reverse on the controller.
+                # Send the one-based logical index without remapping it here.
+                self._set_color(port, led_index + 1, on)
                 return
             led_index -= count
 

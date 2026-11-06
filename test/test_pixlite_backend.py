@@ -103,9 +103,10 @@ def test_does_not_restore_mode_after_initial_rejection(controller):
 @pytest.mark.parametrize(
     ("count", "null_pixels", "group", "expected", "scan_points"),
     [
-        (8, 2, 4, 2, [3, 7]),
-        (10, 2, 4, 2, [3, 7]),
-        (8, 2, 1, 6, [3, 4, 5, 6, 7, 8]),
+        (8, 2, 4, 2, [1, 2]),
+        (10, 2, 4, 2, [1, 2]),
+        (8, 2, 1, 6, [1, 2, 3, 4, 5, 6]),
+        (8, 0, 4, 2, [1, 2]),
         (8, 8, 1, 0, []),
     ],
 )
@@ -124,6 +125,10 @@ def test_logical_pixel_count_and_port_boundary(
         1
     ] * expected
     assert [command["pixNum"] for command in controller["commands"]] == scan_points
+    if expected:
+        backend.set_led(expected - 1, False)
+        assert controller["commands"][-1]["pixNum"] == scan_points[-1]
+        assert controller["commands"][-1]["color"] == [0] * 4
     backend.set_led(expected, True)
     assert controller["commands"][-1]["pixPortNum"] == 3
     assert controller["commands"][-1]["pixNum"] == 1
