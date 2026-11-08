@@ -2,10 +2,13 @@ import argparse
 from base64 import urlsafe_b64encode
 from functools import partial
 from hashlib import sha256
+from multiprocessing import get_logger
 import os
 from urllib.parse import urlsplit
 
 import requests
+
+logger = get_logger()
 
 
 def pixlite_backend_set_args(parser):
@@ -64,6 +67,8 @@ class Backend:
             {
                 "path": [
                     "pix.colorType",
+                    "pix.pixType",
+                    "pix.inFormat",
                     "pix.expand",
                     "pixPort.pixCount",
                     "pixPort.nullPix",
@@ -71,13 +76,34 @@ class Backend:
                 ]
             },
         )["config"]
-        constants = self._request("constantRead", {"path": ["dev.pixPorts"]})[
-            "constant"
-        ]
-        # The config arrays can include entries for inactive expanded ports.
-        port_count = constants["dev"]["pixPorts"] * (
-            2 if config["pix"]["expand"] else 1
+        constants = self._request(
+            "constantRead", {"path": ["dev.pixPorts", "pixTypes"]}
+        )["constant"]
+        pixel = config["pix"]
+        pixel_type = next(
+            (
+                item
+                for item in constants["pixTypes"]
+                if item["pixType"] == pixel["pixType"]
+            ),
+            None,
         )
+        if pixel_type is None or pixel["colorType"] not in pixel_type["colorTypes"]:
+            raise RuntimeError("PixLite pixel type or color type is unsupported")
+        if pixel["expand"] and not pixel_type["canExpand"]:
+            raise RuntimeError("PixLite pixel type does not support expanded mode")
+
+        self.color_channels = {"RGB": 3, "RGBW": 4, "RGBWX": 5}[pixel["colorType"]]
+        bytes_per_color = {"8Bit": 1, "16BitHL": 2, "16BitLH": 2}.get(pixel["inFormat"])
+        if bytes_per_color is None or (
+            bytes_per_color == 2 and pixel_type["bitRes"] == 8
+        ):
+            raise RuntimeError("PixLite pixel type does not support this input format")
+        # DMX footprint describes input channels, not the number of scan points.
+        # Test mode accepts color values separately from the live input format.
+        self.channel_footprint = self.color_channels * bytes_per_color
+        # The config arrays can include entries for inactive expanded ports.
+        port_count = constants["dev"]["pixPorts"] * (2 if pixel["expand"] else 1)
         ports = config["pixPort"]
         if any(
             len(ports[key]) < port_count for key in ("pixCount", "nullPix", "group")
@@ -92,6 +118,7 @@ class Backend:
             count = ports["pixCount"][index]
             if count == 0:
                 self.counts.append(0)
+                logger.info("PixLite port %d: unused", index + 1)
                 continue
             null = ports["nullPix"][index]
             group = ports["group"][index]
@@ -103,10 +130,25 @@ class Backend:
             # Round up so a short group at the end still gets an LED index.
             logical_count = (count - null + group - 1) // group
             self.counts.append(logical_count)
+            logger.info(
+                "PixLite port %d: %d physical, %d null, group %d, %d logical LEDs, %d DMX channels",
+                index + 1,
+                count,
+                null,
+                group,
+                logical_count,
+                logical_count * self.channel_footprint,
+            )
         if not self.get_led_count():
             raise RuntimeError("PixLite has no scannable pixels")
-        channels = {"RGB": 3, "RGBW": 4, "RGBWX": 5}
-        self.color_channels = channels[config["pix"]["colorType"]]
+        logger.info(
+            "PixLite: %d output ports, %s, %s, %d channels per logical LED, %d LEDs total",
+            port_count,
+            pixel["colorType"],
+            pixel["inFormat"],
+            self.channel_footprint,
+            self.get_led_count(),
+        )
 
     def _request(self, name: str, params: dict | None = None) -> dict:
         try:
