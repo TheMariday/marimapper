@@ -29,6 +29,11 @@ class MyBackend:
 
 The only thing you'll need to do extra is add the dependencies to the `pyproject.toml` file
 
+Stateful backends may also implement `blackout()` to clear output before a
+scan and `close()` to release control. When present, `close()` is called by
+the scanner and backend checker on exit, including after a failure. It is
+responsible for any final output cleanup the backend needs.
+
 # Step 3: Add the helper methods
 
 Next we need to add the helper methods so we can launch our backend from the command line 

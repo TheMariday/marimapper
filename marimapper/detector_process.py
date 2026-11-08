@@ -1,5 +1,6 @@
 from multiprocessing import get_logger, Process, Queue, Event
 import time
+from queue import Empty
 from marimapper.detector import (
     show_image,
     set_cam_default,
@@ -22,6 +23,10 @@ logger = get_logger()
 
 
 def backend_black(backend):
+    blackout = getattr(backend, "blackout", None)
+    if blackout is not None:
+        blackout()
+        return True
     buffer = [[0, 0, 0] for _ in range(backend.get_led_count())]
     try:
         backend.set_leds(buffer)
@@ -117,7 +122,17 @@ class DetectorProcess(Process):
         self._request_detections_queue.request(led_id_from, led_id_to, view_id)
 
     def get_led_count(self):
-        return self._led_count.get()
+        # A child that dies during startup cannot put an error on the queue.
+        while True:
+            try:
+                count = self._led_count.get(timeout=1)
+                break
+            except Empty:
+                if not self.is_alive():
+                    raise RuntimeError("LED detector exited before reporting its count")
+        if isinstance(count, str):
+            raise RuntimeError(count)
+        return count
 
     def stop(self):
         self._exit_event.set()
@@ -127,11 +142,22 @@ class DetectorProcess(Process):
             queue.put(control, data)
 
     def run(self):
+        try:
+            led_backend = self._led_backend_factory()
+            count = led_backend.get_led_count()
+        except Exception as error:
+            self._led_count.put(f"Could not initialise LED backend: {error}")
+            return
 
-        led_backend = self._led_backend_factory()
+        self._led_count.put(count)
+        close = getattr(led_backend, "close", None)
+        try:
+            self._detect(led_backend)
+        finally:
+            if close is not None:
+                close()
 
-        self._led_count.put(led_backend.get_led_count())
-
+    def _detect(self, led_backend):
         cam = Camera(self._device)
 
         timeout_controller = TimeoutController()
@@ -236,5 +262,6 @@ class DetectorProcess(Process):
 
         logger.info("detector closing, resetting camera and backend")
         set_cam_default(cam)
-        backend_black(led_backend)
-        time.sleep(1)  # wait a moment for the backend to update before closing
+        if not hasattr(led_backend, "close"):
+            backend_black(led_backend)
+            time.sleep(1)  # wait a moment for the backend to update before closing

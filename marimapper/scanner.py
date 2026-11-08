@@ -13,6 +13,7 @@ from marimapper.visualize_process import VisualiseProcess
 from marimapper.led import last_view
 from marimapper.file_writer_process import FileWriterProcess
 from functools import partial
+from queue import Empty
 
 # This is to do with an issue with open3d bug in estimate normals
 # https://github.com/isl-org/Open3D/issues/1428
@@ -102,15 +103,18 @@ class Scanner:
         self.sfm.add_output_queue(self.renderer3d.get_input_queue())
         self.sfm.add_output_queue(self.file_writer.get_3d_input_queue())
         self.sfm.add_output_info_queue(self.detector.get_input_3d_info_queue())
+        self.detector.start()
+        try:
+            backend_led_count = self.detector.get_led_count()
+        except RuntimeError:
+            self.detector.join()
+            raise
         self.sfm.start()
         self.renderer3d.start()
-        self.detector.start()
         self.file_writer.start()
 
         # we add plus one here as I assume people want to include the last led they define
-        self.led_id_range = range(
-            led_start, min(led_end + 1, self.detector.get_led_count())
-        )
+        self.led_id_range = range(led_start, min(led_end + 1, backend_led_count))
 
         logger.debug("scanner initialised")
 
@@ -153,7 +157,11 @@ class Scanner:
 
             while True:
 
-                control, data = self.detector_update_queue.get()
+                try:
+                    control, data = self.detector_update_queue.get(timeout=1)
+                except Empty:
+                    self.check_for_crash()
+                    continue
 
                 if control == DetectionControlEnum.FAIL:
                     logger.error("Scan failed")

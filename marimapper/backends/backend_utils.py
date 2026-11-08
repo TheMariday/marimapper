@@ -5,6 +5,7 @@ from marimapper.backends.fcmega import fcmega_backend
 from marimapper.backends.pixelblaze import pixelblaze_backend
 from marimapper.backends.wled import wled_backend
 from marimapper.backends.artnet import artnet_backend
+from marimapper.backends.pixlite import pixlite_backend
 
 backend_factories = {
     "custom": custom_backend.custom_backend_factory,
@@ -14,6 +15,7 @@ backend_factories = {
     "pixelblaze": pixelblaze_backend.pixelblaze_backend_factory,
     "wled": wled_backend.wled_backend_factory,
     "artnet": artnet_backend.artnet_backend_factory,
+    "pixlite": pixlite_backend.pixlite_backend_factory,
 }
 
 backend_arg_setters = {
@@ -24,4 +26,5 @@ backend_arg_setters = {
     "pixelblaze": pixelblaze_backend.pixelblaze_backend_set_args,
     "wled": wled_backend.wled_backend_set_args,
     "artnet": artnet_backend.artnet_set_args,
+    "pixlite": pixlite_backend.pixlite_backend_set_args,
 }
